@@ -1,0 +1,203 @@
+{
+  "main": {
+    "id": "95c414ead785d123",
+    "type": "split",
+    "children": [
+      {
+        "id": "5b67d53144dc7d9b",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "c0432503d8abf71f",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "02-Architecture/System Architecture.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "System Architecture"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "e007383e39dc7dbc",
+    "type": "split",
+    "children": [
+      {
+        "id": "e8a79c8cbdd09a75",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "a928d2fab0e47945",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "be38582a30533b66",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "055c5210fe415dd5",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "95dfa611749f9dfc",
+    "type": "split",
+    "children": [
+      {
+        "id": "434f7d98cf6f1789",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "61eb9962292f80cd",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "02-Architecture/System Architecture.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for System Architecture"
+            }
+          },
+          {
+            "id": "087fbe717138b283",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "02-Architecture/System Architecture.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from System Architecture"
+            }
+          },
+          {
+            "id": "ee7ae3274b21aafe",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "dda522aa04152237",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "0416cb086b274a8c",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "02-Architecture/System Architecture.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of System Architecture"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "c0432503d8abf71f",
+  "lastOpenFiles": [
+    "Frontend - NextJS.md",
+    "02-Architecture/System Architecture.md",
+    "assets/architecture/system-architecture.png",
+    "02-Architecture/Untitled",
+    "assets/architecture",
+    "Untitled.md",
+    "Untitled",
+    "assets",
+    "Templates",
+    "11-Meeting-Notes",
+    "10-Thesis",
+    "09-Development-Log",
+    "08-Scheduling",
+    "07-Time-Series"
+  ]
+}
