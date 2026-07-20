@@ -1,9 +1,11 @@
 package com.saigonplantravel.backend.place.controller;
 
 import com.saigonplantravel.backend.common.error.InvalidPaginationException;
+import com.saigonplantravel.backend.place.dto.PlaceDetailResponse;
 import com.saigonplantravel.backend.place.dto.PlacePageResponse;
 import com.saigonplantravel.backend.place.service.PlaceService;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,5 +34,10 @@ public class PlaceController {
             throw new InvalidPaginationException("size must be between 1 and 100");
         }
         return placeService.getActivePlaces(page, size);
+    }
+
+    @GetMapping("/{slug}")
+    public PlaceDetailResponse getPlaceDetail(@PathVariable String slug) {
+        return placeService.getPlaceDetailBySlug(slug);
     }
 }

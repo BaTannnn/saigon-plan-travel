@@ -1,7 +1,9 @@
 package com.saigonplantravel.backend.place.service;
 
+import com.saigonplantravel.backend.place.dto.PlaceDetailResponse;
 import com.saigonplantravel.backend.place.dto.PlacePageResponse;
 import com.saigonplantravel.backend.place.dto.PlaceSummaryResponse;
+import com.saigonplantravel.backend.place.exception.PlaceNotFoundException;
 import com.saigonplantravel.backend.place.mapper.PlaceMapper;
 import com.saigonplantravel.backend.place.repository.PlaceRepository;
 import org.springframework.data.domain.Page;
@@ -41,5 +43,11 @@ public class PlaceService {
                 result.isFirst(),
                 result.isLast()
         );
+    }
+
+    public PlaceDetailResponse getPlaceDetailBySlug(String slug) {
+        return placeRepository.findBySlugAndActiveTrue(slug)
+                .map(placeMapper::toDetailResponse)
+                .orElseThrow(PlaceNotFoundException::new);
     }
 }
