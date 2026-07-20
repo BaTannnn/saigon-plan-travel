@@ -4,6 +4,24 @@
 # Log file
 *.log
 
+# Environment
+.env
+.env.*
+!.env.example
+
+# IDE
+.idea/
+.vscode/
+
+# Frontend
+**/node_modules/
+**/.next/
+**/out/
+**/dist/
+
+# Backend
+backend/target/
+
 # BlueJ files
 *.ctxt
 
