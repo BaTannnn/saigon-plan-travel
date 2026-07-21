@@ -5,10 +5,12 @@ import com.saigonplantravel.backend.place.dto.CategoryResponse;
 import com.saigonplantravel.backend.place.dto.OpeningHourResponse;
 import com.saigonplantravel.backend.place.dto.PlaceDetailResponse;
 import com.saigonplantravel.backend.place.dto.PlacePageResponse;
+import com.saigonplantravel.backend.place.dto.PlaceSearchRequest;
 import com.saigonplantravel.backend.place.dto.PlaceSummaryResponse;
 import com.saigonplantravel.backend.place.exception.PlaceNotFoundException;
 import com.saigonplantravel.backend.place.service.PlaceService;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -22,6 +24,9 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.nullValue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -41,7 +46,7 @@ class PlaceControllerTest {
     @Test
     void usesDefaultPaginationAndReturnsLockedResponseContract() throws Exception {
         PlaceSummaryResponse place = demoPlace();
-        when(placeService.getActivePlaces(0, 20))
+        when(placeService.searchPlaces(any(PlaceSearchRequest.class)))
                 .thenReturn(new PlacePageResponse(List.of(place), 0, 20, 1, 1, true, true));
 
         mockMvc.perform(get("/api/v1/places"))
@@ -74,7 +79,7 @@ class PlaceControllerTest {
 
     @Test
     void acceptsCustomPaginationAndAllowsEmptyPage() throws Exception {
-        when(placeService.getActivePlaces(3, 10))
+        when(placeService.searchPlaces(any(PlaceSearchRequest.class)))
                 .thenReturn(new PlacePageResponse(List.of(), 3, 10, 5, 1, false, true));
 
         mockMvc.perform(get("/api/v1/places").param("page", "3").param("size", "10"))
@@ -115,10 +120,11 @@ class PlaceControllerTest {
 
     @Test
     void acceptsBoundaryPageSizes() throws Exception {
-        when(placeService.getActivePlaces(0, 1))
-                .thenReturn(new PlacePageResponse(List.of(), 0, 1, 0, 0, true, true));
-        when(placeService.getActivePlaces(0, 100))
-                .thenReturn(new PlacePageResponse(List.of(), 0, 100, 0, 0, true, true));
+        when(placeService.searchPlaces(any(PlaceSearchRequest.class)))
+                .thenReturn(
+                        new PlacePageResponse(List.of(), 0, 1, 0, 0, true, true),
+                        new PlacePageResponse(List.of(), 0, 100, 0, 0, true, true)
+                );
 
         mockMvc.perform(get("/api/v1/places").param("size", "1"))
                 .andExpect(status().isOk())
@@ -138,7 +144,7 @@ class PlaceControllerTest {
 
     @Test
     void returnsSafeProblemDetailForUnexpectedErrors() throws Exception {
-        when(placeService.getActivePlaces(0, 20))
+        when(placeService.searchPlaces(any(PlaceSearchRequest.class)))
                 .thenThrow(new DataAccessResourceFailureException("jdbc:postgresql://secret"));
 
         mockMvc.perform(get("/api/v1/places"))
@@ -149,6 +155,63 @@ class PlaceControllerTest {
                 .andExpect(content().string(org.hamcrest.Matchers.not(
                         org.hamcrest.Matchers.containsString("jdbc:postgresql")
                 )));
+    }
+
+    @Test
+    void bindsAndNormalizesAllSearchFilters() throws Exception {
+        when(placeService.searchPlaces(any(PlaceSearchRequest.class)))
+                .thenReturn(new PlacePageResponse(List.of(), 2, 10, 0, 0, false, true));
+
+        mockMvc.perform(get("/api/v1/places")
+                        .param("keyword", "  Bảo   tàng  ")
+                        .param("district", "  Quận   1 ")
+                        .param("category", "van-hoa")
+                        .param("indoor", "false")
+                        .param("maxCost", "100000")
+                        .param("page", "2")
+                        .param("size", "10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", aMapWithSize(7)));
+
+        ArgumentCaptor<PlaceSearchRequest> requestCaptor =
+                ArgumentCaptor.forClass(PlaceSearchRequest.class);
+        verify(placeService).searchPlaces(requestCaptor.capture());
+        PlaceSearchRequest request = requestCaptor.getValue();
+        org.assertj.core.api.Assertions.assertThat(request.keyword()).isEqualTo("Bảo tàng");
+        org.assertj.core.api.Assertions.assertThat(request.district()).isEqualTo("Quận 1");
+        org.assertj.core.api.Assertions.assertThat(request.category()).isEqualTo("van-hoa");
+        org.assertj.core.api.Assertions.assertThat(request.indoor()).isFalse();
+        org.assertj.core.api.Assertions.assertThat(request.maxCost())
+                .isEqualByComparingTo("100000");
+        org.assertj.core.api.Assertions.assertThat(request.resolvedPage()).isEqualTo(2);
+        org.assertj.core.api.Assertions.assertThat(request.resolvedSize()).isEqualTo(10);
+    }
+
+    @Test
+    void returnsInvalidRequestWithFieldErrorsForSearchFilters() throws Exception {
+        mockMvc.perform(get("/api/v1/places").param("category", "Invalid-Slug"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType("application/problem+json"))
+                .andExpect(jsonPath("$.title").value("Invalid request"))
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST"))
+                .andExpect(jsonPath("$.fieldErrors[0].field").value("category"));
+
+        mockMvc.perform(get("/api/v1/places").param("indoor", "yes"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST"))
+                .andExpect(jsonPath("$.fieldErrors[0].field").value("indoor"));
+
+        mockMvc.perform(get("/api/v1/places").param("indoor", "TRUE"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST"))
+                .andExpect(jsonPath("$.fieldErrors[0].field").value("indoor"));
+
+        mockMvc.perform(get("/api/v1/places").param("maxCost", "100000001"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST"))
+                .andExpect(jsonPath("$.fieldErrors[0].field").value("maxCost"));
+
+        verifyNoInteractions(placeService);
     }
 
     @Test

@@ -1,6 +1,8 @@
 package com.saigonplantravel.backend.place.repository;
 
 import com.saigonplantravel.backend.place.dto.PlaceDetailResponse;
+import com.saigonplantravel.backend.place.dto.PlacePageResponse;
+import com.saigonplantravel.backend.place.dto.PlaceSearchRequest;
 import com.saigonplantravel.backend.place.entity.Category;
 import com.saigonplantravel.backend.place.entity.Place;
 import com.saigonplantravel.backend.place.service.PlaceService;
@@ -19,6 +21,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
@@ -99,7 +102,7 @@ class PlaceRepositoryTest {
                 String.class
         );
 
-        assertThat(versions).containsExactly("1", "2", "3", "4", "5", "6", "7", "8");
+        assertThat(versions).containsExactly("1", "2", "3", "4", "5", "6", "7", "8", "9");
         assertThat(jdbcTemplate.queryForObject(
                 "SELECT count(*) FROM flyway_schema_history WHERE version = '6' AND success",
                 Integer.class
@@ -124,6 +127,16 @@ class PlaceRepositoryTest {
                 "SELECT count(*) FROM opening_hours",
                 Integer.class
         )).isEqualTo(33);
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT count(*) FROM pg_extension WHERE extname = 'unaccent'",
+                Integer.class
+        )).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT count(*) FROM pg_indexes "
+                        + "WHERE schemaname = 'public' "
+                        + "AND indexname = 'idx_place_categories_category_place'",
+                Integer.class
+        )).isEqualTo(1);
 
         MigrateResult rerun = flyway.migrate();
 
@@ -136,6 +149,10 @@ class PlaceRepositoryTest {
         )).isEqualTo(1);
         assertThat(jdbcTemplate.queryForObject(
                 "SELECT count(*) FROM flyway_schema_history WHERE version = '8' AND success",
+                Integer.class
+        )).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT count(*) FROM flyway_schema_history WHERE version = '9' AND success",
                 Integer.class
         )).isEqualTo(1);
     }
@@ -243,6 +260,224 @@ class PlaceRepositoryTest {
                 .containsExactly((short) 1, (short) 2, (short) 3, (short) 4, (short) 5, (short) 6);
     }
 
+    @Test
+    @Transactional
+    void searchesKeywordAcrossEveryTextFieldWithoutCaseOrVietnameseDiacritics() {
+        insertSearchPlace(
+                "search-name",
+                "Bảo tàng Name",
+                null,
+                null,
+                "Địa chỉ demo",
+                "Quận 9",
+                true
+        );
+        insertSearchPlace(
+                "search-short-description",
+                "Search Short",
+                "Không gian Bảo tàng",
+                null,
+                "Địa chỉ demo",
+                "Quận 9",
+                true
+        );
+        insertSearchPlace(
+                "search-full-description",
+                "Search Full",
+                null,
+                "Nội dung Bảo tàng",
+                "Địa chỉ demo",
+                "Quận 9",
+                true
+        );
+        insertSearchPlace(
+                "search-address",
+                "Search Address",
+                null,
+                null,
+                "Đường Bảo tàng",
+                "Quận 9",
+                true
+        );
+        insertSearchPlace(
+                "search-district",
+                "Search District",
+                null,
+                null,
+                "Địa chỉ demo",
+                "Bảo tàng District",
+                true
+        );
+
+        PlacePageResponse response = placeService.searchPlaces(searchRequest(
+                "BAO TANG",
+                null,
+                null,
+                null,
+                null,
+                0,
+                100
+        ));
+
+        assertThat(response.content())
+                .extracting(item -> item.slug())
+                .containsExactlyInAnyOrder(
+                        "search-name",
+                        "search-short-description",
+                        "search-full-description",
+                        "search-address",
+                        "search-district"
+                );
+    }
+
+    @Test
+    @Transactional
+    void treatsLikeWildcardsAsLiteralCharacters() {
+        insertSearchPlace(
+                "literal-wildcards",
+                "Demo 50%_path\\name",
+                null,
+                null,
+                "Địa chỉ demo",
+                "Quận 9",
+                true
+        );
+
+        PlacePageResponse response = placeService.searchPlaces(searchRequest(
+                "50%_path\\name",
+                null,
+                null,
+                null,
+                null,
+                0,
+                100
+        ));
+
+        assertThat(response.content())
+                .extracting(item -> item.slug())
+                .containsExactly("literal-wildcards");
+    }
+
+    @Test
+    void combinesAllFiltersAndExcludesInactivePlaces() {
+        PlacePageResponse response = placeService.searchPlaces(searchRequest(
+                "demo",
+                "quan 1",
+                "van-hoa",
+                true,
+                new BigDecimal("100000"),
+                0,
+                100
+        ));
+
+        assertThat(response.content())
+                .extracting(item -> item.slug())
+                .containsExactly("demo-art-space", "demo-history-hall")
+                .doesNotContain("demo-temporarily-hidden-place");
+        assertThat(response.totalElements()).isEqualTo(2);
+    }
+
+    @Test
+    void appliesDistrictCategoryIndoorAndBudgetSemanticsIndividually() {
+        assertThat(placeService.searchPlaces(searchRequest(
+                null, "1", null, null, null, 0, 100
+        )).content()).isEmpty();
+
+        assertThat(placeService.searchPlaces(searchRequest(
+                null, "quan 1", null, null, null, 0, 100
+        )).content())
+                .extracting(item -> item.slug())
+                .containsExactly("demo-art-space", "demo-history-hall");
+
+        assertThat(placeService.searchPlaces(searchRequest(
+                null, null, "khong-ton-tai", null, null, 0, 100
+        )).content()).isEmpty();
+
+        assertThat(placeService.searchPlaces(searchRequest(
+                null, null, null, false, null, 0, 100
+        )).content())
+                .extracting(item -> item.slug())
+                .containsExactly("demo-city-garden", "demo-riverside-walk");
+
+        assertThat(placeService.searchPlaces(searchRequest(
+                null, null, null, null, BigDecimal.ZERO, 0, 100
+        )).content())
+                .extracting(item -> item.slug())
+                .containsExactly("demo-city-garden", "demo-riverside-walk");
+    }
+
+    @Test
+    void usesAtMostContentAndCountQueriesForCategoryPagination() {
+        Statistics statistics = entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
+        statistics.clear();
+
+        PlacePageResponse response = placeService.searchPlaces(searchRequest(
+                null,
+                null,
+                "van-hoa",
+                null,
+                null,
+                0,
+                1
+        ));
+
+        assertThat(response.content()).hasSize(1);
+        assertThat(response.totalElements()).isEqualTo(2);
+        assertThat(statistics.getPrepareStatementCount()).isBetween(1L, 2L);
+    }
+
+    @Test
+    @Transactional
+    void keepsPaginationStableAndFastWithThirtyMatchingPlaces() {
+        for (int index = 0; index < 30; index++) {
+            insertSearchPlace(
+                    "performance-fixture-" + index,
+                    "Performance Fixture",
+                    "Fixture search target",
+                    null,
+                    "Test address " + index,
+                    "Quận 9",
+                    true
+            );
+        }
+
+        PlaceSearchRequest firstPageRequest = searchRequest(
+                "fixture search target", null, null, null, null, 0, 10
+        );
+        PlaceSearchRequest secondPageRequest = searchRequest(
+                "fixture search target", null, null, null, null, 1, 10
+        );
+        Statistics statistics = entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
+
+        statistics.clear();
+        long firstPageStartedAt = System.nanoTime();
+        PlacePageResponse firstPage = placeService.searchPlaces(firstPageRequest);
+        long firstPageElapsedNanos = System.nanoTime() - firstPageStartedAt;
+        assertThat(statistics.getPrepareStatementCount()).isBetween(1L, 2L);
+
+        statistics.clear();
+        long secondPageStartedAt = System.nanoTime();
+        PlacePageResponse secondPage = placeService.searchPlaces(secondPageRequest);
+        long secondPageElapsedNanos = System.nanoTime() - secondPageStartedAt;
+        assertThat(statistics.getPrepareStatementCount()).isBetween(1L, 2L);
+
+        assertThat(firstPage.totalElements()).isEqualTo(30);
+        assertThat(firstPage.totalPages()).isEqualTo(3);
+        assertThat(firstPage.content()).hasSize(10);
+        assertThat(secondPage.content()).hasSize(10);
+        assertThat(firstPage.content())
+                .extracting(item -> item.id())
+                .isSorted()
+                .doesNotContainAnyElementsOf(
+                        secondPage.content().stream().map(item -> item.id()).toList()
+                );
+        assertThat(secondPage.content())
+                .extracting(item -> item.id())
+                .isSorted();
+        assertThat(firstPageElapsedNanos).isLessThan(500_000_000L);
+        assertThat(secondPageElapsedNanos).isLessThan(500_000_000L);
+    }
+
     private void assertInvalidPlace(
             String slug,
             BigDecimal latitude,
@@ -275,5 +510,52 @@ class PlaceRepositoryTest {
     private void assertInvalidSql(String sql) {
         assertThatThrownBy(() -> jdbcTemplate.update(sql))
                 .isInstanceOf(DataAccessException.class);
+    }
+
+    private void insertSearchPlace(
+            String slug,
+            String name,
+            String shortDescription,
+            String fullDescription,
+            String address,
+            String district,
+            boolean active
+    ) {
+        jdbcTemplate.update(
+                """
+                        INSERT INTO places (
+                            name, slug, short_description, full_description, address, district,
+                            latitude, longitude, estimated_visit_minutes, min_cost, max_cost,
+                            indoor, active
+                        ) VALUES (?, ?, ?, ?, ?, ?, 10.7000000, 106.6000000, 60, 0, 100000, TRUE, ?)
+                        """,
+                name,
+                slug,
+                shortDescription,
+                fullDescription,
+                address,
+                district,
+                active
+        );
+    }
+
+    private PlaceSearchRequest searchRequest(
+            String keyword,
+            String district,
+            String category,
+            Boolean indoor,
+            BigDecimal maxCost,
+            Integer page,
+            Integer size
+    ) {
+        return new PlaceSearchRequest(
+                keyword,
+                district,
+                category,
+                indoor,
+                maxCost,
+                page,
+                size
+        );
     }
 }

@@ -2,10 +2,12 @@ package com.saigonplantravel.backend.place.service;
 
 import com.saigonplantravel.backend.place.dto.PlaceDetailResponse;
 import com.saigonplantravel.backend.place.dto.PlacePageResponse;
+import com.saigonplantravel.backend.place.dto.PlaceSearchRequest;
 import com.saigonplantravel.backend.place.dto.PlaceSummaryResponse;
 import com.saigonplantravel.backend.place.exception.PlaceNotFoundException;
 import com.saigonplantravel.backend.place.mapper.PlaceMapper;
 import com.saigonplantravel.backend.place.repository.PlaceRepository;
+import com.saigonplantravel.backend.place.repository.specification.PlaceSpecifications;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -34,6 +36,20 @@ public class PlaceService {
                 .findAllByActiveTrue(PageRequest.of(page, size, PLACE_SORT))
                 .map(placeMapper::toSummaryResponse);
 
+        return toPageResponse(result);
+    }
+
+    public PlacePageResponse searchPlaces(PlaceSearchRequest request) {
+        Page<PlaceSummaryResponse> result = placeRepository.findAll(
+                        PlaceSpecifications.matching(request),
+                        PageRequest.of(request.resolvedPage(), request.resolvedSize(), PLACE_SORT)
+                )
+                .map(placeMapper::toSummaryResponse);
+
+        return toPageResponse(result);
+    }
+
+    private PlacePageResponse toPageResponse(Page<PlaceSummaryResponse> result) {
         return new PlacePageResponse(
                 result.getContent(),
                 result.getNumber(),

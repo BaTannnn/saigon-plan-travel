@@ -2,6 +2,7 @@ package com.saigonplantravel.backend.place.service;
 
 import com.saigonplantravel.backend.place.dto.PlaceDetailResponse;
 import com.saigonplantravel.backend.place.dto.PlacePageResponse;
+import com.saigonplantravel.backend.place.dto.PlaceSearchRequest;
 import com.saigonplantravel.backend.place.dto.PlaceSummaryResponse;
 import com.saigonplantravel.backend.place.entity.Place;
 import com.saigonplantravel.backend.place.exception.PlaceNotFoundException;
@@ -16,6 +17,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -96,6 +98,55 @@ class PlaceServiceTest {
         assertThat(response.totalPages()).isZero();
         assertThat(response.first()).isFalse();
         assertThat(response.last()).isTrue();
+    }
+
+    @Test
+    void searchesWithDefaultsFixedSortingAndSummaryMapping() {
+        Place place = mock(Place.class);
+        PlaceSummaryResponse summary = new PlaceSummaryResponse(
+                1L,
+                "Demo Place",
+                "demo-place",
+                null,
+                "Quận 1",
+                new BigDecimal("10.0000000"),
+                new BigDecimal("106.0000000"),
+                60,
+                BigDecimal.ZERO,
+                new BigDecimal("100000.00"),
+                true
+        );
+        when(placeRepository.findAll(
+                org.mockito.ArgumentMatchers.<Specification<Place>>any(),
+                org.mockito.ArgumentMatchers.any(Pageable.class)
+        )).thenAnswer(invocation -> {
+            Pageable pageable = invocation.getArgument(1);
+            return new PageImpl<>(List.of(place), pageable, 1);
+        });
+        when(placeMapper.toSummaryResponse(place)).thenReturn(summary);
+
+        PlacePageResponse response = new PlaceService(placeRepository, placeMapper)
+                .searchPlaces(new PlaceSearchRequest(
+                        "   ",
+                        null,
+                        null,
+                        false,
+                        new BigDecimal("100000"),
+                        null,
+                        null
+                ));
+
+        assertThat(response.content()).containsExactly(summary);
+        assertThat(response.page()).isZero();
+        assertThat(response.size()).isEqualTo(20);
+
+        ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
+        verify(placeRepository).findAll(
+                org.mockito.ArgumentMatchers.<Specification<Place>>any(),
+                pageableCaptor.capture()
+        );
+        assertThat(pageableCaptor.getValue().getSort().toString())
+                .isEqualTo("name: ASC,id: ASC");
     }
 
     @Test
