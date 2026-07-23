@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { PlacesErrorState } from "@/features/places/components/places-error-state";
 import { PlacesExplorer } from "@/features/places/components/places-explorer";
-import { readPlacesSearchParams, type RawSearchParams } from "@/features/places/search-params";
+import {
+  readPlacesSearchParams,
+  type RawSearchParams,
+} from "@/features/places/search-params";
 import {
   getCategories,
   getPlaceCatalog,
@@ -13,7 +16,9 @@ export const metadata: Metadata = {
   title: "Khám phá địa điểm",
 };
 
-async function loadPlacesPage(filters: ReturnType<typeof readPlacesSearchParams>) {
+async function loadPlacesPage(
+  filters: ReturnType<typeof readPlacesSearchParams>,
+) {
   try {
     const [result, categories, catalog] = await Promise.all([
       getPlaces(filters),
@@ -47,9 +52,9 @@ export default async function PlacesPage({
     );
   }
 
-  const districts = [...new Set(catalog.content.map((place) => place.district))].sort(
-    (left, right) => left.localeCompare(right, "vi"),
-  );
+  const districts = [
+    ...new Set(catalog.content.map((place) => place.district)),
+  ].sort((left, right) => left.localeCompare(right, "vi"));
 
   return (
     <PlacesExplorer

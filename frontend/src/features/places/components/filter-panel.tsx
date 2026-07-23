@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { hasActiveFilters } from "@/features/places/search-params";
+import { cn } from "@/lib/utils";
 import type { Category, PlacesSearchFilters } from "@/types/place";
 
 const ALL_VALUE = "__all__";
@@ -41,10 +42,15 @@ function FilterSelect({
   onValueChange,
 }: FilterSelectProps) {
   return (
-    <div className="filter-field">
-      <Label htmlFor={id}>{label}</Label>
+    <div className="grid gap-[5px]">
+      <Label className="text-xs font-bold text-text-secondary" htmlFor={id}>
+        {label}
+      </Label>
       <Select value={value} onValueChange={onValueChange}>
-        <SelectTrigger className="filter-select-trigger" id={id}>
+        <SelectTrigger
+          className="h-10 min-h-10 w-full min-w-0 rounded-[9px] border-border bg-background px-2.5 text-text-primary"
+          id={id}
+        >
           <SelectValue />
         </SelectTrigger>
         <SelectContent position="popper">
@@ -64,12 +70,14 @@ type FilterPanelProps = {
   categories: Category[];
   districts: string[];
   filters: PlacesSearchFilters;
+  className?: string;
 };
 
 export function FilterPanel({
   categories,
   districts,
   filters,
+  className,
 }: FilterPanelProps) {
   const districtId = useId();
   const categoryId = useId();
@@ -80,14 +88,22 @@ export function FilterPanel({
   const [indoor, setIndoor] = useState(filters.indoor ?? ALL_VALUE);
 
   return (
-    <div className="filter-panel">
-      <div className="filter-panel-heading">
-        <h2>
-          <FilterIcon /> Bộ lọc
+    <div
+      className={cn(
+        "rounded-mint-md border border-border bg-surface p-3.5 shadow-mint-sm",
+        className,
+      )}
+    >
+      <div className="mb-2.5 flex items-center justify-between">
+        <h2 className="m-0 flex items-center gap-[7px] text-sm font-bold">
+          <FilterIcon className="size-5" /> Bộ lọc
         </h2>
       </div>
 
-      <form action="/places" className="filter-form">
+      <form
+        action="/places"
+        className="grid grid-cols-2 gap-2.5 max-md:grid-cols-1 md:max-[1100px]:grid-cols-1"
+      >
         {filters.keyword ? (
           <input type="hidden" name="keyword" value={filters.keyword} />
         ) : null}
@@ -140,9 +156,15 @@ export function FilterPanel({
           onValueChange={setIndoor}
         />
 
-        <div className="filter-field">
-          <Label htmlFor={maxCostId}>Chi phí tối đa (VND)</Label>
+        <div className="grid gap-[5px]">
+          <Label
+            className="text-xs font-bold text-text-secondary"
+            htmlFor={maxCostId}
+          >
+            Chi phí tối đa (VND)
+          </Label>
           <Input
+            className="h-10 min-h-10 rounded-[9px] border-border bg-background px-2.5 text-text-primary"
             id={maxCostId}
             type="number"
             name="maxCost"
@@ -154,11 +176,19 @@ export function FilterPanel({
           />
         </div>
 
-        <Button className="filter-submit-button" type="submit" size="sm">
+        <Button
+          className="min-h-10 self-end text-[0.8rem]"
+          type="submit"
+          size="sm"
+        >
           Áp dụng bộ lọc
         </Button>
         {hasActiveFilters(filters) ? (
-          <Button asChild className="clear-filter-link" variant="link">
+          <Button
+            asChild
+            className="self-center justify-self-center text-[0.78rem] font-bold underline [text-underline-offset:3px]"
+            variant="link"
+          >
             <Link href="/places">Xóa tất cả bộ lọc</Link>
           </Button>
         ) : null}

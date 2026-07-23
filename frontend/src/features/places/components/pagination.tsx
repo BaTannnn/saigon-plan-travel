@@ -17,15 +17,27 @@ export function Pagination({ page, filters }: PaginationProps) {
   if (page.totalPages <= 1) return null;
 
   return (
-    <PaginationRoot className="pagination" aria-label="Phân trang địa điểm">
-      <PaginationContent className="pagination-content">
+    <PaginationRoot
+      className="pt-3 text-[0.78rem] font-bold max-md:py-4"
+      aria-label="Phân trang địa điểm"
+    >
+      <PaginationContent className="w-full justify-between gap-2.5">
         <PaginationItem>
           {page.first ? (
-            <Button className="pagination-link" type="button" variant="outline" disabled>
+            <Button
+              className="min-h-[38px] rounded-[10px] px-3 text-primary"
+              type="button"
+              variant="outline"
+              disabled
+            >
               Trước
             </Button>
           ) : (
-            <Button asChild className="pagination-link" variant="outline">
+            <Button
+              asChild
+              className="min-h-[38px] rounded-[10px] px-3 text-primary"
+              variant="outline"
+            >
               <Link href={createPlacesHref(filters, { page: page.page - 1 })}>
                 Trước
               </Link>
@@ -33,17 +45,26 @@ export function Pagination({ page, filters }: PaginationProps) {
           )}
         </PaginationItem>
         <PaginationItem>
-          <span className="pagination-status" aria-current="page">
+          <span className="whitespace-nowrap" aria-current="page">
             Trang {page.page + 1} / {page.totalPages}
           </span>
         </PaginationItem>
         <PaginationItem>
           {page.last ? (
-            <Button className="pagination-link" type="button" variant="outline" disabled>
+            <Button
+              className="min-h-[38px] rounded-[10px] px-3 text-primary"
+              type="button"
+              variant="outline"
+              disabled
+            >
               Sau
             </Button>
           ) : (
-            <Button asChild className="pagination-link" variant="outline">
+            <Button
+              asChild
+              className="min-h-[38px] rounded-[10px] px-3 text-primary"
+              variant="outline"
+            >
               <Link href={createPlacesHref(filters, { page: page.page + 1 })}>
                 Sau
               </Link>

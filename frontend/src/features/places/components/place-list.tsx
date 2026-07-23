@@ -23,10 +23,14 @@ export function PlaceList({ places, selectedSlug, onSelect }: PlaceListProps) {
 
   if (places.length === 0) {
     return (
-      <Card className="empty-state">
-        <span aria-hidden="true">⌁</span>
-        <h2>Không tìm thấy địa điểm</h2>
-        <p>Thử đổi từ khóa hoặc xóa bớt bộ lọc để xem thêm kết quả.</p>
+      <Card className="grid flex-1 content-center place-items-center rounded-mint-md border border-dashed border-border bg-surface px-5 py-9 text-center ring-0">
+        <span className="text-5xl text-primary" aria-hidden="true">
+          ⌁
+        </span>
+        <h2 className="mt-2 mb-1 text-xl font-bold">Không tìm thấy địa điểm</h2>
+        <p className="mb-[18px] max-w-[340px] text-text-secondary">
+          Thử đổi từ khóa hoặc xóa bớt bộ lọc để xem thêm kết quả.
+        </p>
         <Button asChild variant="outline">
           <Link href="/places">Xóa bộ lọc</Link>
         </Button>
@@ -35,7 +39,10 @@ export function PlaceList({ places, selectedSlug, onSelect }: PlaceListProps) {
   }
 
   return (
-    <div className="place-list" aria-label="Danh sách địa điểm">
+    <div
+      className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto py-0 pr-[7px] pb-[18px] pl-0.5 overscroll-contain [scrollbar-color:var(--border)_transparent] max-md:overflow-visible"
+      aria-label="Danh sách địa điểm"
+    >
       {places.map((place, index) => (
         <PlaceCard
           key={place.id}

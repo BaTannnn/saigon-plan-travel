@@ -13,7 +13,9 @@ import {
   useMapEvents,
 } from "react-leaflet";
 import { PinIcon } from "@/components/ui/icons";
+import { cn } from "@/lib/utils";
 import type { PlaceSummary } from "@/types/place";
+import styles from "./place-map.module.css";
 
 const SAIGON_CENTER: [number, number] = [10.7769, 106.7009];
 
@@ -26,14 +28,17 @@ type PlaceMapProps = {
 
 function markerIcon(index: number, selected: boolean) {
   return L.divIcon({
-    className: "custom-map-marker-wrapper",
-    html: `<span class="custom-map-marker${selected ? " selected" : ""}"><b>${index + 1}</b></span>`,
+    className: styles.markerWrapper,
+    html: `<span class="${styles.marker}${selected ? ` ${styles.markerSelected}` : ""}"><b>${index + 1}</b></span>`,
     iconSize: [42, 50],
     iconAnchor: [21, 48],
   });
 }
 
-function MapViewport({ places, selectedSlug }: Pick<PlaceMapProps, "places" | "selectedSlug">) {
+function MapViewport({
+  places,
+  selectedSlug,
+}: Pick<PlaceMapProps, "places" | "selectedSlug">) {
   const map = useMap();
 
   useEffect(() => {
@@ -53,9 +58,13 @@ function MapViewport({ places, selectedSlug }: Pick<PlaceMapProps, "places" | "s
   useEffect(() => {
     const selected = places.find((place) => place.slug === selectedSlug);
     if (selected) {
-      map.flyTo([selected.latitude, selected.longitude], Math.max(map.getZoom(), 15), {
-        duration: 0.6,
-      });
+      map.flyTo(
+        [selected.latitude, selected.longitude],
+        Math.max(map.getZoom(), 15),
+        {
+          duration: 0.6,
+        },
+      );
     }
   }, [map, places, selectedSlug]);
 
@@ -79,7 +88,7 @@ function LocationControl() {
   return (
     <Button
       type="button"
-      className="location-control"
+      className="absolute right-3 bottom-[82px] z-[800] size-11 rounded-md border-2 border-black/20 bg-surface text-primary-strong"
       onClick={() => map.locate({ setView: false })}
       aria-label="Định vị vị trí của tôi"
       title="Vị trí của tôi"
@@ -103,9 +112,12 @@ export function PlaceMap({
   );
 
   return (
-    <div className={detailMode ? "place-map detail-map" : "place-map"}>
+    <div className={cn(styles.root, "relative size-full")}>
       <MapContainer
-        center={places[0] ? [places[0].latitude, places[0].longitude] : SAIGON_CENTER}
+        className="size-full"
+        center={
+          places[0] ? [places[0].latitude, places[0].longitude] : SAIGON_CENTER
+        }
         zoom={13}
         scrollWheelZoom
         zoomControl={false}
@@ -129,10 +141,20 @@ export function PlaceMap({
       </MapContainer>
 
       {!detailMode && selectedPlace ? (
-        <div className="map-preview" aria-live="polite">
-          <p>{selectedPlace.district}</p>
+        <div
+          className="absolute bottom-7 left-1/2 z-[500] grid min-w-[min(320px,calc(100%_-_100px))] -translate-x-1/2 rounded-mint-md border border-border bg-surface px-[18px] py-3.5 shadow-mint-md max-md:bottom-[90px] max-md:min-w-[calc(100%_-_32px)]"
+          aria-live="polite"
+        >
+          <p className="mb-0.5 text-xs text-text-secondary">
+            {selectedPlace.district}
+          </p>
           <strong>{selectedPlace.name}</strong>
-          <Link href={`/places/${selectedPlace.slug}`}>Xem chi tiết</Link>
+          <Link
+            className="mt-1.5 text-[0.78rem] font-extrabold text-primary"
+            href={`/places/${selectedPlace.slug}`}
+          >
+            Xem chi tiết
+          </Link>
         </div>
       ) : null}
     </div>

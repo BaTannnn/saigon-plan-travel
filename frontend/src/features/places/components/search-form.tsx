@@ -2,6 +2,7 @@ import { SearchIcon } from "@/components/ui/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 import type { PlacesSearchFilters } from "@/types/place";
 
 type SearchFormProps = {
@@ -12,16 +13,19 @@ type SearchFormProps = {
 export function SearchForm({ filters, compact = false }: SearchFormProps) {
   return (
     <form
-      className={compact ? "search-form search-form-compact" : "search-form"}
+      className={cn(
+        "flex min-h-[52px] items-center gap-2 rounded-[15px] border border-border bg-surface py-[5px] pr-1.5 pl-4 shadow-mint-md max-md:min-h-[50px] max-md:shadow-mint-sm",
+        compact && "w-full",
+      )}
       action="/places"
       role="search"
     >
-      <SearchIcon className="search-form-icon" />
+      <SearchIcon className="size-5 shrink-0 text-primary-strong" />
       <Label className="sr-only" htmlFor={compact ? "map-keyword" : "keyword"}>
         Tìm địa điểm
       </Label>
       <Input
-        className="search-input"
+        className="h-[42px] min-w-0 flex-1 border-0 bg-transparent px-0 text-text-primary shadow-none outline-none focus-visible:border-0 focus-visible:ring-0"
         id={compact ? "map-keyword" : "keyword"}
         name="keyword"
         type="search"
@@ -41,7 +45,11 @@ export function SearchForm({ filters, compact = false }: SearchFormProps) {
       {filters.maxCost ? (
         <input type="hidden" name="maxCost" value={filters.maxCost} />
       ) : null}
-      <Button className="search-submit-button" type="submit" size="sm">
+      <Button
+        className="min-h-[42px] min-w-[66px] rounded-[10px] font-extrabold"
+        type="submit"
+        size="sm"
+      >
         Tìm
       </Button>
     </form>

@@ -3,16 +3,19 @@ import { SiteHeader } from "@/components/layout/site-header";
 import "leaflet/dist/leaflet.css";
 import "./globals.css";
 import { Geist } from "next/font/google";
-import { cn } from "@/lib/utils";
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+const geist = Geist({
+  subsets: ["latin"],
+  variable: "--font-geist-sans",
+});
 
 export const metadata: Metadata = {
   title: {
     default: "SaigonPlanTravel",
     template: "%s | SaigonPlanTravel",
   },
-  description: "Khám phá địa điểm và chuẩn bị hành trình tại Thành phố Hồ Chí Minh.",
+  description:
+    "Khám phá địa điểm và chuẩn bị hành trình tại Thành phố Hồ Chí Minh.",
 };
 
 export default function RootLayout({
@@ -21,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi" className={cn("font-sans", geist.variable)}>
+    <html lang="vi" className={geist.variable}>
       <body>
         <SiteHeader />
         {children}

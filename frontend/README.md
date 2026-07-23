@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SaigonPlanTravel Frontend
 
-## Getting Started
+Next.js App Router frontend cho màn hình khám phá và chi tiết địa điểm.
 
-First, run the development server:
+## Chạy local
+
+Từ root repository, khởi động database:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+docker compose --env-file .env -f infra/compose.yaml up -d postgres
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Khởi động backend trong terminal thứ nhất:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+cd backend
+set -a
+source ../.env
+set +a
+./mvnw spring-boot:run
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Khởi động frontend trong terminal thứ hai:
 
-## Learn More
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+Mở `http://localhost:3000/places`. Backend mặc định là
+`http://localhost:8080`. API client chạy ở phía Next.js server nên browser
+không gọi Spring Boot trực tiếp và không phụ thuộc CORS.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Để đổi địa chỉ backend, export biến trước khi chạy:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+BACKEND_API_BASE_URL=http://localhost:8081 npm run dev
+```
 
-## Deploy on Vercel
+Biến mẫu được ghi trong `../.env.example`. Không đưa secret vào file này.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Kiểm tra
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run lint
+npm run build
+```
+
+Repository hiện chưa cấu hình frontend test runner, vì vậy không có script
+`npm test`. Build không yêu cầu backend đang chạy; `/places` và
+`/places/[slug]` được render động khi có request.
+
+## Routes
+
+- `/` chuyển hướng đến `/places`.
+- `/places` đọc filter từ URL search parameters.
+- `/places/[slug]` hiển thị detail, category, opening hours và vị trí thật từ API.
