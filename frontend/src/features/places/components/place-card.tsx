@@ -29,9 +29,9 @@ export function PlaceCard({
     <Card asChild>
       <article
         className={cn(
-          "relative flex shrink-0 flex-row gap-3 overflow-visible rounded-mint-md border border-border bg-surface p-4 shadow-mint-sm ring-0 transition-[border-color,transform] duration-150 hover:-translate-y-px hover:border-accent max-md:w-full max-md:p-3.5",
+          "relative flex shrink-0 flex-row gap-3 overflow-visible rounded-mint-md border border-border bg-surface p-4 shadow-mint-sm ring-0 transition-[border-color,box-shadow] duration-150 hover:border-accent hover:shadow-[0_12px_30px_rgb(255_107_89_/_14%)] max-md:w-full max-md:p-3.5",
           selected &&
-            "-translate-y-px border-accent shadow-[0_12px_30px_rgb(255_107_89_/_14%)]",
+            "border-accent shadow-[0_12px_30px_rgb(255_107_89_/_14%)]",
         )}
         id={`place-card-${place.slug}`}
       >
