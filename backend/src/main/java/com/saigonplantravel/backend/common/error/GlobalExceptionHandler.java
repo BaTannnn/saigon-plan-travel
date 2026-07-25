@@ -1,5 +1,6 @@
 package com.saigonplantravel.backend.common.error;
 
+import com.saigonplantravel.backend.auth.exception.EmailAlreadyExistsException;
 import com.saigonplantravel.backend.place.exception.PlaceNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
@@ -74,7 +75,19 @@ public class GlobalExceptionHandler {
         problem.setProperty("fieldErrors", fieldErrors);
         return problem;
     }
+    @ExceptionHandler(EmailAlreadyExistsException.class)
+    public ProblemDetail handleEmailAlreadyExists(
+            EmailAlreadyExistsException exception
+    ) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.CONFLICT,
+                exception.getMessage()
+        );
 
+        problem.setTitle("Email already exists");
+
+        return problem;
+    }
     @ExceptionHandler(PlaceNotFoundException.class)
     public ProblemDetail handlePlaceNotFound(
             PlaceNotFoundException exception,
