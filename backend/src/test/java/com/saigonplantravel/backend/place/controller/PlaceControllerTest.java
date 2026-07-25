@@ -1,6 +1,7 @@
 package com.saigonplantravel.backend.place.controller;
 
 import com.saigonplantravel.backend.common.error.GlobalExceptionHandler;
+import com.saigonplantravel.backend.common.security.SecurityConfig;
 import com.saigonplantravel.backend.place.dto.CategoryResponse;
 import com.saigonplantravel.backend.place.dto.OpeningHourResponse;
 import com.saigonplantravel.backend.place.dto.PlaceDetailResponse;
@@ -32,9 +33,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 @WebMvcTest(PlaceController.class)
-@Import(GlobalExceptionHandler.class)
+@Import({
+        GlobalExceptionHandler.class,
+        SecurityConfig.class
+})
 class PlaceControllerTest {
 
     @Autowired
