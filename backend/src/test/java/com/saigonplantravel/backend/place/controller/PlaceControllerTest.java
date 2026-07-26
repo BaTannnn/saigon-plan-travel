@@ -1,6 +1,6 @@
 package com.saigonplantravel.backend.place.controller;
 
-import com.saigonplantravel.backend.common.error.GlobalExceptionHandler;
+import com.saigonplantravel.backend.common.exception.GlobalExceptionHandler;
 import com.saigonplantravel.backend.common.security.SecurityConfig;
 import com.saigonplantravel.backend.place.dto.CategoryResponse;
 import com.saigonplantravel.backend.place.dto.OpeningHourResponse;

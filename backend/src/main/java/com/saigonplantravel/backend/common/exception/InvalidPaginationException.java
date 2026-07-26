@@ -1,4 +1,4 @@
-package com.saigonplantravel.backend.common.error;
+package com.saigonplantravel.backend.common.exception;
 
 public class InvalidPaginationException extends RuntimeException {
 

@@ -1,20 +1,24 @@
 package com.saigonplantravel.backend.common.security.jwt;
-
+import com.saigonplantravel.backend.auth.domain.UserRole;
 import com.saigonplantravel.backend.auth.service.model.AuthenticationResult;
+import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Service;
-
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import javax.crypto.SecretKey;
 import java.time.Instant;
 import java.util.Date;
+import java.util.UUID;
 
 @Service
 public class JwtService {
 
     private final JwtProperties jwtProperties;
     private final SecretKey signingKey;
+    private final JwtParser jwtParser;
 
     public JwtService(JwtProperties jwtProperties) {
         this.jwtProperties = jwtProperties;
@@ -24,6 +28,10 @@ public class JwtService {
         );
 
         this.signingKey = Keys.hmacShaKeyFor(keyBytes);
+        this.jwtParser = Jwts.parser()
+                .verifyWith(signingKey)
+                .requireIssuer(jwtProperties.issuer())
+                .build();
     }
 
     public String generateAccessToken(
@@ -51,5 +59,38 @@ public class JwtService {
         return jwtProperties
                 .accessTokenExpiration()
                 .toSeconds();
+    }
+    public AccessTokenClaims parseAccessToken(String token) {
+        if (token == null || token.isBlank()) {
+            throw new InvalidAccessTokenException();
+        }
+
+        try {
+            Claims claims = jwtParser
+                    .parseSignedClaims(token)
+                    .getPayload();
+
+            String subject = claims.getSubject();
+            String roleClaim = claims.get("role", String.class);
+
+            if (subject == null
+                    || subject.isBlank()
+                    || roleClaim == null
+                    || roleClaim.isBlank()
+                    || claims.getExpiration() == null) {
+                throw new InvalidAccessTokenException();
+            }
+
+            UUID userPublicId = UUID.fromString(subject);
+            UserRole role = UserRole.valueOf(roleClaim);
+
+            return new AccessTokenClaims(
+                    userPublicId,
+                    role
+            );
+
+        } catch (JwtException | IllegalArgumentException exception) {
+            throw new InvalidAccessTokenException(exception);
+        }
     }
 }

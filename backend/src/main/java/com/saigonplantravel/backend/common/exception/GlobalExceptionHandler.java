@@ -1,6 +1,7 @@
-package com.saigonplantravel.backend.common.error;
+package com.saigonplantravel.backend.common.exception;
 
 import com.saigonplantravel.backend.auth.exception.EmailAlreadyExistsException;
+import com.saigonplantravel.backend.auth.exception.InvalidCredentialsException;
 import com.saigonplantravel.backend.place.exception.PlaceNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
@@ -85,6 +86,19 @@ public class GlobalExceptionHandler {
         );
 
         problem.setTitle("Email already exists");
+
+        return problem;
+    }
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ProblemDetail handleInvalidCredentials(
+            InvalidCredentialsException exception
+    ) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.UNAUTHORIZED,
+                exception.getMessage()
+        );
+
+        problem.setTitle("Authentication failed");
 
         return problem;
     }
