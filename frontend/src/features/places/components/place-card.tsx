@@ -78,7 +78,8 @@ export function PlaceCard({
           </p>
           <div className="flex flex-wrap gap-x-3 gap-y-[7px]">
             <span className="inline-flex items-center gap-[5px] text-xs font-bold text-text-secondary">
-              <PinIcon className="size-3.5 text-primary" /> {place.district}
+              <PinIcon className="size-3.5 text-primary" />{" "}
+              {place.administrativeUnitName ?? "Chưa xác định"}
             </span>
             <span className="inline-flex items-center gap-[5px] text-xs font-bold text-text-secondary">
               <ClockIcon className="size-3.5 text-primary" />{" "}

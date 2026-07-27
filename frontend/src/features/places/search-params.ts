@@ -30,7 +30,7 @@ export function readPlacesSearchParams(
 
   return {
     keyword: optional(params.keyword),
-    district: optional(params.district),
+    administrativeUnitName: optional(params.administrativeUnitName),
     category: optional(params.category),
     indoor: indoor === "true" || indoor === "false" ? indoor : undefined,
     maxCost: optional(params.maxCost),
@@ -59,7 +59,7 @@ export function createPlacesHref(
 export function hasActiveFilters(filters: PlacesSearchFilters) {
   return Boolean(
     filters.keyword ||
-      filters.district ||
+      filters.administrativeUnitName ||
       filters.category ||
       filters.indoor ||
       filters.maxCost,

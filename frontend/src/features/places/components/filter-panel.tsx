@@ -68,22 +68,24 @@ function FilterSelect({
 
 type FilterPanelProps = {
   categories: Category[];
-  districts: string[];
+  administrativeUnitNames: string[];
   filters: PlacesSearchFilters;
   className?: string;
 };
 
 export function FilterPanel({
   categories,
-  districts,
+  administrativeUnitNames,
   filters,
   className,
 }: FilterPanelProps) {
-  const districtId = useId();
+  const administrativeUnitNameId = useId();
   const categoryId = useId();
   const indoorId = useId();
   const maxCostId = useId();
-  const [district, setDistrict] = useState(filters.district ?? ALL_VALUE);
+  const [administrativeUnitName, setAdministrativeUnitName] = useState(
+    filters.administrativeUnitName ?? ALL_VALUE,
+  );
   const [category, setCategory] = useState(filters.category ?? ALL_VALUE);
   const [indoor, setIndoor] = useState(filters.indoor ?? ALL_VALUE);
 
@@ -109,8 +111,10 @@ export function FilterPanel({
         ) : null}
         <input
           type="hidden"
-          name="district"
-          value={district === ALL_VALUE ? "" : district}
+          name="administrativeUnitName"
+          value={
+            administrativeUnitName === ALL_VALUE ? "" : administrativeUnitName
+          }
         />
         <input
           type="hidden"
@@ -124,12 +128,15 @@ export function FilterPanel({
         />
 
         <FilterSelect
-          id={districtId}
-          label="Quận / khu vực"
-          value={district}
-          allLabel="Tất cả khu vực"
-          options={districts.map((item) => ({ value: item, label: item }))}
-          onValueChange={setDistrict}
+          id={administrativeUnitNameId}
+          label="Đơn vị hành chính"
+          value={administrativeUnitName}
+          allLabel="Tất cả đơn vị hành chính"
+          options={administrativeUnitNames.map((item) => ({
+            value: item,
+            label: item,
+          }))}
+          onValueChange={setAdministrativeUnitName}
         />
 
         <FilterSelect

@@ -146,7 +146,7 @@ export function PlaceMap({
           aria-live="polite"
         >
           <p className="mb-0.5 text-xs text-text-secondary">
-            {selectedPlace.district}
+            {selectedPlace.administrativeUnitName ?? "Chưa xác định"}
           </p>
           <strong>{selectedPlace.name}</strong>
           <Link

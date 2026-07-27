@@ -52,15 +52,19 @@ export default async function PlacesPage({
     );
   }
 
-  const districts = [
-    ...new Set(catalog.content.map((place) => place.district)),
+  const administrativeUnitNames = [
+    ...new Set(
+      catalog.content
+        .map((place) => place.administrativeUnitName)
+        .filter((name): name is string => name !== null),
+    ),
   ].sort((left, right) => left.localeCompare(right, "vi"));
 
   return (
     <PlacesExplorer
       result={result}
       categories={categories}
-      districts={districts}
+      administrativeUnitNames={administrativeUnitNames}
       filters={filters}
     />
   );
