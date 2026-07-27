@@ -1,6 +1,9 @@
 package com.saigonplantravel.backend.place.controller;
 
+import com.saigonplantravel.backend.auth.security.JwtAuthenticationService;
+import com.saigonplantravel.backend.common.security.RestAuthenticationEntryPoint;
 import com.saigonplantravel.backend.common.security.SecurityConfig;
+import com.saigonplantravel.backend.common.security.jwt.JwtService;
 import com.saigonplantravel.backend.place.dto.CategoryResponse;
 import com.saigonplantravel.backend.place.service.CategoryService;
 import org.junit.jupiter.api.Test;
@@ -27,6 +30,15 @@ class CategoryControllerTest {
 
     @MockitoBean
     private CategoryService categoryService;
+
+    @MockitoBean
+    private JwtService jwtService;
+
+    @MockitoBean
+    private JwtAuthenticationService jwtAuthenticationService;
+
+    @MockitoBean
+    private RestAuthenticationEntryPoint authenticationEntryPoint;
 
     @Test
     void returnsRootArrayWithLockedCategoryContract() throws Exception {

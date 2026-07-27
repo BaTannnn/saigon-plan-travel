@@ -29,8 +29,12 @@ public final class PlaceSpecifications {
             if (request.keyword() != null) {
                 predicates.add(keywordPredicate(root, criteriaBuilder, request.keyword()));
             }
-            if (request.district() != null) {
-                predicates.add(districtPredicate(root, criteriaBuilder, request.district()));
+            if (request.administrativeUnitName() != null) {
+                predicates.add(administrativeUnitNamePredicate(
+                        root,
+                        criteriaBuilder,
+                        request.administrativeUnitName()
+                ));
             }
             if (request.category() != null) {
                 Join<Place, Category> categories = root.join("categories");
@@ -63,18 +67,21 @@ public final class PlaceSpecifications {
                 literalSubstring(criteriaBuilder, root.get("shortDescription"), pattern),
                 literalSubstring(criteriaBuilder, root.get("fullDescription"), pattern),
                 literalSubstring(criteriaBuilder, root.get("address"), pattern),
-                literalSubstring(criteriaBuilder, root.get("district"), pattern)
+                literalSubstring(criteriaBuilder, root.get("administrativeUnitName"), pattern)
         );
     }
 
-    private static Predicate districtPredicate(
+    private static Predicate administrativeUnitNamePredicate(
             Root<Place> root,
             CriteriaBuilder criteriaBuilder,
-            String district
+            String administrativeUnitName
     ) {
         return criteriaBuilder.equal(
-                normalizedColumn(criteriaBuilder, root.get("district")),
-                normalizedLiteral(criteriaBuilder, district.toLowerCase(Locale.ROOT))
+                normalizedColumn(criteriaBuilder, root.get("administrativeUnitName")),
+                normalizedLiteral(
+                        criteriaBuilder,
+                        administrativeUnitName.toLowerCase(Locale.ROOT)
+                )
         );
     }
 

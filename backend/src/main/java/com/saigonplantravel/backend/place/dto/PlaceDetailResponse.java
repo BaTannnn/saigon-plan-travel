@@ -1,5 +1,7 @@
 package com.saigonplantravel.backend.place.dto;
 
+import com.saigonplantravel.backend.place.domain.AdministrativeUnitType;
+
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -10,7 +12,8 @@ public record PlaceDetailResponse(
         String shortDescription,
         String fullDescription,
         String address,
-        String district,
+        String administrativeUnitName,
+        AdministrativeUnitType administrativeUnitType,
         BigDecimal latitude,
         BigDecimal longitude,
         Integer estimatedVisitMinutes,

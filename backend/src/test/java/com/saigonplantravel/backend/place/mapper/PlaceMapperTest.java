@@ -4,6 +4,7 @@ import com.saigonplantravel.backend.place.dto.CategoryResponse;
 import com.saigonplantravel.backend.place.dto.OpeningHourResponse;
 import com.saigonplantravel.backend.place.dto.PlaceDetailResponse;
 import com.saigonplantravel.backend.place.dto.PlaceSummaryResponse;
+import com.saigonplantravel.backend.place.domain.AdministrativeUnitType;
 import com.saigonplantravel.backend.place.entity.Category;
 import com.saigonplantravel.backend.place.entity.OpeningHour;
 import com.saigonplantravel.backend.place.entity.Place;
@@ -27,7 +28,8 @@ class PlaceMapperTest {
         when(place.getName()).thenReturn("Demo Place");
         when(place.getSlug()).thenReturn("demo-place");
         when(place.getShortDescription()).thenReturn(null);
-        when(place.getDistrict()).thenReturn("Quận 1");
+        when(place.getAdministrativeUnitName()).thenReturn("Phường Demo");
+        when(place.getAdministrativeUnitType()).thenReturn(AdministrativeUnitType.WARD);
         when(place.getLatitude()).thenReturn(new BigDecimal("10.0000000"));
         when(place.getLongitude()).thenReturn(new BigDecimal("106.0000000"));
         when(place.getEstimatedVisitMinutes()).thenReturn(60);
@@ -42,7 +44,8 @@ class PlaceMapperTest {
                 "Demo Place",
                 "demo-place",
                 null,
-                "Quận 1",
+                "Phường Demo",
+                AdministrativeUnitType.WARD,
                 new BigDecimal("10.0000000"),
                 new BigDecimal("106.0000000"),
                 60,
@@ -71,7 +74,8 @@ class PlaceMapperTest {
         when(place.getShortDescription()).thenReturn(null);
         when(place.getFullDescription()).thenReturn(null);
         when(place.getAddress()).thenReturn("Địa chỉ demo 1");
-        when(place.getDistrict()).thenReturn("Quận 1");
+        when(place.getAdministrativeUnitName()).thenReturn("Phường Demo");
+        when(place.getAdministrativeUnitType()).thenReturn(AdministrativeUnitType.WARD);
         when(place.getLatitude()).thenReturn(new BigDecimal("10.7750000"));
         when(place.getLongitude()).thenReturn(new BigDecimal("106.7000000"));
         when(place.getEstimatedVisitMinutes()).thenReturn(90);
@@ -99,6 +103,8 @@ class PlaceMapperTest {
         assertThat(response.shortDescription()).isNull();
         assertThat(response.fullDescription()).isNull();
         assertThat(response.address()).isEqualTo("Địa chỉ demo 1");
+        assertThat(response.administrativeUnitName()).isEqualTo("Phường Demo");
+        assertThat(response.administrativeUnitType()).isEqualTo(AdministrativeUnitType.WARD);
     }
 
     private Category category(Long id, String name, String slug) {

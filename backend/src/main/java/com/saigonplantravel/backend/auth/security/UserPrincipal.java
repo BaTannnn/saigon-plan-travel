@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.UUID;
 
 public record UserPrincipal(
+        Long id,
         UUID publicId,
         String email,
         String displayName,
@@ -18,6 +19,7 @@ public record UserPrincipal(
 ) implements Principal{
     public static UserPrincipal from(UserAccount userAccount){
         return new UserPrincipal(
+                userAccount.getId(),
                 userAccount.getPublicId(),
                 userAccount.getEmail(),
                 userAccount.getDisplayName(),
