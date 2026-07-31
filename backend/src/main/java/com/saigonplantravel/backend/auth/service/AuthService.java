@@ -7,7 +7,7 @@ import com.saigonplantravel.backend.auth.dto.RegisterResponse;
 import com.saigonplantravel.backend.auth.entity.UserAccount;
 import com.saigonplantravel.backend.auth.exception.EmailAlreadyExistsException;
 import com.saigonplantravel.backend.auth.exception.InvalidCredentialsException;
-import com.saigonplantravel.backend.auth.repository.UserAccoutRepository;
+import com.saigonplantravel.backend.auth.repository.UserAccountRepository;
 import com.saigonplantravel.backend.auth.service.model.AuthenticationResult;
 import com.saigonplantravel.backend.common.security.jwt.JwtService;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,19 +16,19 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AuthService {
-    private final UserAccoutRepository userAccoutRepository;
+    private final UserAccountRepository userAccountRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
-    public AuthService(UserAccoutRepository userAccoutRepository,
+    public AuthService(UserAccountRepository userAccountRepository,
                        PasswordEncoder passwordEncoder,
                        JwtService jwtService) {
-        this.userAccoutRepository = userAccoutRepository;
+        this.userAccountRepository = userAccountRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
     }
     private AuthenticationResult authenticate(LoginRequest request){
-        UserAccount userAccount = userAccoutRepository.findByEmail(request.email())
+        UserAccount userAccount = userAccountRepository.findByEmail(request.email())
                 .orElseThrow(InvalidCredentialsException::new);
         boolean passwordMatches = passwordEncoder.matches(
                 request.password(),
@@ -46,7 +46,7 @@ public class AuthService {
 
     @Transactional
     public RegisterResponse register(RegisterRequest registerRequest){
-        if(userAccoutRepository.existsByEmail(registerRequest.email())){
+        if(userAccountRepository.existsByEmail(registerRequest.email())){
             throw new EmailAlreadyExistsException();
         }
         String passwordHash = passwordEncoder.encode(registerRequest.password());
@@ -55,7 +55,7 @@ public class AuthService {
                 passwordHash,
                 registerRequest.displayName()
         );
-        UserAccount savedUserAccount = userAccoutRepository.save(userAccount);
+        UserAccount savedUserAccount = userAccountRepository.save(userAccount);
         return RegisterResponse.from(savedUserAccount);
     }
     @Transactional(readOnly = true)

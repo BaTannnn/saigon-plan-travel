@@ -2,7 +2,7 @@ package com.saigonplantravel.backend.auth.security;
 
 
 import com.saigonplantravel.backend.auth.entity.UserAccount;
-import com.saigonplantravel.backend.auth.repository.UserAccoutRepository;
+import com.saigonplantravel.backend.auth.repository.UserAccountRepository;
 import com.saigonplantravel.backend.common.security.jwt.AccessTokenClaims;
 import com.saigonplantravel.backend.common.security.jwt.InvalidAccessTokenException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -12,17 +12,17 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class JwtAuthenticationService {
-    private final UserAccoutRepository userAccoutRepository;
+    private final UserAccountRepository userAccountRepository;
     public JwtAuthenticationService(
-            UserAccoutRepository userAccoutRepository
+            UserAccountRepository userAccountRepository
     ){
-        this.userAccoutRepository = userAccoutRepository;
+        this.userAccountRepository = userAccountRepository;
     }
     @Transactional
     public Authentication createAuthentication(
             AccessTokenClaims tokenClaims
     ){
-        UserAccount userAccount = userAccoutRepository
+        UserAccount userAccount = userAccountRepository
                 .findByPublicId(tokenClaims.userPublicId())
                 .orElseThrow(InvalidAccessTokenException::new);
         if (!Boolean.TRUE.equals(userAccount.getActive())) {
