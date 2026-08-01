@@ -1,6 +1,6 @@
 package com.saigonplantravel.backend.trip.domain;
 
-import com.saigonplantravel.backend.trip.exception.InvalidTripDraftException;
+import com.saigonplantravel.backend.trip.exception.InvalidTripException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -14,9 +14,9 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class TripDraftPolicyTest {
+class TripPolicyTest {
 
-    private TripDraftPolicy policy;
+    private TripPolicy policy;
 
     @BeforeEach
     void setUp() {
@@ -25,7 +25,7 @@ class TripDraftPolicyTest {
                 ZoneId.of("Asia/Ho_Chi_Minh")
         );
 
-        policy = new TripDraftPolicy(fixedClock);
+        policy = new TripPolicy(fixedClock);
     }
 
     @Test
@@ -46,7 +46,7 @@ class TripDraftPolicyTest {
                 LocalTime.of(18, 0),
                 List.of("van-hoa")
         ))
-                .isInstanceOf(InvalidTripDraftException.class)
+                .isInstanceOf(InvalidTripException.class)
                 .hasMessageContaining(
                         "trip date must be today or in the future"
                 );
@@ -60,7 +60,7 @@ class TripDraftPolicyTest {
                 LocalTime.of(8, 0),
                 List.of("van-hoa")
         ))
-                .isInstanceOf(InvalidTripDraftException.class)
+                .isInstanceOf(InvalidTripException.class)
                 .hasMessageContaining(
                         "end time must be after start time"
                 );
@@ -74,7 +74,7 @@ class TripDraftPolicyTest {
                 LocalTime.of(8, 59),
                 List.of("van-hoa")
         ))
-                .isInstanceOf(InvalidTripDraftException.class)
+                .isInstanceOf(InvalidTripException.class)
                 .hasMessageContaining(
                         "trip duration must be between"
                 );
@@ -88,7 +88,7 @@ class TripDraftPolicyTest {
                 LocalTime.of(22, 1),
                 List.of("van-hoa")
         ))
-                .isInstanceOf(InvalidTripDraftException.class)
+                .isInstanceOf(InvalidTripException.class)
                 .hasMessageContaining(
                         "trip duration must be between"
                 );
@@ -102,7 +102,7 @@ class TripDraftPolicyTest {
                 LocalTime.of(18, 0),
                 List.of("van-hoa", "nghe-thuat", "van-hoa")
         ))
-                .isInstanceOf(InvalidTripDraftException.class)
+                .isInstanceOf(InvalidTripException.class)
                 .hasMessageContaining(
                         "must not contain duplicates"
                 );
