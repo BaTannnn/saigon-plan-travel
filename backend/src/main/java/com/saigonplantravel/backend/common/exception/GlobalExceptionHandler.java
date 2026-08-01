@@ -3,11 +3,15 @@ package com.saigonplantravel.backend.common.exception;
 import com.saigonplantravel.backend.auth.exception.EmailAlreadyExistsException;
 import com.saigonplantravel.backend.auth.exception.InvalidCredentialsException;
 import com.saigonplantravel.backend.place.exception.PlaceNotFoundException;
+import com.saigonplantravel.backend.trip.exception.InvalidCategoryPreferenceException;
+import com.saigonplantravel.backend.trip.exception.InvalidTripException;
+import com.saigonplantravel.backend.trip.exception.TripNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -28,30 +32,76 @@ public class GlobalExceptionHandler {
     private static final URI ABOUT_BLANK = URI.create("about:blank");
     private static final Set<String> PAGINATION_FIELDS = Set.of("page", "size");
 
-    @ExceptionHandler({
-            InvalidPaginationException.class,
-            MethodArgumentTypeMismatchException.class
-    })
-    public ProblemDetail handleBadRequest(Exception exception, HttpServletRequest request) {
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
-                HttpStatus.BAD_REQUEST,
-                exception instanceof InvalidPaginationException
-                        ? exception.getMessage()
-                        : "page and size must be valid integers"
-        );
+    @ExceptionHandler(InvalidPaginationException.class)
+    public ProblemDetail handleInvalidPagination(
+            InvalidPaginationException exception,
+            HttpServletRequest request
+    ) {
+        ProblemDetail problem =
+                ProblemDetail.forStatusAndDetail(
+                        HttpStatus.BAD_REQUEST,
+                        exception.getMessage()
+                );
+
         problem.setType(ABOUT_BLANK);
-        problem.setTitle("Invalid pagination parameters");
-        problem.setInstance(URI.create(request.getRequestURI()));
-        problem.setProperty("code", "INVALID_REQUEST");
-        if (exception instanceof MethodArgumentTypeMismatchException mismatch) {
-            problem.setProperty(
-                    "fieldErrors",
-                    List.of(new FieldValidationError(mismatch.getName(), "has invalid type"))
-            );
-        }
+        problem.setTitle(
+                "Invalid pagination parameters"
+        );
+        problem.setInstance(
+                URI.create(request.getRequestURI())
+        );
+        problem.setProperty(
+                "code",
+                "INVALID_REQUEST"
+        );
+
         return problem;
     }
+    @ExceptionHandler(
+            MethodArgumentTypeMismatchException.class
+    )
+    public ProblemDetail handleTypeMismatch(
+            MethodArgumentTypeMismatchException exception,
+            HttpServletRequest request
+    ) {
+        boolean paginationField =
+                PAGINATION_FIELDS.contains(
+                        exception.getName()
+                );
 
+        ProblemDetail problem =
+                ProblemDetail.forStatusAndDetail(
+                        HttpStatus.BAD_REQUEST,
+                        paginationField
+                                ? "page and size must be valid integers"
+                                : "Request validation failed"
+                );
+
+        problem.setType(ABOUT_BLANK);
+        problem.setTitle(
+                paginationField
+                        ? "Invalid pagination parameters"
+                        : "Invalid request"
+        );
+        problem.setInstance(
+                URI.create(request.getRequestURI())
+        );
+        problem.setProperty(
+                "code",
+                "INVALID_REQUEST"
+        );
+        problem.setProperty(
+                "fieldErrors",
+                List.of(
+                        new FieldValidationError(
+                                exception.getName(),
+                                "has invalid type"
+                        )
+                )
+        );
+
+        return problem;
+    }
     @ExceptionHandler({MethodArgumentNotValidException.class, BindException.class})
     public ProblemDetail handleValidation(Exception exception, HttpServletRequest request) {
         BindingResult bindingResult = exception instanceof MethodArgumentNotValidException invalid
@@ -74,6 +124,31 @@ public class GlobalExceptionHandler {
         problem.setInstance(URI.create(request.getRequestURI()));
         problem.setProperty("code", "INVALID_REQUEST");
         problem.setProperty("fieldErrors", fieldErrors);
+        return problem;
+    }
+    @ExceptionHandler(
+            HttpMessageNotReadableException.class
+    )
+    public ProblemDetail handleMessageNotReadable(
+            HttpMessageNotReadableException exception,
+            HttpServletRequest request
+    ) {
+        ProblemDetail problem =
+                ProblemDetail.forStatusAndDetail(
+                        HttpStatus.BAD_REQUEST,
+                        "Request body is malformed or contains an invalid value"
+                );
+
+        problem.setType(ABOUT_BLANK);
+        problem.setTitle("Invalid request");
+        problem.setInstance(
+                URI.create(request.getRequestURI())
+        );
+        problem.setProperty(
+                "code",
+                "INVALID_REQUEST"
+        );
+
         return problem;
     }
     @ExceptionHandler(EmailAlreadyExistsException.class)
@@ -102,6 +177,94 @@ public class GlobalExceptionHandler {
 
         return problem;
     }
+    @ExceptionHandler(InvalidTripException.class)
+    public ProblemDetail handleInvalidTrip(
+            InvalidTripException exception,
+            HttpServletRequest request
+    ) {
+        ProblemDetail problem =
+                ProblemDetail.forStatusAndDetail(
+                        HttpStatus.BAD_REQUEST,
+                        exception.getMessage()
+                );
+
+        problem.setType(ABOUT_BLANK);
+        problem.setTitle("Invalid request");
+        problem.setInstance(
+                URI.create(request.getRequestURI())
+        );
+        problem.setProperty(
+                "code",
+                "INVALID_REQUEST"
+        );
+        problem.setProperty(
+                "fieldErrors",
+                List.of(
+                        new FieldValidationError(
+                                exception.getField(),
+                                exception.getMessage()
+                        )
+                )
+        );
+
+        return problem;
+    }
+    @ExceptionHandler(
+            InvalidCategoryPreferenceException.class
+    )
+    public ProblemDetail handleInvalidCategoryPreference(
+            InvalidCategoryPreferenceException exception,
+            HttpServletRequest request
+    ) {
+        ProblemDetail problem =
+                ProblemDetail.forStatusAndDetail(
+                        HttpStatus.BAD_REQUEST,
+                        exception.getMessage()
+                );
+
+        problem.setType(ABOUT_BLANK);
+        problem.setTitle(
+                "Invalid category preference"
+        );
+        problem.setInstance(
+                URI.create(request.getRequestURI())
+        );
+        problem.setProperty(
+                "code",
+                "INVALID_CATEGORY_PREFERENCE"
+        );
+        problem.setProperty(
+                "unknownCategorySlugs",
+                exception.getUnknownCategorySlugs()
+        );
+
+        return problem;
+    }
+    @ExceptionHandler(TripNotFoundException.class)
+    public ProblemDetail handleTripNotFound(
+            TripNotFoundException exception,
+            HttpServletRequest request
+    ) {
+        ProblemDetail problem =
+                ProblemDetail.forStatusAndDetail(
+                        HttpStatus.NOT_FOUND,
+                        exception.getMessage()
+                );
+
+        problem.setType(ABOUT_BLANK);
+        problem.setTitle("Trip not found");
+        problem.setInstance(
+                URI.create(request.getRequestURI())
+        );
+        problem.setProperty(
+                "code",
+                "TRIP_NOT_FOUND"
+        );
+
+        return problem;
+    }
+
+
     @ExceptionHandler(PlaceNotFoundException.class)
     public ProblemDetail handlePlaceNotFound(
             PlaceNotFoundException exception,
