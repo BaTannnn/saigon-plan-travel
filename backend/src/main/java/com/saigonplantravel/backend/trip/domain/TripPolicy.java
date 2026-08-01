@@ -1,6 +1,6 @@
 package com.saigonplantravel.backend.trip.domain;
 
-import com.saigonplantravel.backend.trip.exception.InvalidTripDraftException;
+import com.saigonplantravel.backend.trip.exception.InvalidTripException;
 import org.springframework.stereotype.Component;
 
 import java.time.Clock;
@@ -12,14 +12,14 @@ import java.util.List;
 import java.util.Set;
 
 @Component
-public class TripDraftPolicy {
+public class TripPolicy {
 
     private static final long MIN_DURATION_MINUTES = 60;
     private static final long MAX_DURATION_MINUTES = 18 * 60;
 
     private final Clock clock;
 
-    public TripDraftPolicy(Clock clock) {
+    public TripPolicy(Clock clock) {
         this.clock = clock;
     }
 
@@ -40,7 +40,7 @@ public class TripDraftPolicy {
         LocalDate today = LocalDate.now(clock);
 
         if (tripDate.isBefore(today)) {
-            throw new InvalidTripDraftException(
+            throw new InvalidTripException(
                     "TRIP_DATE_IN_PAST",
                     "tripDate",
                     "trip date must be today or in the future"
@@ -53,7 +53,7 @@ public class TripDraftPolicy {
             LocalTime endTime
     ) {
         if (!startTime.isBefore(endTime)) {
-            throw new InvalidTripDraftException(
+            throw new InvalidTripException(
                     "INVALID_TRIP_TIME_ORDER",
                     "endTime",
                     "end time must be after start time"
@@ -69,7 +69,7 @@ public class TripDraftPolicy {
                 durationMinutes < MIN_DURATION_MINUTES
                         || durationMinutes > MAX_DURATION_MINUTES
         ) {
-            throw new InvalidTripDraftException(
+            throw new InvalidTripException(
                     "INVALID_TRIP_DURATION",
                     "endTime",
                     "trip duration must be between 60 minutes and 18 hours"
@@ -86,7 +86,7 @@ public class TripDraftPolicy {
             boolean added = uniqueSlugs.add(slug);
 
             if (!added) {
-                throw new InvalidTripDraftException(
+                throw new InvalidTripException(
                         "DUPLICATE_CATEGORY_PREFERENCE",
                         "categorySlugs",
                         "category preferences must not contain duplicates"

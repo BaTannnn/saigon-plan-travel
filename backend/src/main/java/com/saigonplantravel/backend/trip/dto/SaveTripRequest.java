@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public record SaveTripDraftRequest(
+public record SaveTripRequest(
 
         @NotNull
         LocalDate tripDate,
@@ -58,7 +58,7 @@ public record SaveTripDraftRequest(
 
 ) {
 
-    public SaveTripDraftRequest {
+    public SaveTripRequest {
         if (categorySlugs != null) {
             List<String> normalizedSlugs =
                     new ArrayList<>(categorySlugs.size());

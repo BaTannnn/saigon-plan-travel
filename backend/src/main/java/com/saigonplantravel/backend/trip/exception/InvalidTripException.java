@@ -1,11 +1,14 @@
 package com.saigonplantravel.backend.trip.exception;
 
-public class InvalidTripDraftException extends RuntimeException {
+import lombok.Getter;
+
+@Getter
+public class InvalidTripException extends RuntimeException {
 
     private final String code;
     private final String field;
 
-    public InvalidTripDraftException(
+    public InvalidTripException(
             String code,
             String field,
             String message
@@ -15,11 +18,4 @@ public class InvalidTripDraftException extends RuntimeException {
         this.field = field;
     }
 
-    public String getCode() {
-        return code;
-    }
-
-    public String getField() {
-        return field;
-    }
 }

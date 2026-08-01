@@ -170,7 +170,7 @@ public class Trip {
         this.updatedAt = createdAt;
     }
 
-    public void replaceDraft(
+    public void replaceDetails(
             LocalDate tripDate,
             LocalTime startTime,
             LocalTime endTime,
