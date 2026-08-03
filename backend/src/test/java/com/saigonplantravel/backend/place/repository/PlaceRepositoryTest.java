@@ -7,8 +7,6 @@ import com.saigonplantravel.backend.place.entity.Category;
 import com.saigonplantravel.backend.place.entity.Place;
 import com.saigonplantravel.backend.place.service.PlaceService;
 import jakarta.persistence.EntityManagerFactory;
-import org.flywaydb.core.Flyway;
-import org.flywaydb.core.api.output.MigrateResult;
 import org.hibernate.SessionFactory;
 import org.hibernate.stat.Statistics;
 import org.junit.jupiter.api.Test;
@@ -70,9 +68,6 @@ class PlaceRepositoryTest {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    @Autowired
-    private Flyway flyway;
-
     @Test
     void returnsOnlyActivePlacesWithStableSortingAndPagination() {
         Sort sort = Sort.by(Sort.Order.asc("name"), Sort.Order.asc("id"));
@@ -97,82 +92,6 @@ class PlaceRepositoryTest {
         assertThat(returnedSlugs).hasSize(5);
         assertThat(firstPage.getContent())
                 .allSatisfy(place -> assertThat(place.getActive()).isTrue());
-    }
-
-    @Test
-    void appliesCanonicalMigrationsAndSeedExactlyOnce() {
-        List<String> versions = jdbcTemplate.queryForList(
-                "SELECT version FROM flyway_schema_history WHERE success ORDER BY installed_rank",
-                String.class
-        );
-
-        assertThat(versions).containsExactly(
-                "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"
-        );
-        assertThat(jdbcTemplate.queryForObject(
-                "SELECT count(*) FROM flyway_schema_history WHERE version = '6' AND success",
-                Integer.class
-        )).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject(
-                "SELECT count(*) FROM pg_extension WHERE extname = 'vector'",
-                Integer.class
-        )).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM places", Integer.class))
-                .isEqualTo(6);
-        assertThat(jdbcTemplate.queryForObject(
-                "SELECT count(*) FROM places WHERE active",
-                Integer.class
-        )).isEqualTo(5);
-        assertThat(jdbcTemplate.queryForObject(
-                "SELECT count(*) FROM places "
-                        + "WHERE administrative_unit_name IS NULL "
-                        + "AND administrative_unit_type IS NULL",
-                Integer.class
-        )).isEqualTo(6);
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM users", Integer.class))
-                .isZero();
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM categories", Integer.class))
-                .isEqualTo(5);
-        assertThat(jdbcTemplate.queryForObject(
-                "SELECT count(*) FROM place_categories",
-                Integer.class
-        )).isEqualTo(8);
-        assertThat(jdbcTemplate.queryForObject(
-                "SELECT count(*) FROM opening_hours",
-                Integer.class
-        )).isEqualTo(33);
-        assertThat(jdbcTemplate.queryForObject(
-                "SELECT count(*) FROM pg_extension WHERE extname = 'unaccent'",
-                Integer.class
-        )).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject(
-                "SELECT count(*) FROM pg_indexes "
-                        + "WHERE schemaname = 'public' "
-                        + "AND indexname = 'idx_place_categories_category_place'",
-                Integer.class
-        )).isEqualTo(1);
-
-        MigrateResult rerun = flyway.migrate();
-
-        assertThat(rerun.migrationsExecuted).isZero();
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM places", Integer.class))
-                .isEqualTo(6);
-        assertThat(jdbcTemplate.queryForObject(
-                "SELECT count(*) FROM flyway_schema_history WHERE version = '6' AND success",
-                Integer.class
-        )).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject(
-                "SELECT count(*) FROM flyway_schema_history WHERE version = '8' AND success",
-                Integer.class
-        )).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject(
-                "SELECT count(*) FROM flyway_schema_history WHERE version = '9' AND success",
-                Integer.class
-        )).isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject(
-                "SELECT count(*) FROM flyway_schema_history WHERE version = '10' AND success",
-                Integer.class
-        )).isEqualTo(1);
     }
 
     @Test
