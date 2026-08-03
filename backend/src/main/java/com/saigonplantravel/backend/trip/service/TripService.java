@@ -20,7 +20,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
-public class TripService {
+public class TripService implements TripSchedulingQuery {
 
     private final TripRepository tripRepository;
     private final CategoryService categoryService;
@@ -189,5 +189,32 @@ public class TripService {
         }
 
         return categories;
+    }
+
+    @Override
+    public TripSchedulingSnapshot getByPublicId(UUID publicId, Long userId) {
+        Trip trip = tripRepository
+                .findByPublicIdAndUserId(
+                        publicId,
+                        userId
+                )
+                .orElseThrow(
+                        TripNotFoundException::new
+                );
+
+        return new TripSchedulingSnapshot(
+                trip.getId(),
+                trip.getPublicId(),
+                trip.getTripDate(),
+                trip.getStartTime(),
+                trip.getEndTime(),
+                trip.getBudget(),
+                trip.getStartLatitude(),
+                trip.getStartLongitude(),
+                trip.getTravelPace(),
+                trip.getEnvironmentPreference(),
+                trip.getPreferredCategoryIds(),
+                trip.getUpdatedAt()
+        );
     }
 }
