@@ -1,6 +1,6 @@
 ---
 id: FEAT-005
-title: Basic Itinerary Generation / Scheduling V1
+title: Basic Itinerary Generation & Scheduling V1
 aliases:
   - Sinh lịch trình cơ bản
   - Greedy Scheduling V1
@@ -9,7 +9,7 @@ priority: P0
 project: SaigonPlanTravel
 owner: Nguyễn Bá Tân
 created: 2026-07-17
-updated: 2026-07-17
+updated: 2026-08-01
 target_milestone: MVP 2026-08-30
 canonical_path: docs/01-Requirements/Features/FEAT-005-basic-itinerary-generation-scheduling-v1.md
 tags:
@@ -22,536 +22,402 @@ tags:
   - mvp
 related:
   - "[[00-Dashboard/PROJECT_CONTEXT]]"
+  - "[[01-Requirements/Features/FEAT-001-place-catalog-api-mvp]]"
   - "[[01-Requirements/Features/FEAT-002-place-detail-category-opening-hours]]"
-  - "[[01-Requirements/Features/FEAT-004-trip-preferences-draft-trip]]"
+  - "[[01-Requirements/Features/FEAT-003-place-search-filter-pagination]]"
+  - "[[01-Requirements/Features/FEAT-004-trip-preferences-mvp]]"
+  - "[[01-Requirements/Features/FEAT-006-itinerary-map-routing-integration]]"
   - "[[02-Architecture/ADR/ADR-001-Modular-Monolith]]"
   - "[[03-Database/Scheduling-Module-ERD]]"
-  - "[[04-API/Itinerary-API]]"
+  - "[[04-API/Itinerary-API-v1]]"
+  - "[[05-Algorithms/Greedy-Scheduling-V1]]"
 ---
 
-# FEAT-005 — Basic Itinerary Generation / Scheduling V1
+# FEAT-005 — Basic Itinerary Generation & Scheduling V1
 
 > [!summary]
-> Sinh và lưu một lịch trình khả thi cho Trip draft một ngày bằng thuật toán greedy deterministic trong Spring Boot. Scheduling V1 lọc active places theo category, environment và ngân sách; xét giờ mở cửa, thời lượng tham quan, khoảng cách Haversine và khung giờ còn lại; sau đó chọn từng địa điểm theo scoring/tie-breaker cố định. Kết quả gồm timeline, ước tính quãng đường/thời gian/chi phí, summary và warnings. Feature không gọi LLM, RAG, context hoặc routing API thật.
+> Xây dựng năng lực cốt lõi của SaigonPlanTravel: đọc một Trip hợp lệ từ
+> FEAT-004, lấy các địa điểm ứng viên từ Place Module và sinh một timeline khả
+> thi trong ngày bằng heuristic `GREEDY_V1` deterministic. Thuật toán xét sở
+> thích category, môi trường, ngân sách, giờ mở cửa, thời lượng tham quan và
+> ước tính di chuyển Haversine. Kết quả được lưu thành một itinerary bất biến,
+> có timeline, tổng quãng đường, thời gian, chi phí và cảnh báo. Feature này
+> không gọi routing provider, weather, RAG, LLM hoặc AI service.
 
-## 1. Trạng thái, ưu tiên và phê duyệt
+## 1. Baseline và điều kiện bắt đầu
 
-| Thuộc tính | Giá trị |
+Tài liệu này thay thế hoàn toàn FEAT-005 phiên bản ngày 2026-07-17. Nó được
+đối chiếu với FEAT-001–003 đã hoàn thành, FEAT-004 phiên bản viết lại ngày
+2026-07-24 và các contract đầu vào mà FEAT-006–009 dự kiến cần.
+
+| Hạng mục | Baseline dùng cho đặc tả ngày 2026-08-01 |
 | --- | --- |
-| Trạng thái | `ready-for-review` |
-| Độ ưu tiên | `P0 — năng lực cốt lõi của đồ án` |
-| Người phụ trách | Nguyễn Bá Tân |
-| Feature phụ thuộc | FEAT-001, FEAT-002 và FEAT-004 |
-| Backend | Spring Boot modular monolith |
-| Module sở hữu | `com.saigonplantravel.backend.scheduling` |
-| Module được tham chiếu | `trip`, `place` qua read contracts |
-| Database | PostgreSQL, Flyway migration-first |
-| API mới | `POST /api/v1/trips/{tripPublicId}/itineraries`, `GET /api/v1/itineraries/{itineraryPublicId}` |
-| Thuật toán | `GREEDY_V1` |
-| Mốc liên quan | MVP có thể demo trước 30/08/2026 |
+| FEAT-001 | Place có tọa độ, `estimatedVisitMinutes`, `minCost`, `maxCost`, `indoor`, `active` |
+| FEAT-002 | Category many-to-many; mỗi place tối đa một opening interval/ngày; thiếu row là `UNKNOWN` |
+| FEAT-003 | Place catalog/search contract ổn định; migration mới nhất trước Trip Module là V9 |
+| FEAT-004 | Dùng V11 cho `trips` và V12 cho `trip_category_preferences`; Trip có owner `user_id` |
+| Trip input | `TripSchedulingSnapshot` là contract duy nhất FEAT-005 được đọc |
+| Error contract | Spring `ProblemDetail` với extension `code`, và `fieldErrors` khi phù hợp |
+| Persistence | PostgreSQL, Flyway, Hibernate `ddl-auto=validate` |
+| Kiến trúc | Modular monolith, package-by-feature, DTO record, không serialize Entity |
+| FEAT-005 migration | Bắt đầu từ V13 nếu repository thực tế kết thúc ở V12 |
 
-### 1.1. Vì sao đây là feature ưu tiên tiếp theo
+> [!warning]
+> FEAT-004 hiện ở trạng thái `ready-for-review`. FEAT-005 có thể được duyệt về
+> mặt tài liệu nhưng **không được code** trước khi FEAT-004 được duyệt, triển
+> khai và xác minh. Khi bắt đầu FEAT-005 phải kiểm tra lại source, migration
+> history và test baseline thực tế; không được coi số version trong tài liệu là
+> bằng chứng thay cho repository.
 
-- FEAT-004 đã chuẩn hóa đầu vào Trip; đây là bước tạo giá trị người dùng cốt lõi tiếp theo.
-- Lập lịch theo constraints là phần nghiệp vụ chính phân biệt dự án với một danh mục địa điểm thông thường.
-- Greedy deterministic đủ giải thích, kiểm thử và đánh giá trong phạm vi khóa luận; chưa cần tối ưu toán học phức tạp.
-- Kết quả V1 tạo baseline để so sánh với routing thật, context động và re-planning trong các feature sau.
+### 1.1. Những điểm đã sửa so với FEAT-005 cũ
 
-### 1.2. Cổng phê duyệt
+- Migration FEAT-005 bắt đầu từ `V13`, nối tiếp FEAT-004 kết thúc ở V12.
+- Chỉ dùng dữ liệu thật sự có trong `TripSchedulingSnapshot`; không giả định có
+  `originLabel`.
+- Tọa độ snapshot dùng precision tương thích `NUMERIC(10,7)` của Place/Trip.
+- API lỗi dùng đúng `ProblemDetail`, không tạo envelope `message/path/details`
+  cạnh tranh.
+- Response có `totalStraightLineDistanceKm` để hỗ trợ summary như prototype
+  “3 điểm đến · 6,2 km”.
+- Itinerary item lưu `indoor`, base duration và opening interval snapshot để
+  FEAT-008/009 không phải suy đoán lại dữ liệu lịch sử.
+- Itinerary lưu snapshot pace, environment và preferred categories.
+- Place candidate loading yêu cầu **số batch query hữu hạn**, không ép một SQL
+  query duy nhất dễ tạo Cartesian product hoặc N+1 trá hình.
+- Scoring có time-efficiency component để không bỏ qua waiting/travel cost.
+- Kế hoạch triển khai được chia thành micro-step nhỏ với approval gate.
 
-- Không bắt đầu code nếu Trip draft, Place categories và OpeningHour semantics chưa ổn định.
-- `ready-for-review` → `approved`: duyệt thuật toán, scoring, travel estimate, unknown-hours policy, schema và API contract.
-- `approved` → `in-progress`: bắt đầu migration/code.
-- `in-progress` → `done`: toàn bộ Definition of Done ở mục 19 đạt yêu cầu.
-- Nếu quyết định dùng routing API thật ngay trong V1, phải sửa spec và phê duyệt external dependency/secret/cost trước khi triển khai.
+### 1.2. Contract phải bảo vệ
 
-## 2. Bối cảnh và vấn đề cần giải quyết
+- Không sửa migrations V1–V12 đã được áp dụng.
+- Không đổi request/response của FEAT-001–004.
+- Không truy cập `TripRepository`, `PlaceRepository`, Trip Entity hoặc Place
+  Entity từ Scheduling Module.
+- Không trả internal numeric Trip/Itinerary/User ID qua public API.
+- Generate/GET bắt buộc authentication; Trip/Itinerary của người khác được xử lý như không tồn tại.
+- Place `id` tiếp tục được phép xuất hiện vì đây đã là field công khai của
+  Place API FEAT-001.
+- Không thay đổi ý nghĩa `MIXED` thành `ANY`.
+- Không biến missing opening-hours row thành closed.
 
-SaigonPlanTravel đã có các dữ liệu nền cần thiết:
+## 2. Bối cảnh và vấn đề
 
-- Trip date, time window, budget, origin, pace, environment và category preferences.
-- Active place, coordinates, estimated visit duration và cost range.
-- Category membership.
-- Weekly opening hours với semantics `open`, `closed`, `unknown`.
+FEAT-004 chỉ lưu các ràng buộc người dùng. Hệ thống vẫn chưa trả lời được:
 
-Chưa có module biến dữ liệu này thành một timeline khả thi. Nếu chỉ sắp xếp theo điểm phù hợp mà không xét travel time, giờ mở cửa và thời lượng tham quan, kết quả có thể vượt khung giờ hoặc đưa người dùng đến nơi đã đóng cửa. Nếu giao toàn bộ quyết định cho LLM, kết quả khó lặp lại, khó kiểm thử và không bảo đảm constraints.
+- nên chọn địa điểm nào;
+- đi theo thứ tự nào;
+- tới nơi lúc mấy giờ;
+- có phải chờ địa điểm mở cửa không;
+- có vượt thời gian hoặc ngân sách không;
+- tổng quãng đường và thời gian di chuyển ước tính là bao nhiêu.
 
-FEAT-005 tạo deterministic baseline trong backend. LLM/RAG chỉ được bổ sung để giải thích sau khi lịch trình đã được thuật toán và constraints kiểm tra.
+Chỉ sắp xếp địa điểm theo điểm yêu thích sẽ dễ tạo timeline không khả thi. Giao
+toàn bộ việc lập lịch cho LLM cũng không bảo đảm constraints, khó lặp lại và
+khó kiểm thử. FEAT-005 vì vậy tạo một baseline deterministic trong Spring Boot:
+LLM/RAG ở feature sau chỉ giải thích kết quả, không quyết định hoặc sửa lịch.
 
 ## 3. Mục tiêu
 
 ### 3.1. Mục tiêu sản phẩm
 
-1. Cho phép người dùng tạo một lịch trình từ Trip draft hợp lệ.
-2. Trả timeline có thứ tự với thời gian di chuyển, chờ và tham quan.
-3. Không vượt trip time window hoặc budget dựa trên minimum cost estimate.
-4. Tôn trọng known opening hours và cảnh báo khi giờ mở cửa chưa biết.
-5. Cho phép frontend mở lại kết quả qua itinerary `publicId`.
-6. Cung cấp warnings minh bạch về giả định và giới hạn ước tính.
+1. Sinh một lịch trình trong ngày từ Trip hợp lệ.
+2. Chọn các địa điểm phù hợp category và environment preference.
+3. Bảo đảm timeline không overlap và không vượt trip window.
+4. Không vượt ngân sách dựa trên `minCost` snapshot.
+5. Tôn trọng known opening hours và hiển thị rõ dữ liệu unknown.
+6. Trả timeline, tổng số điểm đến, tổng quãng đường, thời gian và chi phí.
+7. Cho phép mở lại itinerary đã lưu bằng public UUID.
+8. Cảnh báo minh bạch rằng travel time và cost chỉ là estimate.
 
 ### 3.2. Mục tiêu kỹ thuật
 
-- Tạo Scheduling Module riêng trong modular monolith, không microservice.
-- Giữ thuật toán pure/deterministic và tách khỏi orchestration/persistence.
-- Dùng module-facing DTO/read contracts; không truy cập repository/entity của Trip/Place từ Scheduling.
-- Tạo schema Itinerary bằng Flyway và giữ Hibernate `ddl-auto=validate`.
-- Snapshot output cần thiết để itinerary không thay đổi khi place/trip được chỉnh sửa sau đó.
-- Sinh UUID public cho itinerary; giữ ID nội bộ trong database.
-- Không gọi API ngoài hoặc AI trong transaction.
-- Đo và lưu bằng chứng feasibility, query count và response time.
+- Tạo Scheduling Module trong Spring Boot modular monolith hiện tại.
+- Tách pure scheduling domain khỏi controller, JPA và orchestration.
+- Dùng `TripSchedulingQuery` của FEAT-004 làm đầu vào Trip duy nhất.
+- Tạo `PlaceSchedulingQuery` trả immutable candidate DTO theo batch.
+- Dùng heuristic `GREEDY_V1` có formula, rounding và tie-breaker cố định.
+- Tạo schema bằng Flyway V13–V14 và giữ Hibernate validate.
+- Lưu immutable itinerary snapshot; mỗi lần generate thành công tạo version mới.
+- Dùng UUID công khai và khóa `BIGINT` nội bộ.
+- Giữ output đủ cho FEAT-006 map/routing, FEAT-007 explanation, FEAT-008
+  weather risk và FEAT-009 re-planning.
+- Giữ toàn bộ regression tests FEAT-001–004.
 
 ### 3.3. Kết quả mong đợi
 
-`POST /api/v1/trips/{tripPublicId}/itineraries` trả `201 Created` nếu chọn được ít nhất một place. Kết quả có itinerary items theo thứ tự, summary, warnings và `Location`. Cùng một input snapshot, candidate data và config phải tạo cùng sequence/times/costs/scores; chỉ UUID và generated timestamp khác.
+`POST /api/v1/trips/{tripPublicId}/itineraries`:
+
+- trả `201 Created` và `Location` nếu xếp được ít nhất một place;
+- trả `422 NO_FEASIBLE_ITINERARY` và không lưu dữ liệu nếu không xếp được place
+  nào;
+- cùng input snapshots và algorithm configuration tạo cùng sequence, timeline,
+  score, totals và warning codes; chỉ UUID/timestamp được phép khác.
 
 ## 4. Phạm vi
 
 ### 4.1. Trong phạm vi
 
 - Trip một ngày, không qua nửa đêm.
-- Greedy scheduling `GREEDY_V1`.
-- Lọc active places có ít nhất một preferred category.
-- Environment eligibility: indoor/outdoor/mixed.
+- Tối đa 100 candidate places cho một lần generate.
+- Active place có ít nhất một preferred category.
+- Environment eligibility theo `INDOOR`, `OUTDOOR`, `MIXED`.
 - Budget feasibility dùng `place.minCost`.
-- Weekly opening hours theo ngày ISO của trip.
-- Cho phép scheduled item có opening hours unknown nhưng phải warning.
-- Adjust visit duration theo TravelPace.
-- Haversine distance và configurable average speed/fixed transfer overhead.
-- Recompute score/feasibility tại mỗi greedy iteration.
-- Deterministic score và tie-breakers.
-- Cho phép chờ nếu đến trước giờ mở cửa và visit vẫn khả thi.
-- Lưu itinerary, items, warnings và generation summary.
-- Mỗi lần POST tạo một immutable itinerary version mới.
-- GET itinerary bằng UUID public.
-- Tính `stale` khi Trip draft đã được cập nhật sau generation snapshot.
-- Automated tests, smoke tests và evaluation evidence.
-- Cập nhật Scheduling ERD, Itinerary API, algorithm note, development log và `PROJECT_CONTEXT.md`.
+- One weekly opening interval theo ngày ISO của trip.
+- Missing opening-hours row được phép với warning.
+- Waiting khi đến trước giờ mở cửa.
+- Visit duration điều chỉnh theo `TravelPace`.
+- Straight-line distance bằng Haversine.
+- Travel time bằng average speed và fixed transfer overhead cấu hình.
+- Greedy score và tie-breakers deterministic.
+- Lưu itinerary, preferred category snapshot, items và warnings.
+- Mỗi generate thành công tạo một immutable itinerary mới.
+- Generate API và GET-by-public-ID API.
+- `stale` khi Trip hiện tại mới hơn Trip snapshot đã dùng.
+- Unit, web, service và PostgreSQL integration tests.
+- Evaluation dataset và bằng chứng determinism/constraint feasibility.
+- Cập nhật ERD, API note, algorithm note, development log và PROJECT_CONTEXT.
 
 ### 4.2. Ngoài phạm vi
 
-- Google Routes/Route Matrix, OSRM, GraphHopper hoặc routing API ngoài.
-- Dữ liệu giao thông real-time; travel time V1 chỉ là estimate.
-- Bắt buộc quay về điểm xuất phát cuối ngày.
-- Transport mode, walking/driving/transit selection.
-- Multi-day hoặc overnight trip/opening hours.
-- Nhiều opening intervals/ngày, lunch break hoặc special/holiday hours.
-- Must-visit, blocked places hoặc manual drag-and-drop order.
-- Weighted category preferences.
-- Meal constraints, accessibility, number of travelers.
-- Exact optimization, TSP/VRP, linear programming, genetic algorithm.
-- Weather, crowd, event hoặc context score.
+- OSRM, Google Routes, GraphHopper hoặc routing API thật.
+- Traffic, weather, crowd, events hoặc time-series.
 - RAG/LLM explanation.
-- Re-planning hoặc sửa itinerary đã sinh.
-- Confirm/start/complete lifecycle.
-- List/pagination itinerary history.
-- Delete/archive itinerary.
-- Frontend/map polyline implementation.
+- Re-planning, reorder thủ công hoặc sửa itinerary đã sinh.
+- Tối ưu toàn cục, TSP/VRP, linear programming hoặc genetic algorithm.
+- Return-to-origin cuối ngày.
+- Multi-day, overnight hoặc opening interval qua nửa đêm.
+- Nhiều opening intervals trong cùng một ngày hoặc ngày lễ đặc biệt.
+- Transport mode; V1 dùng một travel estimator chung.
+- Must-visit, avoid-list hoặc category weight do người dùng nhập.
+- Meal, accessibility, số người đi hoặc dietary constraints.
+- Chia sẻ itinerary, cộng tác nhiều người dùng hoặc phân quyền role nâng cao.
+- List/delete/archive itinerary.
+- Frontend map/polyline; thuộc FEAT-006.
+- Tự động gọi FEAT-006/007/008/009 sau khi generate.
 
 > [!important]
-> `estimatedTravelMinutes` không phải dữ liệu giao thông thật. API và UI phải trình bày đây là ước tính baseline. Không được dùng từ “thời gian di chuyển chính xác” trong demo hoặc báo cáo.
+> Haversine là khoảng cách đường chim bay và `minCost` là mức chi phí tối
+> thiểu. UI/báo cáo không được mô tả các giá trị này là tuyến đường, ETA hoặc
+> tổng chi phí thực tế chính xác.
 
 ## 5. Tác nhân và user stories
 
-### Tác nhân
+### 5.1. Tác nhân
 
-- **Khách du lịch ẩn danh:** yêu cầu sinh và xem lịch trình.
-- **Next.js frontend:** gọi generate/get API và render timeline/map markers.
-- **Scheduling Module:** sở hữu thuật toán và Itinerary aggregate.
-- **Trip Module:** cung cấp immutable trip snapshot qua read contract.
-- **Place Module:** cung cấp batch place candidates và opening hours qua read contract.
+- **Người dùng đã đăng nhập:** yêu cầu sinh và xem itinerary thuộc Trip của chính mình.
+- **Next.js frontend:** gọi generate/get API và render timeline/summary.
+- **Scheduling Module:** sở hữu algorithm và Itinerary aggregate.
+- **Trip Module:** cung cấp `TripSchedulingSnapshot`.
+- **Place Module:** cung cấp `PlaceSchedulingCandidate` theo batch.
+- **PostgreSQL:** lưu immutable itinerary snapshots.
 
-### User stories
+### 5.2. User stories
 
-**US-001 — Sinh lịch trình**  
-Là khách du lịch, tôi muốn tạo timeline từ draft để biết nên đi đâu và vào lúc nào.
+**US-001 — Sinh lịch trình**
+Là người dùng đã đăng nhập, tôi muốn hệ thống tạo một timeline từ Trip để biết nên đi
+đâu và vào lúc nào.
 
-**US-002 — Không vượt thời gian**  
-Là khách du lịch, tôi muốn mọi địa điểm kết thúc trước giờ kết thúc chuyến đi.
+**US-002 — Bảo vệ constraints**
+Là khách du lịch, tôi muốn lịch không vượt thời gian hoặc ngân sách đã nhập.
 
-**US-003 — Không vượt ngân sách**  
-Là khách du lịch, tôi muốn tổng chi phí tối thiểu ước tính không vượt ngân sách đã nhập.
+**US-003 — Xét giờ mở cửa**
+Là khách du lịch, tôi muốn tránh địa điểm được biết là đóng cửa và biết khi dữ
+liệu giờ mở cửa còn thiếu.
 
-**US-004 — Xét giờ mở cửa**  
-Là khách du lịch, tôi muốn hệ thống loại ngày đóng cửa và chỉ xếp visit nằm trọn trong known opening interval.
+**US-004 — Hiểu travel estimate**
+Là khách du lịch, tôi muốn thấy thời gian/quãng đường di chuyển ước tính giữa
+các điểm.
 
-**US-005 — Biết giới hạn dữ liệu**  
-Là khách du lịch, tôi muốn được cảnh báo khi giờ mở cửa chưa biết hoặc travel/cost chỉ là ước tính.
+**US-005 — Mở lại kết quả**
+Là frontend, tôi muốn lấy lại đúng snapshot đã sinh mà không chạy thuật toán
+lần nữa.
 
-**US-006 — Mở lại kết quả**  
-Là frontend, tôi muốn lấy itinerary đã lưu bằng public UUID để render lại mà không chạy thuật toán lần nữa.
+**US-006 — Nhận biết stale**
+Là người dùng, tôi muốn biết Trip preferences đã đổi sau khi itinerary được
+sinh để chủ động tạo lại lịch.
 
-## 6. Luồng người dùng và luồng hệ thống
+## 6. Luồng hệ thống
 
-### 6.1. Luồng chính — generate itinerary
+### 6.1. Generate thành công
 
-1. Người dùng xác nhận Trip draft và nhấn tạo lịch trình.
-2. Frontend gửi `POST /api/v1/trips/{tripPublicId}/itineraries` không có body.
-3. Controller chuyển request sang `SchedulingService`.
-4. Service lấy Trip snapshot qua Trip Module contract.
-5. Service lấy batch place candidates qua Place Module contract.
-6. `GreedyItineraryScheduler` lọc và chọn từng item theo policy ở mục 9.
-7. Nếu có ít nhất một item, service tạo immutable Itinerary aggregate.
-8. Repository lưu itinerary, items và warnings trong một transaction.
-9. Mapper tạo response; controller trả `201 Created` và `Location`.
+1. Frontend gửi `POST /api/v1/trips/{tripPublicId}/itineraries`.
+2. Controller parse UUID và gọi `SchedulingService`.
+3. Service gọi `TripSchedulingQuery#getByPublicId(tripPublicId, userId)` để kiểm tra ownership.
+4. Service gọi `PlaceSchedulingQuery#findCandidates` với preferred category IDs
+   và trip date.
+5. Place Module trả immutable candidate list theo thứ tự canonical.
+6. `GreedyItineraryScheduler` chạy bằng pure input records.
+7. Nếu có item, service tạo Itinerary aggregate từ algorithm result.
+8. Itinerary, category snapshot, items và warnings được lưu trong một
+   transaction.
+9. Controller trả `201 Created`, `Location` và `ItineraryResponse`.
 
 ```mermaid
 sequenceDiagram
     actor User as Người dùng
-    participant FE as Next.js
     participant API as Itinerary API
-    participant SVC as SchedulingService
+    participant SVC as Scheduling
+    participant Input as Trip và Place
     participant DB as PostgreSQL
-    User->>FE: Yêu cầu tạo lịch trình
-    FE->>API: POST /trips/{id}/itineraries
+    User->>API: POST generate
     API->>SVC: generate(tripPublicId)
-    SVC->>DB: Load snapshots + save result
-    DB-->>SVC: Trip/places + itinerary
-    SVC-->>API: ItineraryResponse
-    API-->>FE: 201 + Location
+    SVC->>Input: Đọc immutable snapshots
+    Input-->>SVC: Trip và candidates
+    SVC->>SVC: Chạy GREEDY_V1
+    SVC->>DB: Persist aggregate
+    SVC-->>API: Itinerary response
+    API-->>User: 201 + Location
 ```
 
-### 6.2. Luồng greedy iteration
+### 6.2. Không có kết quả khả thi
 
-1. Bắt đầu tại trip origin, `currentTime = trip.startTime`, `remainingBudget = trip.budget`.
-2. Từ unscheduled candidates, tính travel estimate từ current location.
-3. Tính arrival, waiting, visit duration và opening-hours feasibility.
-4. Loại candidate vượt time/budget/known hours.
-5. Tính score cho mọi candidate còn feasible.
-6. Chọn candidate cao nhất theo score và tie-breakers.
-7. Thêm item; cập nhật location, time, budget; lặp lại.
-8. Dừng khi không còn candidate feasible.
+1. Candidate pool rỗng hoặc mọi candidate đều không thỏa constraints.
+2. Algorithm trả typed `NoFeasibleScheduleResult` cùng rejection summary.
+3. API trả `422 NO_FEASIBLE_ITINERARY`.
+4. Không tạo itinerary hoặc child rows.
 
-### 6.3. Luồng không có itinerary khả thi
+### 6.3. Partial itinerary
 
-1. Không candidate nào có thể được xếp do không active/category mismatch/environment/budget/time/opening hours.
-2. API trả `422 NO_FEASIBLE_ITINERARY` với rejection summary.
-3. Không lưu empty itinerary.
+1. Algorithm xếp được ít nhất một place.
+2. Sau một iteration, không còn candidate nào khả thi.
+3. API vẫn trả `201 Created`.
+4. Warning phản ánh unused time/category coverage khi điều kiện tương ứng đúng.
 
-### 6.4. Luồng partial itinerary
-
-1. Ít nhất một place được xếp nhưng còn thời gian/budget do các candidate khác không khả thi.
-2. API vẫn trả `201 Created`.
-3. Response có warnings như `UNUSED_TIME_REMAINS` hoặc `LIMITED_CATEGORY_COVERAGE` khi áp dụng.
-
-### 6.5. Luồng lấy itinerary
+### 6.4. Lấy itinerary
 
 1. Frontend gọi `GET /api/v1/itineraries/{itineraryPublicId}`.
-2. Service load aggregate đã lưu và current trip `updatedAt` qua batch/read contract.
-3. Response trả `stale=true` nếu current trip mới hơn snapshot.
-4. GET không chạy lại scheduler và không thay đổi output đã lưu.
+2. Service load aggregate cùng items/categories/warnings.
+3. Service gọi `TripSchedulingQuery#getByPublicId(tripPublicIdSnapshot, userId)` để kiểm tra ownership và đọc Trip hiện tại.
+4. `stale=true` khi current Trip `updatedAt` lớn hơn
+   `tripUpdatedAtSnapshot`.
+5. GET không regenerate, không sửa aggregate và không gọi external service.
 
-## 7. Yêu cầu chức năng
+## 7. Quyết định cần owner duyệt
+
+Các quyết định dưới đây là baseline đề xuất. Chúng chỉ trở thành quyết định
+triển khai sau khi owner duyệt đặc tả.
+
+| ID | Baseline đề xuất | Lý do |
+| --- | --- | --- |
+| DEC-001 | Greedy deterministic thay vì optimizer/LLM. | Phù hợp MVP, dễ giải thích và kiểm thử. |
+| DEC-002 | Category dùng OR eligibility; match nhiều category được cộng điểm. | Candidate pool đủ rộng nhưng vẫn cá nhân hóa. |
+| DEC-003 | `MIXED` chấp nhận cả indoor/outdoor, không bắt buộc phải có cả hai. | Tránh diversity optimizer trong V1. |
+| DEC-004 | Unknown opening hours được phép với penalty/warning. | Không loại sai do dữ liệu chưa đủ. |
+| DEC-005 | Known closed và visit vượt known close là hard rejection. | Bảo vệ feasibility với dữ liệu đã biết. |
+| DEC-006 | Cost dùng `minCost`. | Có sẵn trong Place; phải cảnh báo là estimate. |
+| DEC-007 | Haversine, 18 km/h và 5 phút overhead mỗi leg. | Baseline không cần network/secret; tham số có config. |
+| DEC-008 | Pace multiplier: RELAXED 1.25, BALANCED 1.00, FAST 0.80. | Biến preference thành hành vi định lượng. |
+| DEC-009 | Score tối đa 100 với 5 components ở mục 10. | Minh bạch và có penalty gián tiếp cho travel/waiting. |
+| DEC-010 | Zero item trả 422; từ một item trở lên trả 201. | Phân biệt failure với partial usable result. |
+| DEC-011 | Mỗi POST tạo immutable version mới. | Audit, stale detection và re-planning sau này. |
+| DEC-012 | Không return-to-origin. | Giảm scope/time complexity; cần ghi rõ trên UI. |
+| DEC-013 | Chỉ V13–V14 cho FEAT-005. | Nối tiếp FEAT-004 và giữ FEAT-006 bắt đầu ở V15. |
+| DEC-014 | Không thêm origin label vào Scheduling snapshot. | Tôn trọng contract FEAT-004 đã khóa. |
+
+### 7.1. Approval gate
+
+Trước khi code:
+
+1. Hoàn tất preflight với source thực tế.
+2. Chạy `$grill-with-docs` trên FEAT-004, FEAT-005, source, migration history và
+   downstream contracts.
+3. Giải quyết toàn bộ BLOCKER.
+4. Owner duyệt DEC-001–DEC-014 hoặc ghi rõ quyết định thay thế.
+5. Chuyển FEAT-005 sang `approved`.
+6. Owner duyệt đúng một micro-step trước mỗi lần sửa source.
+
+`ready-for-review` không phải quyền bắt đầu migration hoặc code.
+
+## 8. Yêu cầu chức năng
 
 | ID | Yêu cầu | Ưu tiên |
 | --- | --- | --- |
-| FR-001 | Schema itinerary phải được tạo bằng Flyway migrations mới. | Must |
-| FR-002 | Hibernate phải validate thành công Itinerary entities với schema. | Must |
-| FR-003 | `POST /api/v1/trips/{tripPublicId}/itineraries` phải sinh itinerary từ Trip draft tồn tại. | Must |
-| FR-004 | Mỗi generate request thành công phải tạo immutable itinerary version mới. | Must |
-| FR-005 | Create response phải trả 201 và `Location: /api/v1/itineraries/{publicId}`. | Must |
-| FR-006 | `GET /api/v1/itineraries/{publicId}` phải trả snapshot đã lưu, không regenerate. | Must |
-| FR-007 | Malformed UUID trả 400; valid missing Trip/Itinerary UUID trả 404 tương ứng. | Must |
-| FR-008 | Scheduler chỉ nhận active place candidates qua Place Module contract. | Must |
-| FR-009 | Place phải match ít nhất một preferred category. | Must |
-| FR-010 | `INDOOR` chỉ nhận indoor places; `OUTDOOR` chỉ nhận outdoor; `MIXED` không loại theo field này. | Must |
-| FR-011 | Candidate chỉ feasible khi `minCost <= remainingBudget`. | Must |
-| FR-012 | Total estimated cost phải bằng tổng `minCost` snapshot và không vượt initial budget. | Must |
-| FR-013 | Known closed day phải loại candidate. | Must |
-| FR-014 | Known open day chỉ feasible nếu toàn bộ visit nằm trong open interval. | Must |
-| FR-015 | Unknown opening hours có thể được xếp nhưng item phải có warning/status rõ ràng. | Must |
-| FR-016 | Scheduler phải cho phép waiting khi đến trước open time nếu visit vẫn fit. | Must |
-| FR-017 | Visit duration phải điều chỉnh theo TravelPace và round-up theo policy. | Must |
-| FR-018 | Travel distance/time phải dùng deterministic Haversine estimator/config trong V1. | Must |
-| FR-019 | Scheduler phải recompute feasibility/score từ location/time/budget hiện tại ở mỗi iteration. | Must |
-| FR-020 | Candidate cao nhất được chọn theo score và deterministic tie-breakers. | Must |
-| FR-021 | Không itinerary item nào được overlap hoặc kết thúc sau trip endTime. | Must |
-| FR-022 | Sequence phải bắt đầu từ 1, liên tục và unique trong một itinerary. | Must |
-| FR-023 | Nếu zero item feasible, API trả 422 và không lưu itinerary. | Must |
-| FR-024 | Nếu có ít nhất một item, partial itinerary là thành công và có warnings khi cần. | Must |
-| FR-025 | Response phải có items, summary, warnings, algorithmVersion và generatedAt. | Must |
-| FR-026 | Itinerary phải snapshot các field place/output cần thiết; GET không phụ thuộc place hiện tại để tái tạo timeline. | Must |
-| FR-027 | Response phải tính `stale` từ trip updatedAt hiện tại so với snapshot. | Must |
-| FR-028 | Scheduling Module phải dùng Trip/Place read contracts, không truy cập repositories/entities của module khác. | Must |
-| FR-029 | Generate operation và persistence phải atomic. | Must |
-| FR-030 | Feature không được gọi LLM, RAG, Context hoặc external routing service. | Must |
-| FR-031 | Contract FEAT-001–004 phải giữ nguyên. | Must |
-| FR-032 | Cùng input/data/config phải tạo cùng sequence/times/costs/scores. | Must |
-| FR-033 | Itinerary phải lưu và trả snapshot các tham số travel estimate đã dùng khi generation. | Must |
+| FR-001 | Tạo schema FEAT-005 bằng next Flyway versions; dự kiến V13–V14. | Must |
+| FR-002 | Hibernate `ddl-auto=validate` phải pass. | Must |
+| FR-003 | POST generate từ một Trip tồn tại và thuộc người dùng hiện tại. | Must |
+| FR-004 | POST thành công trả 201 và `Location`. | Must |
+| FR-005 | GET itinerary trả snapshot đã lưu, không regenerate. | Must |
+| FR-006 | Public API dùng UUID; không lộ internal Trip/Itinerary/User IDs. | Must |
+| FR-007 | Mỗi POST thành công tạo một immutable itinerary mới. | Must |
+| FR-008 | Scheduler chỉ đọc Trip qua `TripSchedulingQuery`. | Must |
+| FR-009 | Scheduler chỉ đọc place qua `PlaceSchedulingQuery`. | Must |
+| FR-010 | Candidate pool chỉ gồm active places match ít nhất một preferred category. | Must |
+| FR-011 | Environment preference phải được áp dụng đúng ba enum FEAT-004. | Must |
+| FR-012 | Candidate chỉ feasible khi `minCost <= remainingBudget`. | Must |
+| FR-013 | Total estimated cost không vượt initial budget. | Must |
+| FR-014 | Known closed bị loại; known open phải fit interval. | Must |
+| FR-015 | Unknown hours có thể được chọn nhưng phải có item warning. | Must |
+| FR-016 | Arrival trước opening time được phép waiting nếu visit vẫn fit. | Must |
+| FR-017 | Visit duration áp dụng pace multiplier và rounding policy. | Must |
+| FR-018 | Travel estimate dùng Haversine/config deterministic. | Must |
+| FR-019 | Feasibility và score được tính lại từ state hiện tại mỗi iteration. | Must |
+| FR-020 | Chọn candidate bằng score và tie-breakers cố định. | Must |
+| FR-021 | Items có sequence liên tục, không trùng place, không overlap. | Must |
+| FR-022 | Không item nào kết thúc sau trip end hoặc known close. | Must |
+| FR-023 | Zero feasible trả 422 và không persist. | Must |
+| FR-024 | Partial itinerary là thành công và có warning đúng policy. | Must |
+| FR-025 | Response có origin, trip window, items, summary, assumptions và warnings. | Must |
+| FR-026 | Summary có scheduled count và total straight-line distance cho prototype. | Must |
+| FR-027 | Item snapshot có place facts, indoor, timeline, opening facts, cost và score. | Must |
+| FR-028 | Itinerary snapshot có pace/environment/preferred category IDs. | Must |
+| FR-029 | GET tính `stale` từ current Trip `updatedAt`. | Must |
+| FR-030 | Candidate loading dùng bounded batch queries, không N+1. | Must |
+| FR-031 | Generate persistence của aggregate phải atomic. | Must |
+| FR-032 | Cùng snapshots/config tạo cùng business output. | Must |
+| FR-033 | Feature không gọi routing/weather/RAG/LLM/AI service. | Must |
+| FR-034 | FEAT-001–004 contracts và tests không bị phá vỡ. | Must |
+| FR-035 | Generate/GET yêu cầu người dùng đã xác thực; `userId` lấy từ `UserPrincipal`. | Must |
+| FR-036 | Trip và Itinerary lookup phải kèm ownership; cross-user access trả 404. | Must |
 
-## 8. Quy tắc nghiệp vụ và giả định V1
+## 9. Quy tắc nghiệp vụ
 
 | ID | Quy tắc |
 | --- | --- |
-| BR-001 | Scheduler chỉ hỗ trợ one-day trip, same-day LocalTime. |
-| BR-002 | Preferred categories kết hợp OR: match ít nhất một category. |
-| BR-003 | `MIXED` nghĩa là chấp nhận indoor và outdoor, không bảo đảm itinerary có cả hai loại. |
-| BR-004 | Estimated cost của place bằng `minCost`, không phải giá chính xác. |
-| BR-005 | Budget bằng 0 chỉ cho phép place có `minCost = 0`. |
-| BR-006 | Missing opening-hours row = `UNKNOWN`, không phải `CLOSED`. |
-| BR-007 | Unknown hours được phép để tránh loại sai do thiếu dữ liệu, nhưng có score thấp hơn và warning. |
-| BR-008 | Không hỗ trợ visit qua midnight hoặc opening interval qua midnight. |
-| BR-009 | Arrival trước open time tạo waiting; waiting tiêu thụ trip window. |
-| BR-010 | Không bắt buộc quay lại origin; timeline kết thúc ở place cuối. |
-| BR-011 | Haversine là straight-line distance, không phải route distance. |
-| BR-012 | Travel estimator default dùng `18 km/h` và fixed overhead `5 phút/leg`; cả hai phải cấu hình được. |
-| BR-013 | Travel minutes luôn round-up tới phút nguyên và tối thiểu fixed overhead. |
-| BR-014 | Visit duration pace multiplier: RELAXED `1.25`, BALANCED `1.00`, FAST `0.80`. |
-| BR-015 | Adjusted visit duration round-up lên bội số 5 phút. |
-| BR-016 | Score chỉ dùng dữ liệu deterministic; không dùng random, LLM hoặc current traffic. |
-| BR-017 | Item output immutable; generate lại tạo itinerary publicId mới. |
-| BR-018 | `stale` chỉ báo Trip draft đã đổi, không tự vô hiệu hóa hoặc xóa itinerary. |
+| BR-001 | Scheduler chỉ hỗ trợ one-day Trip và cùng local date TP.HCM. |
+| BR-002 | Preferred categories kết hợp OR. |
+| BR-003 | `INDOOR` chỉ nhận `indoor=true`; `OUTDOOR` chỉ nhận `false`; `MIXED` nhận cả hai. |
+| BR-004 | Budget dùng VND decimal; không dùng floating point để cộng tiền. |
+| BR-005 | Budget bằng 0 chỉ cho place có `minCost=0`. |
+| BR-006 | Missing opening row là `UNKNOWN`, không phải `CLOSED`. |
+| BR-007 | Unknown hours không tạo artificial open/close interval. |
+| BR-008 | Known open chỉ hợp lệ khi toàn bộ visit thuộc `[openTime, closeTime]`. |
+| BR-009 | Arrival sớm tạo waiting; waiting tiêu thụ trip window. |
+| BR-010 | Không quay về origin sau item cuối. |
+| BR-011 | Distance Haversine không phải road distance. |
+| BR-012 | Travel minutes round-up tới phút nguyên. |
+| BR-013 | Adjusted visit duration round-up lên bội số 5 phút. |
+| BR-014 | Candidate được remove sau khi chọn; một place không lặp. |
+| BR-015 | Scheduler dừng khi không còn candidate feasible ở current state. |
+| BR-016 | Không random/shuffle; mọi collection đầu vào phải canonicalize. |
+| BR-017 | `stale` chỉ là cảnh báo; itinerary cũ vẫn đọc được và không tự đổi. |
+| BR-018 | Warning code/message được tạo từ deterministic templates. |
+| BR-019 | Trip/place data thay đổi sau generation không sửa snapshot cũ. |
+| BR-020 | UUID/timestamp không tham gia so sánh determinism business output. |
+| BR-021 | Dữ liệu demo/mô phỏng phải tiếp tục được ghi nhãn đúng trong UI/báo cáo. |
+| BR-022 | Chỉ owner của Trip được generate; chỉ owner snapshot của Itinerary được GET. Sai owner trả 404 để không lộ UUID hợp lệ. |
 
-## 9. Đặc tả thuật toán `GREEDY_V1`
+## 10. Đặc tả thuật toán `GREEDY_V1`
 
-### 9.1. Candidate eligibility ban đầu
-
-Place được đưa vào candidate pool khi:
-
-1. `active = true`.
-2. Có ít nhất một category giao với Trip preferences.
-3. Thỏa environment rule.
-4. Có tọa độ, visit duration và minCost hợp lệ theo schema.
-
-Candidate query phải batch-load category IDs và opening hours cho trip day; không gọi detail API/repository một lần cho mỗi place.
-
-### 9.2. Travel estimate
-
-Haversine distance:
-
-```text
-a = sin²(Δlat/2) + cos(lat1) × cos(lat2) × sin²(Δlon/2)
-c = 2 × atan2(√a, √(1−a))
-distanceKm = 6371.0088 × c
-```
-
-Travel minutes:
-
-```text
-travelMinutes = ceil(distanceKm / averageSpeedKmh × 60 + fixedOverheadMinutes)
-```
-
-Default config:
-
-```yaml
-scheduling:
-  algorithm-version: GREEDY_V1
-  average-speed-kmh: 18
-  fixed-transfer-minutes: 5
-```
-
-- Dùng full precision trong tính toán; chỉ round distance khi lưu/serialize.
-- Config values phải `> 0` cho speed và `>= 0` cho overhead.
-
-### 9.3. Adjusted visit duration
-
-```text
-raw = estimatedVisitMinutes × paceMultiplier
-adjusted = ceil(raw / 5) × 5
-```
-
-| Pace | Multiplier |
-| --- | --- |
-| `RELAXED` | `1.25` |
-| `BALANCED` | `1.00` |
-| `FAST` | `0.80` |
-
-### 9.4. Time feasibility
-
-Cho current state và một candidate:
-
-1. `arrival = currentTime + travelMinutes`.
-2. Nếu known open và arrival trước open time: `visitStart = openTime`, waiting là chênh lệch.
-3. Nếu known open và arrival sau/equal open time: `visitStart = arrival`.
-4. Nếu unknown: `visitStart = arrival`.
-5. `visitEnd = visitStart + adjustedVisitMinutes`.
-6. Feasible khi `visitEnd <= trip.endTime` và, nếu known open, `visitEnd <= closeTime`.
-7. Known closed luôn infeasible.
-
-### 9.5. Scoring
-
-Tính tại mỗi iteration cho candidate feasible:
-
-```text
-categoryScore = 50 × matchedPreferenceCount / totalPreferenceCount
-distanceScore = 25 / (1 + distanceKm)
-
-if remainingBudget = 0:
-    costScore = 15 if minCost = 0 else 0
-else:
-    costScore = 15 × (1 − min(minCost / remainingBudget, 1))
-
-openingScore = 10 if KNOWN_OPEN else 0
-totalScore = categoryScore + distanceScore + costScore + openingScore
-```
-
-- Dùng `BigDecimal`/defined rounding hoặc numeric policy nhất quán cho score.
-- Chuyển distance dùng cho scoring thành decimal scale 6 `HALF_UP`; tính từng component/total ở scale 8 `HALF_UP`.
-- Comparison dùng total score scale 8; lưu/serialize score scale 4 `HALF_UP`.
-
-### 9.6. Tie-breakers
-
-Khi total score bằng nhau theo comparison policy:
-
-1. Distance tăng dần.
-2. `minCost` tăng dần.
-3. Place name tăng dần bằng Java `String.compareTo` trên giá trị snapshot để không phụ thuộc database collation.
-4. Place internal ID tăng dần.
-
-### 9.7. State update và stop condition
-
-Sau khi chọn candidate:
-
-- `currentLocation = candidate.coordinates`.
-- `currentTime = visitEnd`.
-- `remainingBudget -= minCost`.
-- Remove candidate khỏi unscheduled set.
-- Lặp lại cho tới khi không còn feasible candidate.
-
-Không có random shuffle. Candidate collection phải được canonical-sort trước khi evaluation để iteration order của `Set`/database không ảnh hưởng kết quả.
-
-## 10. Warnings và rejection semantics
-
-### 10.1. Warning codes
-
-| Code | Cấp | Khi xuất hiện |
-| --- | --- | --- |
-| `TRAVEL_TIME_ESTIMATED` | Itinerary | Luôn có trong GREEDY_V1 vì không dùng routing thật |
-| `COST_USES_MINIMUM_ESTIMATE` | Itinerary | Luôn có vì total dùng `minCost` |
-| `OPENING_HOURS_UNKNOWN` | Item | Scheduled place không có opening-hours row cho trip day |
-| `UNUSED_TIME_REMAINS` | Itinerary | Còn ít nhất 60 phút nhưng không có candidate feasible |
-| `LIMITED_CATEGORY_COVERAGE` | Itinerary | Không phải mọi preferred category đều xuất hiện trong items |
-
-Warnings là deterministic và không do LLM viết.
-
-### 10.2. Zero-item rejection summary
-
-`422 NO_FEASIBLE_ITINERARY` có thể trả counts:
-
-- `candidatePoolSize`.
-- `rejectedByEnvironment`.
-- `rejectedByBudget`.
-- `rejectedByOpeningHours`.
-- `rejectedByTimeWindow`.
-
-Một candidate có thể bị tính ở reason đầu tiên theo fixed validation order để tổng counts dễ giải thích; order phải được ghi trong code/test.
-
-## 11. Đặc tả dữ liệu
-
-### 11.1. Bảng `itineraries`
-
-| Cột | Kiểu đề xuất | Null | Ràng buộc/Ghi chú |
-| --- | --- | --- | --- |
-| `id` | `BIGINT GENERATED BY DEFAULT AS IDENTITY` | No | Primary key nội bộ |
-| `public_id` | `UUID` | No | Unique, sinh ở application |
-| `trip_id` | `BIGINT` | No | FK → `trips(id)`, `ON DELETE RESTRICT` |
-| `trip_updated_at_snapshot` | `TIMESTAMPTZ` | No | Dùng tính stale |
-| `trip_date` | `DATE` | No | Snapshot |
-| `window_start` | `TIME` | No | Snapshot |
-| `window_end` | `TIME` | No | Snapshot |
-| `origin_label` | `VARCHAR(255)` | No | Snapshot |
-| `origin_latitude` | `NUMERIC(9,6)` | No | Snapshot |
-| `origin_longitude` | `NUMERIC(10,6)` | No | Snapshot |
-| `initial_budget` | `NUMERIC(12,2)` | No | Snapshot |
-| `total_estimated_cost` | `NUMERIC(12,2)` | No | Sum item cost |
-| `remaining_budget` | `NUMERIC(12,2)` | No | Initial − total |
-| `total_travel_minutes` | `INTEGER` | No | Sum item travel |
-| `total_visit_minutes` | `INTEGER` | No | Sum item visit |
-| `total_waiting_minutes` | `INTEGER` | No | Sum item waiting |
-| `remaining_minutes` | `INTEGER` | No | Trip end − last visit end |
-| `candidate_count` | `INTEGER` | No | Candidate pool size |
-| `scheduled_count` | `INTEGER` | No | Number of items |
-| `algorithm_version` | `VARCHAR(40)` | No | `GREEDY_V1` |
-| `average_speed_kmh` | `NUMERIC(6,2)` | No | Config snapshot, `> 0` |
-| `fixed_transfer_minutes` | `INTEGER` | No | Config snapshot, `>= 0` |
-| `generated_at` | `TIMESTAMPTZ` | No | Injected Clock |
-
-Constraints:
-
-- Numeric/minute/count fields không âm.
-- `window_start < window_end`.
-- `total_estimated_cost <= initial_budget`.
-- `remaining_budget = initial_budget - total_estimated_cost` nếu check expression được giữ rõ.
-- `scheduled_count > 0` và bằng item count được xác minh ở service/integration test.
-
-### 11.2. Bảng `itinerary_items`
-
-| Cột | Kiểu đề xuất | Null | Ràng buộc/Ghi chú |
-| --- | --- | --- | --- |
-| `id` | `BIGINT GENERATED BY DEFAULT AS IDENTITY` | No | Primary key |
-| `itinerary_id` | `BIGINT` | No | FK → itineraries, `ON DELETE CASCADE` |
-| `sequence_no` | `INTEGER` | No | Unique per itinerary, `> 0` |
-| `place_id` | `BIGINT` | No | FK → places, `ON DELETE RESTRICT` |
-| `place_name` | `VARCHAR(160)` | No | Snapshot |
-| `place_slug` | `VARCHAR(180)` | No | Snapshot |
-| `address` | `VARCHAR(255)` | No | Snapshot |
-| `district` | `VARCHAR(100)` | No | Snapshot |
-| `latitude` | `NUMERIC(9,6)` | No | Snapshot |
-| `longitude` | `NUMERIC(10,6)` | No | Snapshot |
-| `travel_minutes_from_previous` | `INTEGER` | No | `>= 0` |
-| `distance_km_from_previous` | `NUMERIC(8,3)` | No | `>= 0` |
-| `arrival_time` | `TIME` | No | Timeline |
-| `waiting_minutes` | `INTEGER` | No | `>= 0` |
-| `visit_start` | `TIME` | No | Timeline |
-| `visit_end` | `TIME` | No | Timeline |
-| `visit_minutes` | `INTEGER` | No | Adjusted duration |
-| `estimated_cost` | `NUMERIC(12,2)` | No | Place minCost snapshot |
-| `score` | `NUMERIC(10,4)` | No | Selection score |
-| `opening_hours_status` | `VARCHAR(20)` | No | `KNOWN_OPEN`/`UNKNOWN` |
-
-Constraints tối thiểu:
-
-- Unique `(itinerary_id, sequence_no)`.
-- Unique `(itinerary_id, place_id)` để một place không lặp trong itinerary.
-- `arrival_time <= visit_start < visit_end`.
-- Nonnegative numeric fields.
-
-### 11.3. Bảng `itinerary_warnings`
-
-| Cột | Kiểu đề xuất | Null | Ràng buộc/Ghi chú |
-| --- | --- | --- | --- |
-| `id` | `BIGINT GENERATED BY DEFAULT AS IDENTITY` | No | Primary key |
-| `itinerary_id` | `BIGINT` | No | FK → itineraries, `ON DELETE CASCADE` |
-| `itinerary_item_id` | `BIGINT` | Yes | FK → items, `ON DELETE CASCADE` |
-| `code` | `VARCHAR(60)` | No | Check approved codes |
-| `message` | `VARCHAR(500)` | No | Deterministic template text |
-
-- Itinerary-level warning có `itinerary_item_id = NULL`.
-- Item warning tham chiếu đúng item cùng itinerary; cross-parent integrity được bảo vệ ở service/test nếu schema check không đủ rõ.
-
-### 11.4. Migration dự kiến
-
-Nếu FEAT-004 kết thúc ở `V10__create_trip_category_preferences_table.sql`:
-
-```text
-V11__create_itineraries_table.sql
-V12__create_itinerary_items_table.sql
-V13__create_itinerary_warnings_table.sql
-```
-
-Kiểm tra version thực tế trước khi tạo. Không sửa migrations cũ và không seed itinerary giả trong production-like migration.
-
-## 12. Module boundary và application contracts
-
-### 12.1. Ownership
-
-- Scheduling Module sở hữu Itinerary aggregate, algorithm và API.
-- Trip Module sở hữu Trip aggregate và cung cấp `TripSchedulingSnapshot`.
-- Place Module sở hữu Place/Category/OpeningHour và cung cấp `PlaceSchedulingCandidate` batch list.
-- Scheduling không import Trip/Place JPA Entity hoặc repositories.
-- Database FK giữa module tables được chấp nhận trong modular monolith.
-
-### 12.2. Trip read contract đề xuất
+### 10.1. Input canonical
 
 ```java
-public interface TripSchedulingQuery {
-    TripSchedulingSnapshot getByPublicId(UUID publicId);
-    Instant getUpdatedAtByInternalId(Long tripId);
-}
+public record SchedulingInput(
+        TripSchedulingSnapshot trip,
+        List<PlaceSchedulingCandidate> candidates,
+        SchedulingPolicy policy,
+        OffsetDateTime generatedAt
+) {}
 ```
 
-Snapshot gồm internal ID cho FK, publicId, date/window, budget, origin, pace, environment, preferred category IDs và updatedAt. Không trả Trip Entity.
+Trước khi chạy:
 
-### 12.3. Place read contract đề xuất
+- preferred category IDs được copy thành immutable sorted set;
+- candidates được sort theo `placeId ASC`;
+- collection từ JPA/Set không được dùng trực tiếp làm iteration order;
+- policy được validate;
+- algorithm core không gọi repository, Clock, Spring hoặc network.
+
+### 10.2. Candidate contract từ Place Module
 
 ```java
 public interface PlaceSchedulingQuery {
@@ -562,26 +428,280 @@ public interface PlaceSchedulingQuery {
 }
 ```
 
-Candidate DTO gồm internal ID, public summary/snapshot fields, indoor, minCost, base visit minutes, matched category IDs và opening status/interval cho đúng trip day.
+```java
+public record PlaceSchedulingCandidate(
+        Long placeId,
+        String name,
+        String slug,
+        String address,
+        String administrativeUnitName,
+        AdministrativeUnitType administrativeUnitType,
+        BigDecimal latitude,
+        BigDecimal longitude,
+        int baseVisitMinutes,
+        BigDecimal minCost,
+        boolean indoor,
+        Set<Long> matchedPreferredCategoryIds,
+        OpeningHoursSnapshot openingHours
+) {}
+```
 
-- Query phải batch-load và canonical-sort.
-- Place Module chịu trách nhiệm diễn giải missing row thành `UNKNOWN`, không tự biến thành closed.
-- Scheduling Module vẫn quyết định feasibility/scoring.
+```java
+public record OpeningHoursSnapshot(
+        OpeningHoursStatus status,
+        LocalTime openTime,
+        LocalTime closeTime
+) {}
+```
 
-## 13. API contract
+`OpeningHoursStatus` cho candidate input gồm:
 
-### 13.1. Generate itinerary
+- `KNOWN_OPEN`;
+- `CLOSED`;
+- `UNKNOWN`.
+
+Place Module chịu trách nhiệm:
+
+- chỉ trả active places có category intersection;
+- load place/category/opening data bằng số batch query hữu hạn không phụ thuộc
+  tuyến tính vào số place;
+- map missing row thành `UNKNOWN`;
+- trả matched preferred category IDs;
+- không trả Entity hoặc lazy collection.
+
+Scheduling Module chịu trách nhiệm environment, budget, duration, travel,
+time feasibility, score và selection.
+
+Nếu candidate pool vượt `maxCandidates`, service trả
+`409 SCHEDULING_DATA_CONFLICT`; không cắt ngầm theo 100 bản ghi đầu vì việc đó
+có thể làm thay đổi kết quả theo query/order implementation.
+
+### 10.3. Khởi tạo state
+
+```text
+currentLocation = trip origin
+currentTime = trip.startTime
+remainingBudget = trip.budget
+unscheduled = canonical candidate list
+scheduledItems = []
+```
+
+### 10.4. Travel estimate
+
+Haversine:
+
+```text
+a = sin²(Δlat/2) + cos(lat1) × cos(lat2) × sin²(Δlon/2)
+c = 2 × atan2(√a, √(1−a))
+distanceKm = 6371.0088 × c
+```
+
+Travel minutes:
+
+```text
+travelMinutes =
+    ceil(distanceKm / averageSpeedKmh × 60 + fixedTransferMinutes)
+```
+
+Baseline config:
+
+```yaml
+scheduling:
+  algorithm-version: GREEDY_V1
+  average-speed-kmh: 18.00
+  fixed-transfer-minutes: 5
+  max-candidates: 100
+```
+
+Validation:
+
+- `averageSpeedKmh > 0`;
+- `fixedTransferMinutes >= 0`;
+- `maxCandidates` thuộc `1..100`;
+- tính distance bằng `double` cho hàm lượng giác;
+- money không dùng `double`;
+- distance chỉ round khi tạo snapshot/response.
+
+### 10.5. Visit duration
+
+```text
+rawVisitMinutes = baseVisitMinutes × paceMultiplier
+adjustedVisitMinutes = ceil(rawVisitMinutes / 5) × 5
+```
+
+| Pace | Multiplier |
+| --- | --- |
+| `RELAXED` | 1.25 |
+| `BALANCED` | 1.00 |
+| `FAST` | 0.80 |
+
+### 10.6. Feasibility theo thứ tự cố định
+
+Mỗi candidate được kiểm tra theo order:
+
+1. Environment.
+2. Remaining budget.
+3. Opening status `CLOSED`.
+4. Travel arrival.
+5. Waiting/opening start.
+6. Trip end.
+7. Known closing time.
+
+Tính timeline:
+
+```text
+arrival = currentTime + travelMinutes
+
+if KNOWN_OPEN and arrival < openTime:
+    visitStart = openTime
+    waitingMinutes = minutes(openTime - arrival)
+else:
+    visitStart = arrival
+    waitingMinutes = 0
+
+visitEnd = visitStart + adjustedVisitMinutes
+```
+
+Feasible khi:
+
+- environment hợp lệ;
+- `minCost <= remainingBudget`;
+- status khác `CLOSED`;
+- `visitEnd <= trip.endTime`;
+- nếu `KNOWN_OPEN`, `visitStart >= openTime` và `visitEnd <= closeTime`.
+
+### 10.7. Scoring
+
+Chỉ candidate feasible mới được tính score:
+
+```text
+preferenceScore =
+    40 × matchedPreferredCategoryCount / totalPreferredCategoryCount
+
+distanceScore =
+    25 / (1 + distanceKm)
+
+if remainingBudget = 0:
+    costScore = 15
+else:
+    costScore =
+        15 × (1 − min(minCost / remainingBudget, 1))
+
+openingConfidenceScore =
+    10 if KNOWN_OPEN else 0
+
+timeEfficiencyScore =
+    10 × adjustedVisitMinutes
+       / (travelMinutes + waitingMinutes + adjustedVisitMinutes)
+
+totalScore =
+    preferenceScore
+    + distanceScore
+    + costScore
+    + openingConfidenceScore
+    + timeEfficiencyScore
+```
+
+Ý nghĩa:
+
+- preference là thành phần lớn nhất;
+- distance và time-efficiency giảm lợi thế của candidate tốn nhiều transfer hoặc
+  waiting;
+- cost ưu tiên phương án còn dư ngân sách;
+- known hours có confidence bonus, nhưng unknown vẫn có thể được chọn.
+
+Numeric policy:
+
+- ratio/score tính ở scale 8, `RoundingMode.HALF_UP`;
+- distance dùng trong score được chuyển sang decimal scale 6;
+- comparison dùng total score scale 8;
+- snapshot/JSON `selectionScore` dùng scale 4;
+- không so score bằng epsilon tùy ý.
+
+### 10.8. Tie-breakers
+
+Khi total score bằng nhau:
+
+1. `waitingMinutes` tăng dần.
+2. Distance tăng dần.
+3. `minCost` tăng dần.
+4. `name` tăng dần bằng Java `String.compareTo`.
+5. `placeId` tăng dần.
+
+Database collation và input insertion order không được quyết định kết quả.
+
+### 10.9. State update
+
+Sau khi chọn candidate:
+
+```text
+sequence += 1
+currentLocation = candidate coordinates
+currentTime = visitEnd
+remainingBudget = remainingBudget - minCost
+remove candidate from unscheduled
+append scheduled item
+```
+
+Sau đó recompute travel, feasibility và score cho toàn bộ unscheduled
+candidates từ state mới. Complexity tối đa `O(n²)` với `n <= 100`.
+
+### 10.10. Stop condition
+
+Scheduler dừng khi:
+
+- unscheduled rỗng; hoặc
+- không còn candidate feasible ở current state.
+
+Nếu `scheduledItems` rỗng, trả typed no-feasible result. Nếu có ít nhất một
+item, trả success result và warning phù hợp.
+
+### 10.11. Warning policy
+
+| Code | Scope | Điều kiện |
+| --- | --- | --- |
+| `TRAVEL_TIME_ESTIMATED` | Itinerary | Luôn có với GREEDY_V1 |
+| `COST_USES_MINIMUM_ESTIMATE` | Itinerary | Luôn có với GREEDY_V1 |
+| `OPENING_HOURS_UNKNOWN` | Item | Item được xếp với hours unknown |
+| `UNUSED_TIME_REMAINS` | Itinerary | Còn ít nhất 60 phút và còn candidate đã qua environment nhưng không thể xếp do budget/hours/time |
+| `LIMITED_CATEGORY_COVERAGE` | Itinerary | Union matched categories của items không phủ hết preferences |
+
+Warning order cố định:
+
+1. itinerary-level theo enum order;
+2. item warnings theo `itemSequence ASC`, rồi enum order.
+
+### 10.12. Zero-item rejection summary
+
+Chỉ dùng khi không xếp được item nào:
+
+```java
+public record RejectionSummary(
+        int candidatePoolSize,
+        int rejectedByEnvironment,
+        int rejectedByBudget,
+        int rejectedByClosedHours,
+        int rejectedByTripWindow,
+        int rejectedByClosingTime
+) {}
+```
+
+Mỗi candidate được đếm ở **reason đầu tiên** theo order mục 10.6 để các counts
+không trùng và tổng có thể giải thích.
+
+## 11. API contract
+
+### 11.1. Generate
+
+Mọi request yêu cầu JWT hợp lệ. `userId` lấy từ `UserPrincipal`, không nhận từ path hoặc body. Trip không tồn tại hoặc không thuộc người dùng hiện tại đều trả `404 TRIP_NOT_FOUND`.
 
 ```http
 POST /api/v1/trips/{tripPublicId}/itineraries
 Accept: application/json
 ```
 
-- Không request body trong V1.
-- Không authentication trong anonymous demo MVP.
-- Mỗi call thành công tạo itinerary version mới.
-
-Response:
+- Không có request body trong V1.
+- Mỗi request thành công tạo public itinerary UUID mới.
 
 ```http
 HTTP/1.1 201 Created
@@ -589,34 +709,44 @@ Location: /api/v1/itineraries/76aab24a-1938-449f-a12c-0cd273710afa
 Content-Type: application/json
 ```
 
-### 13.2. Get itinerary
+### 11.2. Get
 
 ```http
 GET /api/v1/itineraries/{itineraryPublicId}
 Accept: application/json
 ```
 
-GET trả snapshot đã lưu và computed `stale`; không chạy scheduler.
+GET trả stored snapshot và computed `stale`; không chạy scheduler. Itinerary không tồn tại hoặc không thuộc người dùng hiện tại đều trả `404 ITINERARY_NOT_FOUND`.
 
-### 13.3. Response thành công
+### 11.3. Response thành công
 
 ```json
 {
   "publicId": "76aab24a-1938-449f-a12c-0cd273710afa",
   "tripPublicId": "7a674ef0-57c8-4d0e-b99b-dccfd342fc98",
   "algorithmVersion": "GREEDY_V1",
-  "generatedAt": "2026-07-17T06:00:00Z",
+  "generatedAt": "2026-07-24T15:00:00+07:00",
   "stale": false,
   "assumptions": {
     "travelEstimator": "HAVERSINE",
     "averageSpeedKmh": 18.00,
     "fixedTransferMinutes": 5,
-    "costBasis": "MIN_COST"
+    "costBasis": "MIN_COST",
+    "returnToOrigin": false
   },
   "tripWindow": {
     "tripDate": "2026-08-20",
     "startTime": "08:00",
     "endTime": "18:00"
+  },
+  "preferencesSnapshot": {
+    "travelPace": "BALANCED",
+    "environmentPreference": "MIXED",
+    "preferredCategoryIds": [1, 3]
+  },
+  "origin": {
+    "latitude": 10.7726400,
+    "longitude": 106.6980500
   },
   "items": [
     {
@@ -626,524 +756,929 @@ GET trả snapshot đã lưu và computed `stale`; không chạy scheduler.
         "name": "Địa điểm demo A",
         "slug": "dia-diem-demo-a",
         "address": "Địa chỉ demo, TP.HCM",
-        "district": "Quận 1",
-        "latitude": 10.776889,
-        "longitude": 106.700806
+        "administrativeUnitName": "Bến Nghé",
+        "administrativeUnitType": "WARD",
+        "latitude": 10.7768890,
+        "longitude": 106.7008060,
+        "indoor": false
       },
       "travel": {
-        "estimatedMinutes": 12,
-        "straightLineDistanceKm": 2.100
+        "estimatedMinutes": 7,
+        "straightLineDistanceKm": 0.510
       },
-      "arrivalTime": "08:12",
+      "arrivalTime": "08:07",
       "waitingMinutes": 0,
-      "visitStart": "08:12",
-      "visitEnd": "09:42",
+      "visitStart": "08:07",
+      "visitEnd": "09:37",
+      "baseVisitMinutes": 90,
       "visitMinutes": 90,
       "estimatedCost": 0.00,
-      "score": 71.4286,
-      "openingHoursStatus": "KNOWN_OPEN"
+      "selectionScore": 90.8346,
+      "openingHours": {
+        "status": "KNOWN_OPEN",
+        "openTime": "08:00",
+        "closeTime": "17:00"
+      }
     }
   ],
   "summary": {
     "candidateCount": 12,
-    "scheduledCount": 4,
-    "totalEstimatedCost": 350000.00,
-    "remainingBudget": 150000.00,
-    "totalTravelMinutes": 75,
-    "totalVisitMinutes": 330,
-    "totalWaitingMinutes": 10,
-    "remainingMinutes": 185
+    "scheduledCount": 1,
+    "totalStraightLineDistanceKm": 0.510,
+    "totalEstimatedCost": 0.00,
+    "remainingBudget": 500000.00,
+    "totalTravelMinutes": 7,
+    "totalVisitMinutes": 90,
+    "totalWaitingMinutes": 0,
+    "remainingMinutes": 503
   },
   "warnings": [
     {
       "code": "TRAVEL_TIME_ESTIMATED",
-      "message": "Travel time uses a straight-line distance estimate, not live routing.",
+      "message": "Thời gian di chuyển đang dùng ước tính đường thẳng, chưa phải dữ liệu tuyến đường thực tế.",
       "itemSequence": null
     },
     {
-      "code": "OPENING_HOURS_UNKNOWN",
-      "message": "Opening hours are not verified for this visit date.",
-      "itemSequence": 3
+      "code": "COST_USES_MINIMUM_ESTIMATE",
+      "message": "Chi phí lịch trình được ước tính từ mức chi phí tối thiểu của từng địa điểm.",
+      "itemSequence": null
     }
   ]
 }
 ```
 
-> [!note]
-> Example dùng dữ liệu demo và contract minh họa; không phải itinerary thực đã được xác minh.
+Ví dụ chỉ minh họa contract và dùng dữ liệu demo.
 
-### 13.4. Response DTO outline
+### 11.4. DTO outline
 
 ```java
 public record ItineraryResponse(
         UUID publicId,
         UUID tripPublicId,
         String algorithmVersion,
-        Instant generatedAt,
+        OffsetDateTime generatedAt,
         boolean stale,
         SchedulingAssumptionsResponse assumptions,
         TripWindowResponse tripWindow,
+        PreferencesSnapshotResponse preferencesSnapshot,
+        CoordinateResponse origin,
         List<ItineraryItemResponse> items,
         ItinerarySummaryResponse summary,
         List<ItineraryWarningResponse> warnings
 ) {}
 ```
 
-Không trả Entity hoặc Jackson serialization mặc định của aggregate.
+Không serialize aggregate/Entity trực tiếp.
 
-### 13.5. Error responses
+### 11.5. Error contract
 
-| Trường hợp | HTTP | Code |
+| Trường hợp | HTTP | `code` |
 | --- | --- | --- |
-| Malformed UUID | 400 | `INVALID_REQUEST` |
-| Trip không tồn tại | 404 | `TRIP_NOT_FOUND` |
-| Itinerary không tồn tại | 404 | `ITINERARY_NOT_FOUND` |
-| Trip/candidate data vi phạm invariant | 409 | `SCHEDULING_DATA_CONFLICT` |
+| Malformed Trip/Itinerary UUID | 400 | `INVALID_REQUEST` |
+| Trip không tồn tại hoặc không thuộc người dùng hiện tại | 404 | `TRIP_NOT_FOUND` |
+| Itinerary không tồn tại hoặc không thuộc người dùng hiện tại | 404 | `ITINERARY_NOT_FOUND` |
+| Trip/place snapshot vi phạm invariant | 409 | `SCHEDULING_DATA_CONFLICT` |
 | Không có item khả thi | 422 | `NO_FEASIBLE_ITINERARY` |
-| Config scheduling invalid | 500/startup failure | Không chạy bằng default ẩn |
+| Config invalid | Startup failure | Không chạy bằng hidden fallback |
 
-Ví dụ 422:
+Ví dụ 422 theo Spring `ProblemDetail`:
 
 ```json
 {
+  "type": "about:blank",
+  "title": "No feasible itinerary",
   "status": 422,
+  "detail": "No place can be scheduled within the current trip constraints",
+  "instance": "/api/v1/trips/7a674ef0-57c8-4d0e-b99b-dccfd342fc98/itineraries",
   "code": "NO_FEASIBLE_ITINERARY",
-  "message": "No place can be scheduled within the current constraints",
-  "path": "/api/v1/trips/7a674ef0-57c8-4d0e-b99b-dccfd342fc98/itineraries",
-  "details": {
+  "rejectionSummary": {
     "candidatePoolSize": 8,
+    "rejectedByEnvironment": 1,
     "rejectedByBudget": 2,
-    "rejectedByOpeningHours": 3,
-    "rejectedByTimeWindow": 3
+    "rejectedByClosedHours": 2,
+    "rejectedByTripWindow": 2,
+    "rejectedByClosingTime": 1
   }
 }
 ```
 
-Common error envelope hiện có được ưu tiên; tên fields trong example không buộc tạo contract cạnh tranh.
+Không tạo `message`, `path` hoặc `details` root fields cạnh tranh với
+`ProblemDetail`.
+
+## 12. Đặc tả dữ liệu
+
+### 12.1. Migration plan
+
+Nếu FEAT-004 thực tế kết thúc ở V12:
+
+```text
+V13__create_itineraries_and_preference_snapshots.sql
+V14__create_itinerary_items_and_warnings.sql
+```
+
+- V13 tạo parent aggregate và preferred-category snapshot.
+- V14 tạo ordered items và warnings.
+- Không seed itinerary trong Flyway.
+- Nếu migration history khác, dùng next versions thực tế và cập nhật toàn bộ
+  tài liệu downstream trước khi code.
+
+### 12.2. Bảng `itineraries`
+
+| Cột | Kiểu | Null | Ràng buộc/Ghi chú |
+| --- | --- | --- | --- |
+| `id` | `BIGINT GENERATED BY DEFAULT AS IDENTITY` | No | Primary key nội bộ |
+| `public_id` | `UUID` | No | Unique, application generated |
+| `user_id` | `BIGINT` | No | FK → `users(id)`, owner snapshot để lookup an toàn |
+| `trip_id` | `BIGINT` | No | FK → `trips(id)`, `ON DELETE RESTRICT` |
+| `trip_public_id_snapshot` | `UUID` | No | Dùng GET/stale mà không lộ internal ID |
+| `trip_updated_at_snapshot` | `TIMESTAMPTZ` | No | Version snapshot |
+| `trip_date` | `DATE` | No | One-day snapshot |
+| `window_start` | `TIME` | No | Snapshot |
+| `window_end` | `TIME` | No | Snapshot |
+| `origin_latitude` | `NUMERIC(10,7)` | No | Snapshot |
+| `origin_longitude` | `NUMERIC(10,7)` | No | Snapshot |
+| `travel_pace` | `VARCHAR(20)` | No | Approved FEAT-004 enum |
+| `environment_preference` | `VARCHAR(20)` | No | `INDOOR/OUTDOOR/MIXED` |
+| `initial_budget` | `NUMERIC(12,2)` | No | Trip budget snapshot |
+| `total_estimated_cost` | `NUMERIC(12,2)` | No | Sum item cost |
+| `remaining_budget` | `NUMERIC(12,2)` | No | Initial − total |
+| `total_distance_km` | `NUMERIC(10,3)` | No | Sum Haversine legs |
+| `total_travel_minutes` | `INTEGER` | No | Sum travel |
+| `total_visit_minutes` | `INTEGER` | No | Sum adjusted visit |
+| `total_waiting_minutes` | `INTEGER` | No | Sum waiting |
+| `remaining_minutes` | `INTEGER` | No | End − last visit end |
+| `candidate_count` | `INTEGER` | No | Candidate pool size |
+| `scheduled_count` | `INTEGER` | No | `> 0` |
+| `algorithm_version` | `VARCHAR(40)` | No | `GREEDY_V1` |
+| `average_speed_kmh` | `NUMERIC(6,2)` | No | `> 0` |
+| `fixed_transfer_minutes` | `INTEGER` | No | `>= 0` |
+| `generated_at` | `TIMESTAMPTZ` | No | Injected Clock |
+
+Named constraints tối thiểu:
+
+- public UUID unique;
+- FK `user_id → users(id)` với `ON DELETE RESTRICT`;
+- index `(user_id, public_id)` hoặc lookup tương đương cho ownership;
+- `window_start < window_end`;
+- coordinate ranges;
+- approved pace/environment/algorithm values;
+- money/totals/counts/minutes/distance không âm;
+- `total_estimated_cost <= initial_budget`;
+- `remaining_budget = initial_budget - total_estimated_cost`;
+- `scheduled_count > 0`.
+
+Aggregate/service và integration tests xác minh stored summary bằng child rows;
+PostgreSQL không thể dùng check constraint để đếm child rows.
+
+### 12.3. Bảng `itinerary_preferred_categories`
+
+| Cột | Kiểu | Null | Ràng buộc/Ghi chú |
+| --- | --- | --- | --- |
+| `itinerary_id` | `BIGINT` | No | FK → itineraries, `ON DELETE CASCADE` |
+| `category_id` | `BIGINT` | No | FK → categories, `ON DELETE RESTRICT` |
+
+- Primary key `(itinerary_id, category_id)`.
+- Lưu exact category set dùng khi generation.
+- JPA có thể map bằng `@ElementCollection<Set<Long>>`; không import Category
+  Entity vào Scheduling Module.
+
+### 12.4. Bảng `itinerary_items`
+
+| Cột | Kiểu | Null | Ràng buộc/Ghi chú |
+| --- | --- | --- | --- |
+| `id` | `BIGINT GENERATED BY DEFAULT AS IDENTITY` | No | Primary key |
+| `itinerary_id` | `BIGINT` | No | FK → itineraries, `ON DELETE CASCADE` |
+| `sequence_no` | `INTEGER` | No | `> 0`, unique per itinerary |
+| `place_id` | `BIGINT` | No | FK → places, `ON DELETE RESTRICT` |
+| `place_name` | `VARCHAR(150)` | No | Snapshot |
+| `place_slug` | `VARCHAR(180)` | No | Snapshot |
+| `place_address` | `VARCHAR(255)` | No | Snapshot |
+| `place_administrative_unit_name` | `VARCHAR(150)` | No | Snapshot |
+| `place_administrative_unit_type` | `VARCHAR(30)` | No | `WARD/COMMUNE/SPECIAL_ZONE` snapshot |
+| `latitude` | `NUMERIC(10,7)` | No | Snapshot |
+| `longitude` | `NUMERIC(10,7)` | No | Snapshot |
+| `indoor` | `BOOLEAN` | No | Snapshot cho context/replan |
+| `base_visit_minutes` | `INTEGER` | No | Place value trước pace |
+| `travel_minutes_from_previous` | `INTEGER` | No | `>= 0` |
+| `distance_km_from_previous` | `NUMERIC(10,3)` | No | `>= 0` |
+| `arrival_time` | `TIME` | No | Timeline |
+| `waiting_minutes` | `INTEGER` | No | `>= 0` |
+| `visit_start` | `TIME` | No | Timeline |
+| `visit_end` | `TIME` | No | Timeline |
+| `visit_minutes` | `INTEGER` | No | Adjusted duration |
+| `estimated_cost` | `NUMERIC(12,2)` | No | `minCost` snapshot |
+| `selection_score` | `NUMERIC(10,4)` | No | GREEDY_V1 score |
+| `opening_hours_status` | `VARCHAR(20)` | No | `KNOWN_OPEN/UNKNOWN` |
+| `opening_time` | `TIME` | Yes | Required với known open |
+| `closing_time` | `TIME` | Yes | Required với known open |
+
+Constraints tối thiểu:
+
+- unique `(itinerary_id, sequence_no)`;
+- unique `(itinerary_id, place_id)`;
+- coordinate ranges;
+- numeric/minute fields không âm và visit duration `> 0`;
+- `arrival_time <= visit_start < visit_end`;
+- known-open phải có `opening_time < closing_time`;
+- unknown phải có opening/closing time null;
+- stored known-open visit nằm trong interval.
+
+### 12.5. Bảng `itinerary_warnings`
+
+| Cột | Kiểu | Null | Ràng buộc/Ghi chú |
+| --- | --- | --- | --- |
+| `id` | `BIGINT GENERATED BY DEFAULT AS IDENTITY` | No | Primary key |
+| `itinerary_id` | `BIGINT` | No | FK → itineraries, `ON DELETE CASCADE` |
+| `item_sequence` | `INTEGER` | Yes | Null = itinerary-level |
+| `code` | `VARCHAR(60)` | No | Approved warning code |
+| `message` | `VARCHAR(500)` | No | Deterministic snapshot |
+| `sort_order` | `INTEGER` | No | Stable response order |
+
+- `item_sequence` nếu có phải `> 0`.
+- `sort_order >= 0` và unique trong một itinerary.
+- Application/aggregate xác minh item sequence thật sự tồn tại.
+- Không cần FK trực tiếp tới `itinerary_items` chỉ để render item sequence.
+
+### 12.6. JPA aggregate rules
+
+- `Itinerary` là aggregate root.
+- Items, category IDs và warnings không có repository công khai riêng.
+- Child collections được thay bằng immutable/copy-on-create semantics.
+- GET fetch aggregate bằng entity graph/query phù hợp; repository lookup dùng `publicId + userId`; không dựa vào Open
+  Session in View.
+- Không dùng Lombok `@Data`, public all-fields setter hoặc Entity serialization.
+- Aggregate factory xác minh timeline, sequence, totals và warning invariants
+  trước persist.
+
+## 13. Kiến trúc và module boundary
+
+### 13.1. Package đề xuất
+
+Ownership contract bắt buộc:
+
+```java
+public interface TripSchedulingQuery {
+    TripSchedulingSnapshot getByPublicId(UUID publicId, Long userId);
+}
+```
+
+`userId` lấy từ `UserPrincipal`; Scheduling Module không nhận owner từ request body.
+
+```text
+com.saigonplantravel.backend
+├── place
+│   └── service
+│       ├── PlaceSchedulingQuery.java
+│       ├── PlaceSchedulingCandidate.java
+│       └── OpeningHoursSnapshot.java
+├── trip
+│   └── service
+│       ├── TripSchedulingQuery.java
+│       └── TripSchedulingSnapshot.java
+└── scheduling
+    ├── controller
+    │   └── ItineraryController.java
+    ├── domain
+    │   ├── GreedyItineraryScheduler.java
+    │   ├── HaversineTravelEstimator.java
+    │   ├── PaceDurationPolicy.java
+    │   ├── CandidateFeasibilityPolicy.java
+    │   ├── CandidateScorer.java
+    │   ├── SchedulingInput.java
+    │   └── SchedulingResult.java
+    ├── config
+    │   └── SchedulingProperties.java
+    ├── dto
+    │   └── itinerary response records
+    ├── entity
+    │   ├── Itinerary.java
+    │   ├── ItineraryItem.java
+    │   └── ItineraryWarning.java
+    ├── exception
+    │   ├── ItineraryNotFoundException.java
+    │   ├── NoFeasibleItineraryException.java
+    │   └── SchedulingDataConflictException.java
+    ├── mapper
+    │   └── ItineraryMapper.java
+    ├── repository
+    │   └── ItineraryRepository.java
+    └── service
+        └── SchedulingService.java
+```
+
+Tên package/file có thể điều chỉnh theo repository thật, nhưng dependency
+direction không đổi.
+
+### 13.2. Dependency rules
+
+- Scheduling → Trip contract, không → Trip Entity/Repository.
+- Scheduling → Place contract, không → Place/Category/OpeningHour
+  Entity/Repository.
+- Place Module implement candidate query vì nó sở hữu Place schema.
+- Trip Module implement trip snapshot vì nó sở hữu Trip schema.
+- Scheduling sở hữu itinerary tables, algorithm, API và mapper.
+- Database FK giữa modules được chấp nhận trong modular monolith.
+
+### 13.3. Candidate loading
+
+Không đặt yêu cầu “đúng một SQL query”. Yêu cầu đúng là:
+
+- số query bị chặn trên, không tăng theo từng candidate;
+- không gọi place detail trong loop;
+- category intersection và active filter thực hiện ở Place Module;
+- category IDs/opening row cho đúng weekday được batch load;
+- output canonical sort;
+- query-count integration test dùng dataset nhiều categories/hours.
+
+### 13.4. Transaction boundaries
+
+- `generate`: một local database write transaction cho read snapshots, pure
+  compute và persist aggregate; không external I/O.
+- `get`: read-only transaction, load aggregate và current Trip snapshot.
+- Zero-feasible exception xảy ra trước persist.
+- Persistence failure rollback itinerary và toàn bộ children.
+- Không dùng lock/optimistic version cho Trip ở V1; concurrent Trip update có
+  thể làm itinerary mới lập tức `stale`, nhưng không làm snapshot bị mutate.
 
 ## 14. Yêu cầu phi chức năng
 
 | ID | Yêu cầu |
 | --- | --- |
-| NFR-001 | Với tối đa 100 candidates, generate local không external I/O có mục tiêu dưới 1 giây sau warm-up; ghi môi trường/dataset. |
-| NFR-002 | Candidate/trip data phải được batch-load; không N+1 theo số place/hour/category. |
-| NFR-003 | Algorithm time complexity mục tiêu O(n²) tối đa cho greedy V1 với n ≤ 100. |
-| NFR-004 | Cùng snapshots/config tạo output deterministic ngoài UUID/generatedAt. |
-| NFR-005 | Generate persistence atomic; lỗi không để itinerary/items/warnings một phần. |
-| NFR-006 | Không network/AI call trong generate transaction. |
-| NFR-007 | Dùng BigDecimal cho cost/score policy cần chính xác; không cộng tiền bằng double. |
-| NFR-008 | JSON không lộ internal itinerary/trip IDs, Entity, Hibernate proxy hoặc SQL. |
-| NFR-009 | Logs ghi algorithm version, counts, duration và outcome; không log full origin/personal payload. |
-| NFR-010 | PostgreSQL integration tests bao phủ constraints, ordering và aggregate persistence. |
-| NFR-011 | `./mvnw test`, Flyway, Hibernate validate và smoke tests phải pass. |
-| NFR-012 | Algorithm/config constants tập trung, có validation và được ghi vào algorithm note/report. |
+| NFR-001 | Với tối đa 100 candidates, local generate mục tiêu dưới 1 giây sau warm-up; phải ghi môi trường đo. |
+| NFR-002 | Pure algorithm complexity tối đa O(n²). |
+| NFR-003 | Candidate loading không N+1. |
+| NFR-004 | Output deterministic ngoài UUID/generatedAt. |
+| NFR-005 | Money dùng BigDecimal; không cộng/so sánh tiền bằng double. |
+| NFR-006 | Generate aggregate persistence atomic. |
+| NFR-007 | Không network/AI call trong generate/get. |
+| NFR-008 | API không lộ Entity, proxy, internal Trip/Itinerary/User IDs, SQL hoặc stack trace. |
+| NFR-009 | Không log origin coordinates, full Trip snapshot hoặc location payload. |
+| NFR-010 | Log chỉ chứa algorithm version, trip/itinerary public ID phù hợp, counts, duration và outcome. |
+| NFR-011 | Clock/timezone injected; tests không phụ thuộc system time. |
+| NFR-012 | PostgreSQL/Testcontainers bao phủ migrations, constraints và aggregate persistence. |
+| NFR-013 | Configuration fail-fast; không dùng hidden default khi config invalid. |
+| NFR-014 | `./mvnw clean test` và `./mvnw clean verify` phải pass từ repository đầy đủ. |
+| NFR-015 | Không thêm dependency mới nếu JDK/Spring hiện tại đủ đáp ứng. |
 
 ## 15. Tiêu chí chấp nhận
 
-### AC-001 — Migrations và startup
+### AC-001 — Migration nối tiếp
 
-**Given** database đã có Place/Trip schema  
-**When** backend khởi động với migrations mới  
-**Then** ba scheduling tables được tạo đúng một lần và Hibernate validate thành công.
+**Given** database đã có V1–V12
+**When** backend khởi động
+**Then** V13–V14 chạy đúng một lần, Hibernate validate pass và migration cũ
+không bị sửa.
 
 ### AC-002 — Generate happy path
 
-**Given** Trip hợp lệ và có nhiều candidates khả thi  
-**When** gọi generate API  
-**Then** API trả 201, Location và itinerary có ít nhất một item đúng contract.
+**Given** Trip hợp lệ và có nhiều candidates khả thi
+**When** gọi POST generate
+**Then** trả 201, Location và ít nhất một ordered item đúng contract.
 
-### AC-003 — Active/category/environment eligibility
+### AC-003 — GET immutable snapshot
 
-**Given** candidates gồm inactive, category mismatch, environment mismatch và matching places  
-**When** generate  
-**Then** chỉ matching active/environment-eligible places được xem xét/xếp.
+**Given** itinerary đã sinh
+**When** gọi GET bằng public UUID
+**Then** trả snapshot đã lưu, không gọi scheduler và không phụ thuộc dữ liệu
+Place hiện tại để tái tạo item.
 
-### AC-004 — Budget constraint
+### AC-004 — Public identity
 
-**Given** candidates có minCost khác nhau và trip budget giới hạn  
-**When** generate  
-**Then** mỗi selection không vượt remaining budget và totalEstimatedCost không vượt initial budget.
+**Given** POST/GET response
+**When** kiểm tra JSON
+**Then** có Trip/Itinerary public UUID và public Place ID nhưng không có internal
+Trip/Itinerary IDs.
 
-### AC-005 — Zero budget
+### AC-005 — Candidate eligibility
 
-**Given** trip budget bằng 0 và có free/paid places  
-**When** generate  
-**Then** chỉ places có minCost bằng 0 được xếp.
+**Given** inactive, category mismatch, environment mismatch và matching places
+**When** generate
+**Then** chỉ active, category-matching và environment-eligible places được xếp.
 
-### AC-006 — Known closed/open/unknown hours
+### AC-006 — Budget
 
-**Given** ba places lần lượt closed, known open và unknown vào trip day  
-**When** generate  
-**Then** closed bị loại, known open phải fit interval, unknown có thể được xếp kèm warning.
+**Given** budget giới hạn và candidates có minCost khác nhau
+**When** generate
+**Then** từng selection không vượt remaining budget và total không vượt initial
+budget.
 
-### AC-007 — Waiting before opening
+### AC-007 — Zero budget
 
-**Given** arrival trước open time và còn đủ thời gian visit  
-**When** candidate được chọn  
-**Then** visitStart bằng openTime, waitingMinutes đúng và timeline vẫn không overlap.
+**Given** budget bằng 0 và có free/paid places
+**When** generate
+**Then** chỉ free place được xếp.
 
-### AC-008 — Opening close/time-window feasibility
+### AC-008 — Opening semantics
 
-**Given** visit sẽ kết thúc sau closeTime hoặc trip endTime  
-**When** evaluate candidate  
-**Then** candidate bị loại tại iteration đó.
+**Given** known-open, closed và unknown candidates
+**When** generate
+**Then** closed bị loại; known-open phải fit interval; unknown có thể được xếp
+với warning.
 
-### AC-009 — Travel estimate
+### AC-009 — Waiting
 
-**Given** fixed origin/place coordinates và config 18 km/h + 5 phút  
-**When** estimate travel  
-**Then** distance/travel minutes khớp Haversine/formula/rounding đã định nghĩa.
+**Given** arrival trước open time và còn đủ trip/closing time
+**When** candidate được chọn
+**Then** visitStart bằng openTime, waiting đúng và timeline không overlap.
 
-### AC-010 — Pace adjustment
+### AC-010 — Time boundary
 
-**Given** place có base duration cố định  
-**When** schedule với RELAXED/BALANCED/FAST  
-**Then** duration lần lượt áp dụng 1.25/1.00/0.80 và round-up 5 phút.
+**Given** visit kết thúc đúng/vượt trip end hoặc closing time
+**When** evaluate
+**Then** exact boundary hợp lệ; vượt một phút bị loại.
 
-### AC-011 — Score và tie-breakers
+### AC-011 — Pace duration
 
-**Given** candidate fixtures có score bằng/khác nhau  
-**When** scheduler chọn item  
-**Then** score formula và tie-breaker order cho kết quả đúng, không phụ thuộc insertion order.
+**Given** fixed base duration
+**When** dùng RELAXED/BALANCED/FAST
+**Then** áp dụng 1.25/1.00/0.80 và round-up bội số 5 đúng policy.
 
-### AC-012 — Recompute mỗi iteration
+### AC-012 — Haversine estimate
 
-**Given** candidate gần origin nhưng xa place vừa chọn và candidate khác trở nên gần hơn  
-**When** qua iteration tiếp theo  
-**Then** distance/score/feasibility được tính lại từ current state trước khi chọn.
+**Given** fixed coordinates/config
+**When** estimate
+**Then** distance/travel minutes đúng formula và rounding đã duyệt.
 
-### AC-013 — Timeline invariants
+### AC-013 — Score và tie-breakers
 
-**Given** itinerary sinh thành công  
-**When** kiểm tra items  
-**Then** sequence liên tục, không place lặp, không overlap và item cuối không vượt trip end.
+**Given** fixtures có score bằng/khác nhau
+**When** rank
+**Then** components, precision và tie-breaker order cho kết quả đúng, không phụ
+thuộc input order.
 
-### AC-014 — Zero feasible item
+### AC-014 — Recompute mỗi iteration
 
-**Given** không candidate nào khả thi  
-**When** generate  
-**Then** API trả `422 NO_FEASIBLE_ITINERARY`, có rejection summary và không lưu aggregate.
+**Given** relative distance thay đổi sau item đầu
+**When** iteration tiếp theo chạy
+**Then** travel, time, feasibility và score được tính lại từ current state.
 
-### AC-015 — Partial itinerary warnings
+### AC-015 — Timeline invariants
 
-**Given** ít nhất một item khả thi nhưng còn ≥60 phút và không candidate nào tiếp theo fit  
-**When** generate  
-**Then** API trả 201 với `UNUSED_TIME_REMAINS` cùng các warning bắt buộc khác.
+**Given** generate thành công
+**When** kiểm tra aggregate
+**Then** sequence bắt đầu 1/liên tục, không duplicate place, không overlap và
+item cuối không vượt trip end.
 
-### AC-016 — Immutable generation versions
+### AC-016 — Zero feasible
 
-**Given** cùng trip gọi generate hai lần  
-**When** cả hai thành công  
-**Then** tạo hai itinerary publicIds khác nhau; GET từng ID trả snapshot riêng.
+**Given** không place nào khả thi
+**When** POST generate
+**Then** trả 422 ProblemDetail với rejection summary và không có row itinerary.
 
-### AC-017 — Determinism
+### AC-017 — Partial và warnings
 
-**Given** cùng Trip/Place snapshots, config và Clock-equivalent generated context  
-**When** chạy algorithm nhiều lần  
-**Then** sequence, timeline, costs, scores và warnings giống nhau ngoài identity/timestamp.
+**Given** ít nhất một place khả thi nhưng loop dừng sớm
+**When** generate
+**Then** trả 201 và warning codes/order đúng mục 10.11.
 
-### AC-018 — Stale detection
+### AC-018 — Prototype summary
 
-**Given** itinerary được sinh rồi Trip draft được PUT cập nhật  
-**When** GET itinerary cũ  
-**Then** output snapshot không đổi và `stale=true`.
+**Given** itinerary ba items
+**When** đọc response
+**Then** `scheduledCount=3`, total straight-line distance bằng tổng item legs và
+timeline đủ để render danh sách như prototype.
 
-### AC-019 — Module boundaries và batch loading
+### AC-019 — Snapshot đầy đủ
 
-**Given** generate với tối đa 100 places  
-**When** review imports/query logs  
-**Then** Scheduling không dùng Trip/Place repositories/entities, candidate data được batch-load và không N+1.
+**Given** itinerary đã lưu
+**When** đọc database/response
+**Then** pace, environment, preferred categories, origin, config, item indoor,
+opening facts, duration, cost và timeline đều là generation snapshots.
 
-### AC-020 — No AI/external side effects
+### AC-020 — Immutable versions
 
-**Given** generate thành công/thất bại  
-**When** kiểm tra dependency calls  
-**Then** không gọi LLM, RAG, context, weather, routing hoặc map services.
+**Given** cùng Trip gọi POST hai lần
+**When** cả hai thành công
+**Then** có hai UUID khác nhau và GET từng UUID trả snapshot riêng.
 
-### AC-021 — Persistence constraints/atomicity
+### AC-021 — Stale
 
-**Given** insert vi phạm UUID/sequence/place duplicate/time/cost hoặc transaction fail giữa aggregate  
-**When** PostgreSQL/transaction xử lý  
-**Then** constraint từ chối và không để partial records.
+**Given** itinerary đã sinh rồi Trip được PUT
+**When** GET itinerary cũ
+**Then** snapshot không đổi và `stale=true`.
 
-### AC-022 — Regression và full verification
+### AC-022 — Module boundary và batching
 
-**Given** FEAT-005 hoàn tất  
-**When** chạy full suite, startup, generate/get smoke tests và regression FEAT-001–004  
-**Then** mọi test pass và development log có bằng chứng.
+**Given** tối đa 100 candidates
+**When** review imports/query count
+**Then** Scheduling không import cross-module Entity/Repository và query count
+không tăng theo từng place.
 
-### AC-023 — Algorithm config snapshot
+### AC-023 — Atomicity
 
-**Given** itinerary đã được sinh với speed/overhead config xác định rồi application config thay đổi  
-**When** GET itinerary cũ  
-**Then** response vẫn trả assumptions snapshot ban đầu và output items không thay đổi.
+**Given** lỗi persistence giữa parent/child writes
+**When** transaction rollback
+**Then** không còn partial itinerary/category/item/warning rows.
+
+### AC-024 — Determinism
+
+**Given** cùng immutable snapshots/config
+**When** chạy algorithm nhiều lần và hoán vị input order
+**Then** sequence/times/costs/scores/totals/warnings giống nhau.
+
+### AC-025 — Error contract
+
+**Given** malformed/missing UUID, data conflict và no-feasible
+**When** gọi API
+**Then** status/code/ProblemDetail đúng mục 11.5, không có 500 ngoài dự kiến.
+
+### AC-026 — Không side effect ngoài phạm vi
+
+**Given** POST/GET thành công hoặc thất bại
+**When** kiểm tra dependencies
+**Then** không gọi route, weather, context, RAG, LLM hoặc AI service.
+
+### AC-027 — Authentication và ownership
+
+**Given** Trip và Itinerary thuộc người dùng A
+**When** A generate/GET và người dùng B gọi cùng public UUID
+**Then** A thao tác thành công; B nhận `404 TRIP_NOT_FOUND` hoặc `404 ITINERARY_NOT_FOUND`; không có `userId` trong request/response.
+
+### AC-028 — Regression và full verification
+
+**Given** FEAT-005 hoàn tất
+**When** chạy clean test, clean verify, migration/startup và smoke tests
+**Then** FEAT-001–004 cùng tests mới pass và evidence được ghi.
 
 ## 16. Ma trận truy vết
 
-| Nhóm yêu cầu | Acceptance criteria | Bằng chứng dự kiến |
+| Nhóm | Acceptance criteria | Bằng chứng |
 | --- | --- | --- |
-| FR-001–FR-007 | AC-001–AC-002, AC-016, AC-018 | Migration/API/persistence tests |
-| FR-008–FR-017 | AC-003–AC-008, AC-010 | Eligibility/feasibility unit tests |
-| FR-018–FR-020 | AC-009, AC-011–AC-012 | Estimator/scorer/determinism tests |
-| FR-021–FR-027 | AC-013–AC-018 | Timeline/response/stale tests |
-| FR-028–FR-033 | AC-019–AC-023 | Architecture, config snapshot, regression/full suite |
+| Schema/persistence | AC-001, AC-019, AC-023 | Flyway/Hibernate/PostgreSQL tests |
+| API/identity | AC-002–AC-004, AC-016, AC-020–AC-021, AC-025, AC-027 | Web/service tests, curl |
+| Eligibility/constraints | AC-005–AC-010, AC-015 | Pure/service tests |
+| Algorithm | AC-011–AC-014, AC-017–AC-018, AC-024 | Unit/golden tests |
+| Architecture/scope | AC-022, AC-026 | Import/query/dependency verification |
+| Regression | AC-028 | Full suite/startup/smoke log |
 
-## 17. Kế hoạch triển khai file-by-file
+## 17. Kế hoạch triển khai theo micro-step
 
-> [!warning]
-> Chỉ triển khai sau approval. Tên/version migration và file là dự kiến; phải inspect repository thật và không tạo abstraction trùng.
+> [!important]
+> Mỗi lượt Codex chỉ triển khai **một micro-step đã được owner duyệt**, giải
+> thích source và dừng. Không coi toàn bộ migration/domain/service/controller
+> là một lượt code.
 
-### Phase A — Preflight và contract approval
+### A — Preflight và phê duyệt
 
-- [ ] Xác nhận FEAT-001/002/004 implementation và contracts thực tế đã ổn định.
-- [ ] Đọc root `AGENTS.md`, `PROJECT_CONTEXT.md`, nearest `AGENTS.md`, specs, ERDs, API notes.
-- [ ] Inspect migration versions, entities, Clock/config/error patterns và test infrastructure.
-- [ ] Duyệt unknown-hours policy, Haversine config, score/tie-breakers, immutable versions và 422 behavior.
-- [ ] Ghi/duyệt algorithm note trước code.
-- [ ] Chuyển frontmatter `status` thành `approved`.
+| Mã | Phạm vi | Kết quả |
+| --- | --- | --- |
+| A0 | Read-only: AGENTS, PROJECT_CONTEXT, FEAT-001–005, source, migrations, tests, git status | Baseline và conflict report; không sửa file |
+| A1 | Chạy `$grill-with-docs` và owner trả lời BLOCKER | Decision log |
+| A2 | Chỉ cập nhật spec/algorithm note theo quyết định đã duyệt | FEAT-005 `approved` |
 
-### Phase B — Flyway migrations
+### B — Flyway
 
-- [ ] Tạo `V11__create_itineraries_table.sql` hoặc next valid version.
-- [ ] Tạo `V12__create_itinerary_items_table.sql` hoặc next valid version.
-- [ ] Tạo `V13__create_itinerary_warnings_table.sql` hoặc next valid version.
-- [ ] Thêm named constraints, FKs, unique indexes và delete actions.
-- [ ] Chạy migrations trên database sạch và database có FEAT-001–004.
-- [ ] Xác minh restart, checksums và Hibernate baseline.
+| Mã | Phạm vi nhỏ | Files dự kiến | Test trực tiếp |
+| --- | --- | --- | --- |
+| B1 | Parent itinerary + category snapshot | `V13__...sql` | Clean/upgrade migration + constraints |
+| B2 | Items + warnings | `V14__...sql` | Child FK/unique/check constraints |
+| B3 | Migration restart/checksum checkpoint | Không thêm production code | Clean/upgrade/restart Flyway |
 
-### Phase C — Cross-module read contracts
+### C — Place read contract
 
-- [ ] Tạo/tái sử dụng `trip/service/TripSchedulingQuery.java` và immutable snapshot DTO.
-- [ ] Implement batch preferred-category snapshot without exposing Trip Entity.
-- [ ] Tạo/tái sử dụng `place/service/PlaceSchedulingQuery.java` và candidate DTO.
-- [ ] Implement one batch candidate query/load cho active places, categories và trip-day hours.
-- [ ] Canonical-sort output; giữ `UNKNOWN` semantics.
-- [ ] Test no Entity/repository leakage và query count.
+| Mã | Phạm vi nhỏ | Files dự kiến | Test trực tiếp |
+| --- | --- | --- | --- |
+| C1 | Immutable candidate/opening records + interface | 2–3 Place service/contract files | Contract/unit validation |
+| C2 | Active/category candidate batch query | Repository/query projection files | PostgreSQL query tests |
+| C3 | Opening-hour batch mapping/canonical order | Place scheduling query implementation | Open/closed/unknown + query-count tests |
 
-### Phase D — Pure scheduling algorithm
+### D — Pure scheduling domain
 
-- [ ] Tạo `scheduling/domain/GreedyItineraryScheduler.java`.
-- [ ] Tạo `scheduling/domain/HaversineTravelEstimator.java`.
-- [ ] Tạo `scheduling/domain/PlaceCandidateScorer.java`.
-- [ ] Tạo `scheduling/domain/SchedulingPolicy.java`/config properties.
-- [ ] Tạo input/output value records cho pure algorithm.
-- [ ] Implement eligibility, time feasibility, pace, score, tie-breakers, warnings và rejection counts.
-- [ ] Không dùng Spring/repository/clock/network trong algorithm core.
+| Mã | Phạm vi nhỏ | Files dự kiến | Test trực tiếp |
+| --- | --- | --- | --- |
+| D1 | `SchedulingProperties` validation | Config + properties | Boundary/startup tests |
+| D2 | Pure input/output records/enums | Domain records | Construction/invariant tests |
+| D3 | Haversine estimator | Estimator | Fixed coordinate/rounding tests |
+| D4 | Pace duration policy | Pace policy | Multiplier/round-up tests |
+| D5 | Time/opening feasibility | Feasibility policy | Open/closed/unknown/wait boundaries |
+| D6 | Score và tie-breakers | Scorer/ranker | Precision/order permutation tests |
+| D7 | Greedy iteration/state update | Scheduler | Multi-iteration/recompute tests |
+| D8 | Warning/rejection aggregation | Domain result/warning code | Zero/partial/warning order tests |
 
-### Phase E — Itinerary aggregate và persistence
+### E — Itinerary persistence
 
-- [ ] Tạo `scheduling/entity/Itinerary.java`.
-- [ ] Tạo `scheduling/entity/ItineraryItem.java`.
-- [ ] Tạo `scheduling/entity/ItineraryWarning.java`.
-- [ ] Tạo enums `OpeningHoursStatus`, `ItineraryWarningCode`, algorithm version constant.
-- [ ] Aggregate factory bảo đảm item sequence/summary/warning invariants.
-- [ ] Tạo `scheduling/repository/ItineraryRepository.java` lookup by publicId.
-- [ ] Không dùng Lombok `@Data`, Entity serialization hoặc public setters toàn class.
+| Mã | Phạm vi nhỏ | Files dự kiến | Test trực tiếp |
+| --- | --- | --- | --- |
+| E1 | Itinerary parent + preferred category mapping | Parent Entity | Persistence/constraint test |
+| E2 | Ordered item mapping | Item Entity + parent relation | Insert/load/order/duplicate test |
+| E3 | Warning mapping | Warning Entity + parent relation | Stable order/scope test |
+| E4 | Aggregate factory invariants | Aggregate methods/factory | Timeline/totals/warnings unit tests |
+| E5 | Repository lookup/fetch | `ItineraryRepository` | Public UUID + no lazy failure test |
 
-### Phase F — DTO, mapper, service và controller
+### F — Application/API
 
-- [ ] Tạo response records cho itinerary header/window/item/place/travel/summary/warning.
-- [ ] Tạo `scheduling/mapper/ItineraryMapper.java`.
-- [ ] Tạo `scheduling/service/SchedulingService.java` cho orchestration/transaction.
-- [ ] Generate load snapshots → run pure algorithm → persist atomically → map response.
-- [ ] GET load aggregate + current trip updatedAt → compute stale → map snapshot.
-- [ ] Tạo exceptions `ItineraryNotFoundException`, `NoFeasibleItineraryException`, data conflict nếu cần.
-- [ ] Tạo `scheduling/controller/ItineraryController.java` với POST/GET routes.
-- [ ] Tái sử dụng common error handler và constructor injection.
+| Mã | Phạm vi nhỏ | Files dự kiến | Test trực tiếp |
+| --- | --- | --- | --- |
+| F1 | Assumption/window/preference/origin DTOs | 1–3 DTO files | Serialization contract test |
+| F2 | Item/travel/opening DTOs | 1–3 DTO files | Item JSON contract test |
+| F3 | Root/summary/warning DTOs | 1–3 DTO files | Full response shape test |
+| F4 | Mapper | `ItineraryMapper` | Exact model/no internal IDs |
+| F5 | Generate orchestration | `SchedulingService#generate` | Calls, zero-feasible, atomicity |
+| F6 | GET và stale | `SchedulingService#get` | Immutable/stale tests |
+| F7 | POST endpoint | Controller method | 201/Location/400/404/409/422 |
+| F8 | GET endpoint | Controller method | 200/400/404 |
+| F9 | Scheduling ProblemDetail mappings | Exceptions + common handler | Exact code/envelope regression |
 
-### Phase G — Automated tests
+### G — Checkpoints
 
-- [ ] Haversine estimator fixtures/rounding/config validation.
-- [ ] Pace multiplier/round-up tests.
-- [ ] Eligibility tests cho active/category/environment/budget.
-- [ ] Opening known/closed/unknown/wait/close boundary tests.
-- [ ] Score/tie-breaker/canonical order/determinism tests.
-- [ ] Multi-iteration recompute và timeline invariant tests.
-- [ ] Zero-feasible/partial warnings/rejection counts tests.
-- [ ] Aggregate/mapper/service/transaction/stale tests.
-- [ ] Controller tests cho 201/400/404/409/422 và JSON/Location.
-- [ ] PostgreSQL migration/constraint/batch query integration tests.
-- [ ] Regression tests FEAT-001–004.
-- [ ] Chạy toàn bộ `./mvnw test` từ `backend/`.
+| Mã | Phạm vi | Xác minh |
+| --- | --- | --- |
+| G1 | PostgreSQL aggregate checkpoint | V1–V14, Hibernate, constraints, query count, rollback |
+| G2 | FEAT-001–004 regression | Full existing tests và API contracts |
+| G3 | Determinism/evaluation | Golden scenarios, permutation, repeated runs, runtime |
+| G4 | Runtime smoke | POST/GET/422/stale bằng ứng dụng chạy thật |
 
-### Phase H — Smoke test và evaluation evidence
+### H — Tài liệu và đóng feature
 
-- [ ] Chạy PostgreSQL theo `infra/compose.yaml` và start backend.
-- [ ] Kiểm tra Flyway/Hibernate logs.
-- [ ] Tạo Trip fixtures cho happy, zero-budget, closed, unknown-hours và no-feasible cases.
-- [ ] POST generate, lưu Location, GET itinerary.
-- [ ] PUT Trip rồi GET itinerary cũ để kiểm tra stale.
-- [ ] Chạy cùng snapshot nhiều lần và diff normalized outputs.
-- [ ] Ghi response time, candidate count, query count và algorithm config.
-- [ ] Review `git diff`; không secret, migration cũ, network/AI dependency hoặc file ngoài scope.
+| Mã | Phạm vi | Kết quả |
+| --- | --- | --- |
+| H1 | ERD + Itinerary API note | Tài liệu schema/API |
+| H2 | Greedy algorithm note | Formula, pseudocode, complexity, limitations |
+| H3 | Development log + PROJECT_CONTEXT | Bằng chứng tests/performance/decisions |
+| H4 | Final diff audit và DoD | Chuyển `done` khi mọi điều kiện đạt |
 
-### Phase I — Cập nhật tài liệu
+### 17.1. Approval phrase
 
-- [ ] Tạo/cập nhật `docs/03-Database/Scheduling-Module-ERD.md`.
-- [ ] Tạo/cập nhật `docs/04-API/Itinerary-API.md`.
-- [ ] Tạo `docs/05-Algorithms/Greedy-Scheduling-V1.md` với formulas, pseudocode, complexity và assumptions.
-- [ ] Cập nhật module-boundary/architecture note với Trip/Place read contracts.
-- [ ] Thêm development log gồm decisions, failures, test/query/performance evidence.
-- [ ] Cập nhật `PROJECT_CONTEXT.md`: FEAT-005 hoàn tất và feature kế tiếp.
-- [ ] Liên kết spec ↔ ERD ↔ API ↔ algorithm note ↔ log.
-- [ ] Đổi spec thành `status: done` khi DoD đạt.
+Owner duyệt mỗi lượt bằng câu rõ ràng:
+
+```text
+TÔI DUYỆT MICRO-STEP D3.
+Hãy chỉ triển khai đúng D3 theo phạm vi đã đề xuất.
+Sau khi hoàn thành, giải thích source và dừng chờ tôi review.
+```
+
+“Tiếp tục”, “ổn” hoặc một câu hỏi kỹ thuật không tự động là phê duyệt bước kế
+tiếp.
+
+### 17.2. Báo cáo bắt buộc sau mỗi micro-step
+
+Codex phải trả:
+
+1. Kết quả và acceptance criteria liên quan.
+2. Files đã thay đổi và vai trò từng file.
+3. Luồng code thật sau bước đó.
+4. Kiến thức Java/Spring/JPA/Flyway cần nắm.
+5. Lệnh test đã chạy và kết quả thật.
+6. Diff audit/file ngoài phạm vi.
+7. Cách owner tự đọc/chạy/kiểm tra.
+8. Đề xuất đúng một micro-step tiếp theo.
+9. Dừng ở trạng thái chờ duyệt.
 
 ## 18. Chiến lược kiểm thử và đánh giá
 
 ### 18.1. Pure unit tests
 
-- Mỗi formula/rule với fixed fixtures.
-- Boundary exact open/close/trip end.
-- Decimal/rounding/tie behavior.
-- Candidate insertion order permutations cho determinism.
+- Haversine fixed fixtures và coordinate edge cases.
+- Pace multiplier/5-minute rounding.
+- Environment/budget/opening/time feasibility.
+- Waiting và exact close/trip-end boundaries.
+- Score components, scale/rounding và ties.
+- Candidate input permutations.
+- Multi-iteration state recompute.
+- Warnings và rejection counts.
+- Aggregate sequence/timeline/totals invariants.
 
-### 18.2. Service/transaction tests
+### 18.2. Service tests
 
-- Snapshot orchestration và module calls.
-- Zero-feasible không persist.
-- Failure giữa item/warning persistence rollback toàn bộ.
-- New version per POST và stale detection.
+- Trip/Place contracts được gọi đúng một lần mỗi hướng orchestration.
+- Không truy cập cross-module repositories.
+- Zero feasible không gọi save.
+- Generate success persist đúng snapshot.
+- Persistence failure rollback.
+- GET không gọi scheduler.
+- Stale false/true.
+- Không gọi downstream feature dependencies.
 
-### 18.3. Web slice tests
+### 18.3. Web tests
 
-- Route, UUID parsing, status, Location và error envelope.
-- JSON LocalTime/Instant/BigDecimal shapes.
-- Snapshot response không lộ internal IDs.
+- POST 201 + Location.
+- GET 200.
+- Malformed UUID 400.
+- Missing Trip/Itinerary 404.
+- Data conflict 409.
+- No feasible 422.
+- Exact `application/problem+json`, `code` và rejection extension.
+- Exact time/decimal/UUID field shapes.
+- Không có internal IDs.
 
-### 18.4. PostgreSQL integration tests
+### 18.4. PostgreSQL integration
 
-- Flyway + Hibernate validate.
-- All unique/check/FK constraints.
-- Aggregate loading order và no N+1.
-- Item/warning cascade behavior.
+- Clean V1→V14 migration.
+- Upgrade V12→V14.
+- Restart/checksum và Hibernate validate.
+- Named constraints của bốn tables.
+- `@ElementCollection` category snapshot.
+- Ordered child loading.
+- Aggregate rollback.
+- Bounded candidate query count với 30–100 places.
 
-### 18.5. Evaluation dataset
+### 18.5. Golden evaluation dataset
 
-Chuẩn bị ít nhất các scenarios có nhãn demo:
+Tối thiểu 10 scenarios:
 
 1. Nhiều candidate khả thi.
-2. Budget bằng 0.
-3. Place đóng cửa.
-4. Place mở muộn cần waiting.
-5. Opening hours unknown.
-6. Khung giờ quá ngắn.
-7. Candidate tie score.
-8. RELAXED vs FAST.
+2. Không có category match.
+3. Indoor/outdoor mismatch.
+4. Budget bằng 0.
+5. Candidate vượt ngân sách.
+6. Known closed.
+7. Mở muộn cần waiting.
+8. Unknown hours.
+9. Khung giờ quá ngắn.
+10. Score tie và input permutation.
+11. RELAXED vs FAST.
+12. Multi-iteration thay đổi candidate gần nhất.
 
 Chỉ số ghi trong báo cáo:
 
-- Constraint violation count phải bằng 0.
-- Scheduled place count.
-- Total/remaining time và budget.
-- Runtime theo candidate count.
-- Determinism across repeated runs.
-- Warning coverage.
+- scheduled count;
+- constraint violation count, mục tiêu bằng 0;
+- total/remaining time và budget;
+- total straight-line distance;
+- warning coverage;
+- repeated-run determinism;
+- runtime theo candidate count;
+- bounded query count.
 
-### 18.6. Smoke test
+Không dùng các chỉ số này để tuyên bố greedy là tối ưu toàn cục.
 
-```bash
-curl -i -X POST \
-  http://localhost:8080/api/v1/trips/{tripPublicId}/itineraries
+### 18.6. Smoke flow
 
-curl -i \
-  http://localhost:8080/api/v1/itineraries/{itineraryPublicId}
-```
+1. Tạo Trip hợp lệ bằng FEAT-004.
+2. Đăng nhập, POST generate bằng owner của Trip và lấy `Location`.
+3. GET itinerary bằng đúng owner; kiểm tra cross-user GET trả 404.
+4. Kiểm tra timeline, totals và warnings.
+5. PUT Trip rồi GET itinerary cũ để kiểm tra stale.
+6. Tạo no-feasible Trip để kiểm tra 422.
+7. Kiểm tra không có external/network/AI call.
 
 ## 19. Definition of Done
 
-Feature chỉ được đánh dấu `done` khi:
-
-- [ ] Dependency baseline và FEAT-005 spec/algorithm đã được phê duyệt.
+- [ ] FEAT-004 đã `done`; FEAT-005 decisions/spec đã được owner duyệt.
 - [ ] Implementation không vượt phạm vi mục 4.
-- [ ] Flyway migrations chạy sạch/hiện có và không sửa migration cũ.
-- [ ] Hibernate `ddl-auto=validate` pass.
-- [ ] Generate/get API đúng contract, status và errors.
-- [ ] Algorithm đúng eligibility, budget, hours, pace, travel, score và tie-breakers.
-- [ ] Timeline không overlap/vượt trip end; total cost không vượt budget.
-- [ ] Unknown hours và estimates có warnings đúng.
-- [ ] Zero-feasible trả 422 và không persist; partial itinerary persist đúng.
-- [ ] Output deterministic ngoài identity/timestamp.
-- [ ] Algorithm/travel config snapshot được lưu và trả đúng.
-- [ ] Immutable versions và stale detection đúng.
-- [ ] Module boundaries/batch loading/no N+1 được xác minh.
-- [ ] Không external routing, AI, context hoặc LLM call.
-- [ ] PostgreSQL/automated/regression/smoke tests pass.
-- [ ] Performance/evaluation evidence được ghi.
-- [ ] `git diff` không secret, migration cũ hoặc thay đổi ngoài scope.
-- [ ] ERD, API, algorithm note, development log và `PROJECT_CONTEXT.md` đã cập nhật.
+- [ ] V13–V14 chạy trên clean DB và existing V12 DB; migrations cũ không đổi.
+- [ ] Hibernate validate pass.
+- [ ] POST/GET đúng status, Location, JSON và ProblemDetail.
+- [ ] Candidate eligibility/category/environment đúng.
+- [ ] Budget/opening/waiting/time constraints đúng.
+- [ ] Haversine/pace/score/tie-breakers đúng policy.
+- [ ] Timeline không overlap/vượt trip end/known close.
+- [ ] Zero feasible 422 không persist; partial itinerary persist đúng.
+- [ ] Summary khớp child items và hỗ trợ prototype.
+- [ ] Snapshot đủ cho FEAT-006–009 theo mục 20.
+- [ ] Mỗi POST tạo immutable version; stale detection đúng.
+- [ ] Candidate loading không N+1.
+- [ ] Module boundaries không bị vi phạm.
+- [ ] Generate/GET yêu cầu authentication; ownership đúng và cross-user access trả 404.
+- [ ] Không routing/weather/RAG/LLM/AI side effect.
+- [ ] Pure/service/web/PostgreSQL/regression tests pass.
+- [ ] Determinism/runtime/query-count evidence đã ghi.
+- [ ] `./mvnw clean test` và `./mvnw clean verify` pass.
+- [ ] Runtime startup/smoke pass.
+- [ ] Không log vị trí nhạy cảm hoặc lộ secret/internal errors.
+- [ ] ERD, API, algorithm note, development log và PROJECT_CONTEXT đã cập nhật.
+- [ ] Final diff audit không có file ngoài phạm vi hoặc migration cũ bị sửa.
 
-## 20. Rủi ro và quyết định
+## 20. Bàn giao cho feature sau
 
-### 20.1. Rủi ro và giảm thiểu
+### 20.1. FEAT-006 — Map và routing
 
-| Rủi ro | Tác động | Giảm thiểu |
-| --- | --- | --- |
-| Greedy bị kỳ vọng là tối ưu toàn cục | Đánh giá sai chất lượng | Gọi rõ baseline; đánh giá constraints/determinism, không tuyên bố optimal |
-| Haversine khác route thực | Timeline lệch | Warning + config + routing integration feature sau |
-| Dùng minCost quá lạc quan | Chi phí thực cao hơn | Warning `COST_USES_MINIMUM_ESTIMATE`; provenance/data improvement sau |
-| Unknown hours được xếp | Có thể đến nơi đóng cửa | Penalty score + item warning; UI phải hiển thị |
-| Unknown hours bị loại hết | Không tạo được lịch do thiếu data | Policy allow-with-warning đã chốt |
-| Score bằng double không ổn định | Tie khác giữa runs | Defined numeric/rounding/comparison policy + tests |
-| Cross-module Entity/repository coupling | Modular boundary suy yếu | Snapshot/read contracts và import review |
-| Candidate query N+1 | Generate chậm | Batch query/load + query-count integration test |
-| Transaction chứa external call | Lock lâu/thất bại khó kiểm soát | Không network/AI trong V1 |
-| Scope kéo sang context/RAG/replan | Trễ core scheduling | Để feature riêng sau baseline |
-| Nhiều generation versions tăng storage | Dữ liệu tích lũy | MVP nhỏ; retention/list/delete feature sau |
+FEAT-005 cung cấp:
 
-### 20.2. Quyết định đã chốt
+- origin coordinates;
+- ordered item coordinates/sequence;
+- baseline distance/travel minutes từng leg;
+- total baseline distance/travel minutes;
+- remaining minutes;
+- immutable itinerary public ID.
 
-| ID | Quyết định | Lý do |
-| --- | --- | --- |
-| DEC-001 | Greedy deterministic, không optimizer/LLM. | Dễ giải thích, test và phù hợp MVP. |
-| DEC-002 | Haversine + 18 km/h + 5 phút, config được. | Không cần external dependency/secret cho baseline. |
-| DEC-003 | TravelPace điều chỉnh visit duration. | Biến preference thành behavior định lượng rõ. |
-| DEC-004 | Cost dùng minCost. | Có dữ liệu sẵn; output ghi rõ là minimum estimate. |
-| DEC-005 | Unknown hours allowed with penalty/warning. | Không loại sai do dữ liệu thiếu. |
-| DEC-006 | Closed/known interval là hard constraints. | Bảo đảm feasibility với dữ liệu đã biết. |
-| DEC-007 | Preferred categories là OR eligibility. | Tăng candidate pool; score thưởng nhiều category match. |
-| DEC-008 | MIXED không bảo đảm cân bằng indoor/outdoor. | Tránh thêm diversity optimizer vào V1. |
-| DEC-009 | Mỗi POST tạo immutable version. | Giữ lịch sử và hỗ trợ stale/replan sau. |
-| DEC-010 | Zero item trả 422; partial item trả 201. | Phân biệt không có giá trị với kết quả dùng được nhưng chưa đầy. |
-| DEC-011 | Warnings là deterministic templates. | Không cần LLM và dễ test/localize sau. |
-| DEC-012 | Không quay về origin. | Giảm route/time complexity; phải nêu rõ trong UI. |
+FEAT-006 chỉ enrich route; không sửa order/timeline FEAT-005.
 
-## 21. Feature kế tiếp đề xuất
+### 20.2. FEAT-007 — RAG explanation
 
-Sau FEAT-005, ưu tiên gần nhất:
+FEAT-005 cung cấp:
 
-**FEAT-006 — Itinerary Map & Routing Estimate Integration**
+- itinerary/item public-facing snapshot;
+- place IDs/slugs/names;
+- selected order, timeline, cost và algorithm version.
 
-Candidate scope:
+RAG giải thích sau quyết định; không chọn hoặc reorder place.
 
-- Frontend render marker order và polyline.
-- Tích hợp một routing provider được phê duyệt cho distance/travel time.
-- Cache/fallback policy.
-- So sánh Haversine baseline với route estimates.
-- Không thay đổi scoring/scheduling contract âm thầm.
+### 20.3. FEAT-008 — Weather context
 
-RAG explanation, weather/context và dynamic re-planning tiếp tục là feature riêng sau khi itinerary baseline chạy ổn định.
+FEAT-005 cung cấp:
 
-## 22. Liên kết với prototype và báo cáo khóa luận
+- item internal reference qua owning read contract;
+- place coordinates;
+- `indoor`;
+- trip date và visit start/end;
+- immutable target snapshot.
 
-### Prototype mobile-first
+Weather assessment không sửa itinerary.
 
-- Nút tạo lịch gọi generate API.
-- Timeline dùng `travel`, `arrival`, `waiting`, `visitStart/End`.
-- Map dùng item coordinates và sequence; polyline route thật chưa thuộc feature.
-- Warnings phải hiển thị rõ, đặc biệt unknown hours/travel/cost estimates.
-- Nếu `stale=true`, UI yêu cầu generate lại thay vì tự sửa output.
+### 20.4. FEAT-009 — Re-planning
 
-### Báo cáo khóa luận
+FEAT-005 cung cấp:
 
-- **Chương 3 — Phân tích và thiết kế:** Scheduling Module, constraints, state, schema và module contracts.
-- **Chương 3 — Thuật toán:** pseudocode greedy, Haversine, scoring, complexity O(n²), deterministic tie-breakers.
-- **Chương 3 — Cài đặt:** pure algorithm + orchestration + aggregate persistence.
-- **Chương 4 — Thực nghiệm:** 8 scenario dataset, constraint violations, runtime, determinism và limitations so với route thực.
+- immutable base itinerary/items;
+- Trip/config/preferred-category snapshots;
+- base/adjusted duration;
+- origin, timeline, travel and cost snapshots;
+- reusable Haversine/duration/feasibility policies qua explicit contracts.
 
-Không mô tả GREEDY_V1 là thuật toán tối ưu. Dùng cụm “heuristic baseline tạo lịch khả thi theo các ràng buộc đã biết”.
+Lineage, derived itinerary writer và matched-category snapshot chi tiết hơn có
+thể được bổ sung bằng forward migration trong FEAT-009; không kéo proposal
+lifecycle vào FEAT-005.
+
+## 21. Liên kết prototype và báo cáo khóa luận
+
+### 21.1. Prototype
+
+Từ response FEAT-005:
+
+- timeline card dùng `sequence`, `place.name`, `visitStart`, `visitEnd`;
+- marker dùng `sequence` và coordinates;
+- summary “3 điểm đến” dùng `scheduledCount`;
+- summary “6,2 km” dùng `totalStraightLineDistanceKm`;
+- warning phải nói rõ đây là khoảng cách/thời gian đường thẳng;
+- route polyline, zoom controls và routed distance thật thuộc FEAT-006.
+
+### 21.2. Báo cáo khóa luận
+
+**Chương Cơ sở lý thuyết**
+
+- Bài toán lập lịch có ràng buộc.
+- Heuristic/greedy algorithm.
+- Haversine distance.
+- Determinism và tie-breaking.
+
+**Chương Phân tích và thiết kế hệ thống**
+
+- Input constraints từ Trip Module.
+- Candidate facts từ Place Module.
+- Scheduling Module boundary.
+- Itinerary aggregate/ERD/API.
+- Hard constraints, soft score và warning semantics.
+
+**Chương Cài đặt và triển khai**
+
+- Pure domain algorithm.
+- Cross-module immutable read contracts.
+- Flyway migration-first và JPA snapshot persistence.
+- Transaction, error handling và Clock/config injection.
+
+**Chương Thực nghiệm và đánh giá**
+
+- Golden scenarios.
+- Constraint violations.
+- Determinism.
+- Runtime/query count theo candidate size.
+- So sánh baseline Haversine với routed estimate ở FEAT-006.
+- Giới hạn của greedy, minCost và unknown hours.
+
+Văn phong cần dùng:
+
+> `GREEDY_V1` là heuristic baseline tạo lịch trình khả thi theo các ràng buộc đã
+> biết.
+
+Không dùng:
+
+> `GREEDY_V1` tìm lịch trình tối ưu.
+
+## 22. Gợi ý ghi chú Obsidian
+
+```text
+docs/
+├── 01-Requirements/Features/
+│   └── FEAT-005-basic-itinerary-generation-scheduling-v1.md
+├── 03-Database/
+│   └── Scheduling-Module-ERD.md
+├── 04-API/
+│   └── Itinerary-API-v1.md
+├── 05-Algorithms/
+│   └── Greedy-Scheduling-V1.md
+├── 05-Technical-Knowledge/
+│   ├── Haversine-Distance.md
+│   ├── Greedy-Heuristic.md
+│   ├── BigDecimal-Rounding.md
+│   └── Deterministic-Tie-Breaking.md
+└── 09-Development-Log/
+    └── YYYY-MM-DD-FEAT-005-implementation.md
+```
+
+Liên kết:
+
+- FEAT-005 ↔ FEAT-004.
+- FEAT-005 ↔ Scheduling ERD.
+- FEAT-005 ↔ Itinerary API.
+- FEAT-005 ↔ Greedy algorithm note.
+- FEAT-005 ↔ FEAT-006/008/009.
+- Mỗi development log ↔ micro-step và test evidence tương ứng.
 
 ## 23. Lịch sử thay đổi
 
 | Ngày | Phiên bản | Thay đổi |
 | --- | --- | --- |
-| 2026-07-17 | 0.1 | Tạo đặc tả FEAT-005 cho Greedy Scheduling V1 deterministic, không external routing/AI. |
+| 2026-07-17 | 0.1 | Đặc tả FEAT-005 ban đầu. |
+| 2026-07-24 | 1.0 | Viết lại theo FEAT-004 và downstream contracts: ProblemDetail, snapshot schema/precision, scoring có time efficiency, bounded batch queries và approval-gated micro-steps. |
+| 2026-08-01 | 1.1 | Chuẩn hóa đầu vào thành `Trip` hợp lệ, cập nhật ownership theo người dùng đã đăng nhập, migration V13–V14 và thuật ngữ `administrativeUnit`. |

@@ -9,7 +9,7 @@ priority: P0
 project: SaigonPlanTravel
 owner: Nguyễn Bá Tân
 created: 2026-07-17
-updated: 2026-07-20
+updated: 2026-07-27
 target_milestone: MVP 2026-08-30
 canonical_path: docs/01-Requirements/Features/FEAT-001-place-catalog-api-mvp.md
 tags:
@@ -27,9 +27,10 @@ related:
 
 # FEAT-001 — Place Catalog API MVP
 
-> [!note] Frontend consumer (2026-07-21)
-> Route `/places` dùng đúng 11-field summary và 7-field pagination envelope để
-> render place cards/markers. Frontend không thay đổi backend contract này.
+> [!note] Frontend consumer (cập nhật 2026-07-27)
+> Route `/places` dùng đúng 12-field summary và 7-field pagination envelope để
+> render place cards/markers. Khi chưa có mapping đơn vị hành chính, frontend
+> hiển thị “Chưa xác định”.
 
 > [!summary]
 > Xây dựng vertical slice đầu tiên của SaigonPlanTravel để frontend lấy danh sách địa điểm đang hoạt động tại TP.HCM qua `GET /api/v1/places`. Feature bao gồm schema `places`, dữ liệu demo có gắn nhãn, Entity, Repository, Service, Mapper, DTO, Controller và tests tối thiểu. Đây là nền dữ liệu bắt buộc trước khi triển khai bản đồ, lọc địa điểm, lập lịch và RAG.
@@ -139,9 +140,9 @@ vì lỗi.
 Là một khách du lịch, tôi muốn xem các địa điểm hiện có để bắt đầu khám phá và lựa chọn cho chuyến đi.
 
 **US-002 — Hiển thị card và marker**  
-Là frontend, tôi muốn nhận tên, mô tả ngắn, quận/huyện, tọa độ, thời lượng và
-chi phí ước tính để hiển thị card và marker mà không phụ thuộc Entity nội bộ;
-địa chỉ đầy đủ dành cho Place Detail.
+Là frontend, tôi muốn nhận tên, mô tả ngắn, đơn vị hành chính nếu đã được xác
+minh, tọa độ, thời lượng và chi phí ước tính để hiển thị card và marker mà
+không phụ thuộc Entity nội bộ; địa chỉ đầy đủ dành cho Place Detail.
 
 **US-003 — Ẩn địa điểm chưa sẵn sàng**  
 Là người quản trị dữ liệu, tôi muốn bản ghi `active = false` không xuất hiện trong API công khai để có thể tạm ẩn dữ liệu chưa đủ chất lượng.
@@ -219,6 +220,9 @@ sequenceDiagram
 | BR-006 | `latitude` nằm trong `[-90, 90]`; `longitude` nằm trong `[-180, 180]`. |
 | BR-007 | Bản ghi `active = false` không được xuất hiện trong public list API. |
 | BR-008 | Dữ liệu giá, mô tả và địa chỉ trong seed của feature này chỉ dùng cho phát triển nếu chưa có nguồn kiểm chứng. |
+| BR-009 | `administrative_unit_name` và `administrative_unit_type` phải cùng `NULL` hoặc cùng có giá trị. |
+| BR-010 | `administrative_unit_type` chỉ nhận `WARD`, `COMMUNE` hoặc `SPECIAL_ZONE`; không đơn giản hóa toàn bộ thành ward. |
+| BR-011 | Không suy diễn hoặc tự gán đơn vị hành chính từ địa chỉ, tọa độ hay dữ liệu cũ; place chưa xác minh phải giữ cả hai field là `NULL`. |
 
 ## 9. Đặc tả dữ liệu
 
@@ -232,7 +236,8 @@ sequenceDiagram
 | `short_description` | `VARCHAR(500)` | Yes | Dùng cho card; vẫn serialize `null` |
 | `full_description` | `TEXT` | Yes | Chưa trả trong summary API |
 | `address` | `VARCHAR(255)` | No | Địa chỉ văn bản |
-| `district` | `VARCHAR(100)` | No | Quận/huyện/TP Thủ Đức |
+| `administrative_unit_name` | `VARCHAR(100)` | Yes | Tên đơn vị hành chính đã được xác minh; không được blank |
+| `administrative_unit_type` | `VARCHAR(20)` | Yes | `WARD`, `COMMUNE` hoặc `SPECIAL_ZONE` |
 | `latitude` | `NUMERIC(10,7)` | No | Check `-90..90` |
 | `longitude` | `NUMERIC(10,7)` | No | Check `-180..180` |
 | `estimated_visit_minutes` | `INTEGER` | No | Check `> 0` |
@@ -250,13 +255,17 @@ sequenceDiagram
 
 ### 9.3. Quy tắc migration
 
-- `V2__create_places_table.sql` tạo schema `places` nếu lịch sử Flyway hiện tại chỉ có `V1`.
-- `V2__create_places_table.sql` là schema `places` canonical.
+- `V2__create_places_table.sql` là schema `places` canonical và chứa hai cột
+  administrative-unit cùng các check constraint ở BR-009–BR-010.
 - V3–V5 đã tồn tại như baseline bất biến cho các feature sau; FEAT-001 không
   triển khai Category hoặc OpeningHour dù các bảng đã có.
-- `V6__seed_demo_places.sql` seed 5 place active và 1 place inactive.
-- Không sửa hoặc xóa V1–V6 sau khi đã áp dụng; migration tương lai phải dùng
-  version mới sau khi kiểm tra filesystem và `flyway_schema_history`.
+- `V6__seed_demo_places.sql` seed 5 place active và 1 place inactive; cả sáu
+  place giữ `administrative_unit_name = NULL` và
+  `administrative_unit_type = NULL` vì chưa có mapping được xác minh.
+- Theo quyết định owner ngày 2026-07-27, refactor này sửa trực tiếp V2 và V6,
+  không tạo V11. Database đã áp dụng checksum cũ phải được drop/recreate;
+  không hỗ trợ upgrade tại chỗ từ schema location cũ.
+- V3–V5 và V7–V10 không bị thay đổi bởi refactor này.
 
 ## 10. API contract
 
@@ -291,7 +300,8 @@ Content-Type: application/json
       "name": "Demo Art Space",
       "slug": "demo-art-space",
       "shortDescription": "Dữ liệu minh họa, chưa được xác minh",
-      "district": "Quận 1",
+      "administrativeUnitName": null,
+      "administrativeUnitType": null,
       "latitude": 10.7750000,
       "longitude": 106.7000000,
       "estimatedVisitMinutes": 90,
@@ -320,15 +330,19 @@ public record PlaceSummaryResponse(
         String name,
         String slug,
         String shortDescription,
-        String district,
+        String administrativeUnitName,
+        AdministrativeUnitType administrativeUnitType,
         BigDecimal latitude,
         BigDecimal longitude,
         Integer estimatedVisitMinutes,
         BigDecimal minCost,
         BigDecimal maxCost,
-        boolean indoor
+        Boolean indoor
 ) {}
 ```
+
+`PlaceSummaryResponse` có đúng 12 field. Hai administrative-unit field luôn có
+trong JSON và có thể là `null`.
 
 `PlacePageResponse` có đúng 7 field cấp cao: `content`, `page`, `size`,
 `totalElements`, `totalPages`, `first`, `last`.
@@ -413,7 +427,9 @@ trả `404` hoặc `null`.
 
 **Given** một `Place` có đầy đủ dữ liệu persistence  
 **When** Entity được ánh xạ sang response  
-**Then** response có đúng các field ở mục 10.4 và không có `active`, `createdAt`, `updatedAt` hoặc thuộc tính Hibernate.
+**Then** response có đúng 12 field ở mục 10.4, bao gồm hai field
+administrative-unit nullable, và không có `active`, `createdAt`, `updatedAt`
+hoặc thuộc tính Hibernate.
 
 ### AC-007 — Database từ chối dữ liệu không hợp lệ
 
@@ -473,17 +489,18 @@ trả `404` hoặc `null`.
 
 - [x] Duyệt phạm vi: list active places có pagination; không filter,
   client-controlled sorting hoặc detail.
-- [x] Duyệt 11 field của `PlaceSummaryResponse` và envelope 7 field.
-- [x] Kiểm tra migration hiện có; V2 và V1–V5 là baseline bất biến, V6 là seed.
+- [x] Duyệt 12 field của `PlaceSummaryResponse` và envelope 7 field.
+- [x] Kiểm tra migration hiện có; V2 là canonical places schema và V6 là seed.
 - [x] Contract đã được phê duyệt và triển khai.
 
 ### Phase B — Database và persistence
 
-- [x] V2 tạo canonical `places` schema và constraints.
+- [x] V2 tạo canonical `places` schema, administrative-unit pair và constraints.
 - [x] Hibernate validate thành công với Entity `Place`.
 - [x] Entity dùng Lombok có kiểm soát; tiền/tọa độ là `BigDecimal`, timestamp là
   `OffsetDateTime`.
-- [x] V6 seed 5 active và 1 inactive demo place sau baseline V3–V5.
+- [x] V6 seed 5 active và 1 inactive demo place; cả sáu chưa có mapping nên
+  hai administrative-unit field đều `NULL`.
 
 ### Phase C — Repository, DTO và mapper
 
@@ -502,12 +519,13 @@ trả `404` hoặc `null`.
 - [x] Mapper, service và MockMvc controller tests đã có.
 - [x] PostgreSQL/pgvector Testcontainers test xác minh migrations, seed,
   constraints, active filter và ordering.
-- [x] Maven clean/verify pass 15 tests.
+- [x] Full backend suite pass 39 tests sau administrative-unit refactor ngày
+  2026-07-27.
 
 ### Phase F — Smoke test và review
 
 - [x] Normal runtime chạy với PostgreSQL Docker trên port 8080.
-- [x] Flyway V1–V6 và Hibernate validate không lỗi.
+- [x] Flyway V1–V10 và Hibernate validate không lỗi trên database sạch.
 - [x] Curl smoke test pass cho default, out-of-range và invalid pagination.
 - [x] Active filter được xác minh bằng 5 active/1 inactive fixture.
 
@@ -557,15 +575,17 @@ Kết quả cần lưu trong development log:
 Feature được đánh dấu `done` ngày 2026-07-20 với bằng chứng:
 
 - [x] Spec đã được duyệt và implementation không vượt phạm vi.
-- [x] Flyway V1–V6 chạy thành công trên PostgreSQL Testcontainers và live database.
+- [x] Flyway V1–V10 chạy thành công trên PostgreSQL Testcontainers sau khi
+  refactor V2/V6 và Hibernate validation thành công.
 - [x] Chạy migrate lại không seed trùng; V6 chỉ có một history row thành công.
 - [x] Hibernate `ddl-auto: validate` thành công.
 - [x] Endpoint đúng contract và chỉ trả 5 active places.
 - [x] Empty/out-of-range page trả `200` với `content: []` và đủ envelope.
 - [x] Không trả Entity trực tiếp.
-- [x] `clean verify` pass 15 tests, 0 failure/error/skip.
+- [x] `./mvnw test` pass 39 tests, 0 failure/error/skip ngày 2026-07-27.
 - [x] Runtime smoke test pass cho success, out-of-range và invalid pagination.
-- [x] Diff được audit trong phạm vi FEAT-001; V1–V6 không bị sửa sau khi áp dụng.
+- [x] Diff được audit; chỉ V2 và V6 được sửa có chủ đích theo quyết định
+  drop/recreate database, không tạo V11 cho refactor này.
 - [x] Database note, API note, development log và `PROJECT_CONTEXT.md` được cập nhật.
 - [x] Seed data được ghi rõ là demo/mô phỏng.
 
@@ -574,7 +594,8 @@ Feature được đánh dấu `done` ngày 2026-07-20 với bằng chứng:
 | Rủi ro | Tác động | Giảm thiểu |
 | --- | --- | --- |
 | Entity không khớp Flyway schema | Backend không khởi động với `validate` | Thiết kế migration trước, map rõ từng cột, chạy startup test sớm |
-| Sửa migration đã chạy | Lệch checksum Flyway | Luôn tạo migration version mới |
+| Database còn checksum V2/V6 cũ | Flyway từ chối khởi động | Drop/recreate database theo quyết định owner; không chạy refactor này trên database cần giữ dữ liệu |
+| Tự suy diễn đơn vị hành chính | Hiển thị dữ liệu sai như đã xác minh | Giữ cặp field `NULL` cho đến khi được mapping thủ công |
 | Seed bị hiểu là dữ liệu thật | Sai nội dung demo/báo cáo | Comment rõ `DEMO DATA`; không dùng làm nguồn RAG chính thức |
 | API vô tình trả Entity | Rò field nội bộ, contract khó ổn định | DTO `record` + mapper + controller test |
 | Mở rộng sang filter/category quá sớm | Trễ vertical slice đầu tiên | Giữ mục 4.2; tạo spec riêng sau khi feature này done |
@@ -591,6 +612,9 @@ Feature được đánh dấu `done` ngày 2026-07-20 với bằng chứng:
 | DEC-004 | `fullDescription` không nằm trong summary DTO. | Giữ payload gọn; detail API sẽ xử lý sau. |
 | DEC-005 | Seed demo là migration version kế tiếp sau migration tạo bảng. | Có dữ liệu lặp lại được giữa các môi trường dev. |
 | DEC-006 | Không tạo index riêng cho `active` trong MVP. | Quy mô nhỏ; tránh tối ưu sớm khi chưa có bằng chứng. |
+| DEC-007 | Thay field location cũ bằng `administrativeUnitName` và `administrativeUnitType`. | Domain không còn phụ thuộc đơn vị hành chính cấp quận. |
+| DEC-008 | Hai field administrative-unit nullable theo cặp; type gồm `WARD`, `COMMUNE`, `SPECIAL_ZONE`. | Biểu diễn đúng dữ liệu chưa biết và không ép mọi đơn vị thành ward. |
+| DEC-009 | Refactor trực tiếp V2/V6, không tạo V11. | Owner chấp nhận drop/recreate database và không cần upgrade tại chỗ. |
 
 ## 19. Feature kế tiếp sau khi hoàn thành
 
@@ -617,3 +641,4 @@ Development log nên liên kết ngược về note này để truy vết quyế
 | --- | --- | --- |
 | 2026-07-17 | 0.1 | Tạo đặc tả hoàn chỉnh cho Place Catalog API MVP dựa trên `PROJECT_CONTEXT.md`. |
 | 2026-07-20 | 1.0 | Đồng bộ spec với implementation thực tế, ghi nhận 15 tests và runtime smoke test thành công; chuyển FEAT-001 sang `done`. |
+| 2026-07-27 | 1.1 | Đồng bộ schema/API/frontend/tests sau refactor location thành cặp administrative-unit nullable; ghi nhận V2/V6 được sửa có chủ đích và full suite 39 tests pass. |

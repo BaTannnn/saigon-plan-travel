@@ -821,6 +821,125 @@ if (size < 1 || size > 100) {
 Controller chỉ kiểm tra input HTTP đơn giản rồi gọi service. Nó không truy vấn
 database và không mapping entity.
 
+### 11.5 Strict Boolean binding: phân biệt request `Boolean` và response `boolean`
+
+Source liên quan:
+
+- [`PlaceController.java`](../../backend/src/main/java/com/saigonplantravel/backend/place/controller/PlaceController.java)
+- [`PlaceSearchRequest.java`](../../backend/src/main/java/com/saigonplantravel/backend/place/dto/PlaceSearchRequest.java)
+- [`PlaceDetailResponse.java`](../../backend/src/main/java/com/saigonplantravel/backend/place/dto/PlaceDetailResponse.java)
+- [`PlaceControllerTest.java`](../../backend/src/test/java/com/saigonplantravel/backend/place/controller/PlaceControllerTest.java)
+- [FEAT-003 Place search/filter/pagination](../01-Requirements/Features/FEAT-003-place-search-filter-pagination.md)
+
+Hai hướng dữ liệu phải được tách riêng:
+
+```text
+Query string "false"
+    -> WebDataBinder
+    -> PlaceSearchRequest.indoor (Boolean)
+    -> search predicate
+
+Place entity indoor
+    -> PlaceMapper
+    -> PlaceDetailResponse.indoor (boolean)
+    -> Jackson
+    -> JSON true/false
+```
+
+`configureStrictBooleanBinding` và `StrictBooleanEditor` chỉ tham gia hướng
+đầu tiên. Chúng đọc query parameter của `GET /api/v1/places`, không đọc hoặc
+serialize `PlaceDetailResponse`.
+
+#### Vì sao cần editor riêng?
+
+Boolean editor mặc định của Spring chấp nhận nhiều cách viết như `true`,
+`on`, `yes`, `1` và các giá trị false tương ứng; việc so sánh chữ cũng không
+phân biệt hoa thường. Contract của Place API hẹp hơn: chỉ chấp nhận đúng
+`true` hoặc `false` viết thường.
+
+```java
+@InitBinder
+void configureStrictBooleanBinding(WebDataBinder binder) {
+    binder.registerCustomEditor(
+            Boolean.class,
+            "indoor",
+            new StrictBooleanEditor()
+    );
+}
+```
+
+Ba đối số có nghĩa là:
+
+- editor áp dụng cho giá trị đích kiểu `Boolean`;
+- chỉ áp dụng cho property tên `indoor`;
+- dùng quy tắc parse do `StrictBooleanEditor` định nghĩa.
+
+```java
+if (text == null || text.isEmpty()) {
+    setValue(null);
+} else if ("true".equals(text)) {
+    setValue(Boolean.TRUE);
+} else if ("false".equals(text)) {
+    setValue(Boolean.FALSE);
+} else {
+    throw new IllegalArgumentException("indoor must be true or false");
+}
+```
+
+Do dùng `String.equals` theo đúng case và không `trim`, các giá trị như `yes`,
+`1`, `TRUE` hoặc ` true ` đều bị từ chối. Lỗi conversion được error handler
+chuyển thành `400 INVALID_REQUEST`. Controller test khóa hành vi `yes` và
+`TRUE` phải bị từ chối.
+
+#### Tại sao request dùng `Boolean`, không dùng `boolean`?
+
+`indoor` là filter tùy chọn nên cần ba trạng thái:
+
+| Giá trị Java | Ý nghĩa tìm kiếm |
+|---|---|
+| `null` | Client không yêu cầu lọc indoor/outdoor |
+| `true` | Chỉ lấy địa điểm indoor |
+| `false` | Chỉ lấy địa điểm outdoor |
+
+Primitive `boolean` chỉ có hai trạng thái. Nếu đổi
+`PlaceSearchRequest.indoor` thành `boolean`, request không truyền `indoor`
+không còn cách biểu diễn “không lọc”. Tùy cơ chế tạo/binding object, giá trị
+thiếu phải trở thành mặc định `false` hoặc gây lỗi binding; cả hai đều không
+đúng contract filter tùy chọn. Đây mới là nơi khác biệt `Boolean`/`boolean`
+ảnh hưởng trực tiếp tới binder và nghiệp vụ.
+
+#### Nếu đổi `PlaceDetailResponse.indoor` thành `Boolean` thì sao?
+
+Không thể bỏ hai phương thức binding chỉ vì thay đổi này. `PlaceDetailResponse`
+là DTO **đầu ra**, còn binder được đăng ký cho `PlaceSearchRequest` **đầu vào**.
+Hai việc độc lập với nhau.
+
+Thay kiểu response chỉ thay đổi khả năng biểu diễn JSON:
+
+| Kiểu trong response | Giá trị Java có thể có | JSON có thể trả |
+|---|---|---|
+| `boolean` | `true`, `false` | `true`, `false` |
+| `Boolean` | `true`, `false`, `null` | `true`, `false`, `null` |
+
+Database hiện đặt `places.indoor` là `NOT NULL`, nên `boolean` trong response
+thể hiện contract chặt hơn: detail luôn phải nói rõ indoor hay outdoor. Dùng
+`Boolean` sẽ cho phép mapper hoặc dữ liệu lỗi truyền `null` ra public API; nó
+chỉ phù hợp nếu nghiệp vụ thật sự có trạng thái “chưa biết”. Nếu nguồn luôn
+không null, autounboxing từ `Boolean` entity sang `boolean` response hoạt động
+bình thường; nếu nguồn bất ngờ null, autounboxing ném
+`NullPointerException`, giúp lộ vi phạm invariant thay vì âm thầm trả `null`.
+
+#### Khi nào nên và không nên dùng cách này?
+
+Nên giữ strict editor khi API chủ ý khóa lexical contract của query parameter
+thành đúng hai chuỗi lowercase. Không cần custom editor nếu API chấp nhận quy
+tắc Boolean rộng mặc định của Spring.
+
+Các lựa chọn khác là nhận `String` rồi validate/parse, hoặc tạo
+`Converter`/`Formatter`. Nhận `String` làm DTO kém đúng kiểu hơn;
+converter toàn cục có thể vô tình thay đổi mọi Boolean parameter. Editor hiện
+tại được scope theo property `indoor`, nên thay đổi nhỏ và ít ảnh hưởng nhất.
+
 ---
 
 ## 12. Error handling

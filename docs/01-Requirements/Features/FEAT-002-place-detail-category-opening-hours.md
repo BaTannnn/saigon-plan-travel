@@ -9,7 +9,7 @@ priority: P0
 project: SaigonPlanTravel
 owner: Nguyễn Bá Tân
 created: 2026-07-17
-updated: 2026-07-20
+updated: 2026-07-27
 target_milestone: MVP 2026-08-30
 canonical_path: docs/01-Requirements/Features/FEAT-002-place-detail-category-opening-hours.md
 tags:
@@ -30,9 +30,10 @@ related:
 
 # FEAT-002 — Place Detail, Category & Opening Hours MVP
 
-> [!note] Frontend consumer (2026-07-21)
+> [!note] Frontend consumer (cập nhật 2026-07-27)
 > Route `/places/[slug]` hiển thị detail scalar fields, categories và opening
 > hours. Missing day hiển thị “chưa có dữ liệu”; closed day giữ đúng semantics.
+> Administrative unit chưa được mapping hiển thị “Chưa xác định”.
 
 > [!summary]
 > Mở rộng `Place Module` sau FEAT-001 để frontend đọc chi tiết một địa điểm theo `slug`, lấy danh mục công khai và hiển thị lịch mở cửa hằng tuần. Feature bổ sung schema `categories`, `place_categories`, `opening_hours`, dữ liệu demo có gắn nhãn, JPA mapping, DTO, service, REST API và tests. Đây là dữ liệu nền cho màn hình chi tiết, lựa chọn theo sở thích và kiểm tra tính khả thi của lịch trình.
@@ -129,7 +130,7 @@ Nếu scheduling được triển khai trước khi quy tắc giờ mở cửa r
 ### 4.2. Ngoài phạm vi
 
 - Search, filter, client-defined sorting và pagination.
-- Thay đổi payload `GET /api/v1/places`.
+- Thay đổi các contract ngoài administrative-unit refactor đã duyệt.
 - Admin CRUD cho place/category/opening hours.
 - Authentication và authorization.
 - Giờ đặc biệt theo ngày cụ thể, lễ/Tết hoặc đóng cửa đột xuất.
@@ -238,7 +239,7 @@ sequenceDiagram
 | FR-011 | Ngày thiếu dữ liệu phải được biểu diễn bằng việc không có phần tử, không tự thêm `closed=true`. | Must |
 | FR-012 | `GET /api/v1/categories` phải công khai và trả category theo `name ASC, id ASC`. | Must |
 | FR-013 | Category catalog rỗng phải trả `200 OK` và `[]`. | Must |
-| FR-014 | Contract và behavior của `GET /api/v1/places` phải giữ nguyên. | Must |
+| FR-014 | Contract và behavior của `GET /api/v1/places` phải giữ nguyên ngoài việc thay field location cũ bằng cặp administrative-unit đã duyệt. | Must |
 | FR-015 | Seed phải ghi rõ là demo/mô phỏng, kèm comment không phải dữ liệu đã xác minh. | Must |
 | FR-016 | Read service phải chạy trong `@Transactional(readOnly = true)`. | Should |
 | FR-017 | Controller không được truy cập repository hoặc chứa business logic. | Must |
@@ -265,6 +266,8 @@ sequenceDiagram
 | BR-013 | Category slug phải khớp `^[a-z0-9]+(?:-[a-z0-9]+)*$`; PostgreSQL phải enforce bằng forward migration. |
 | BR-014 | Place slug được lookup chính xác và phân biệt hoa–thường; API không trim, lowercase hoặc redirect. |
 | BR-015 | Category catalog trả toàn bộ category trong bảng, kể cả category chưa gắn với active place. |
+| BR-016 | Detail response luôn có `administrativeUnitName` và `administrativeUnitType`; hai field cùng `null` khi chưa được mapping. |
+| BR-017 | `administrativeUnitType` chỉ nhận `WARD`, `COMMUNE`, `SPECIAL_ZONE`; không suy diễn mapping từ địa chỉ hoặc tọa độ. |
 
 ## 9. Đặc tả dữ liệu
 
@@ -322,7 +325,7 @@ Constraints tối thiểu:
 
 ### 9.5. Migration đã có và migration FEAT-002
 
-V1–V6 đã được áp dụng và là baseline bất biến:
+Canonical migration baseline hiện gồm:
 
 ```text
 V1__enable_pgvector.sql
@@ -331,10 +334,14 @@ V3__create_categories_table.sql
 V4__create_place_categories_table.sql
 V5__create_opening_hours_table.sql
 V6__seed_demo_places.sql
+V7__strengthen_category_and_opening_hour_constraints.sql
+V8__seed_demo_place_metadata.sql
+V9__enable_unaccent_and_place_search_index.sql
+V10__create_users_table.sql
 ```
 
-FEAT-002 không tạo lại ba bảng từ V3–V5. Sau khi kiểm tra filesystem và
-`flyway_schema_history`, feature đã thêm và áp dụng:
+FEAT-002 không tạo lại ba bảng từ V3–V5. Trong phạm vi triển khai ban đầu, sau
+khi kiểm tra filesystem và `flyway_schema_history`, feature đã thêm và áp dụng:
 
 ```text
 V7__strengthen_category_and_opening_hour_constraints.sql
@@ -343,8 +350,10 @@ V8__seed_demo_place_metadata.sql
 
 V7 bổ sung category-slug format và trạng thái giờ đóng/mở đầy đủ. V8 seed 5
 category, 8 quan hệ place–category và 33 opening-hour rows có nhãn demo.
-Live database và PostgreSQL Testcontainers đều xác nhận V1–V8 thành công;
-không sửa migration cũ hoặc đổi checksum.
+Administrative-unit refactor ngày 2026-07-27 sửa trực tiếp V2 và V6 theo quyết
+định owner; V3–V5, V7–V10 giữ nguyên. Database có checksum V2/V6 cũ phải được
+drop/recreate, không upgrade tại chỗ. PostgreSQL Testcontainers xác nhận clean
+migration V1–V10 và Hibernate validation thành công.
 
 ## 10. API contract
 
@@ -380,7 +389,8 @@ Content-Type: application/json
   "shortDescription": "Dữ liệu mô phỏng phục vụ phát triển.",
   "fullDescription": "Mô tả demo, chưa phải nội dung đã xác minh.",
   "address": "Địa chỉ demo, TP.HCM",
-  "district": "Quận 1",
+  "administrativeUnitName": null,
+  "administrativeUnitType": null,
   "latitude": 10.776889,
   "longitude": 106.700806,
   "estimatedVisitMinutes": 90,
@@ -424,7 +434,8 @@ public record PlaceDetailResponse(
         String shortDescription,
         String fullDescription,
         String address,
-        String district,
+        String administrativeUnitName,
+        AdministrativeUnitType administrativeUnitType,
         BigDecimal latitude,
         BigDecimal longitude,
         Integer estimatedVisitMinutes,
@@ -595,7 +606,8 @@ lần và Hibernate `validate` thành công.
 
 **Given** implementation FEAT-002 hoàn tất  
 **When** chạy regression test `GET /api/v1/places`  
-**Then** payload, active filter, ordering và empty behavior vẫn đúng FEAT-001.
+**Then** payload 12 field với cặp administrative-unit nullable, active filter,
+ordering và empty behavior vẫn đúng FEAT-001 hiện hành.
 
 ### AC-013 — Không N+1
 
@@ -629,6 +641,15 @@ hoặc dấu gạch ngang sai vị trí
 **When** câu lệnh insert/update được thực thi  
 **Then** PostgreSQL từ chối bằng forward constraint của FEAT-002.
 
+### AC-018 — Administrative unit chưa được mapping
+
+**Given** active place chưa có mapping đơn vị hành chính đã được xác minh
+
+**When** client gọi detail API
+
+**Then** response trả cả `administrativeUnitName: null` và
+`administrativeUnitType: null`, không suy diễn giá trị từ địa chỉ hoặc tọa độ.
+
 ## 13. Ma trận truy vết
 
 | Nhóm yêu cầu | Acceptance criteria | Bằng chứng dự kiến |
@@ -636,7 +657,7 @@ hoặc dấu gạch ngang sai vị trí
 | FR-001–FR-004, BR-013 | AC-001, AC-008, AC-009, AC-017 | Migration log, PostgreSQL constraint tests |
 | FR-005–FR-011 | AC-002–AC-007 | Service/mapper/controller tests, curl response |
 | FR-012–FR-013 | AC-010, AC-011 | Repository + MockMvc tests |
-| FR-014 | AC-012 | Regression tests FEAT-001 |
+| FR-014, BR-016–BR-017 | AC-012, AC-018 | Regression tests FEAT-001, mapper/controller/repository tests |
 | FR-015 | AC-014 | Seed migration review |
 | FR-016–FR-020 | AC-013, AC-015, AC-016 | Query count/log, code review, full test run |
 
@@ -663,7 +684,8 @@ hoặc dấu gạch ngang sai vị trí
 - [x] Trong cùng forward migration hoặc version kế tiếp, bổ sung constraint
   `closed=true ⇒ open_time IS NULL AND close_time IS NULL`.
 - [x] Chạy migration trên database có FEAT-001 và trên database sạch.
-- [x] Xác minh `flyway_schema_history`; không có migration cũ bị sửa.
+- [x] Xác minh V7/V8 không bị sửa; V2/V6 chỉ được refactor có chủ đích sau khi
+  owner chấp nhận drop/recreate database.
 
 ### Phase C — Entity và repository
 
@@ -683,7 +705,8 @@ hoặc dấu gạch ngang sai vị trí
 - [x] Mở rộng `place/mapper/PlaceMapper.java`.
 - [x] Map `LocalTime` đúng định dạng `HH:mm`.
 - [x] Sort nested lists rõ ràng trong mapper, không dựa vào collection order.
-- [x] Không thay đổi `PlaceSummaryResponse`.
+- [x] Đồng bộ `PlaceSummaryResponse` thành contract 12 field với cặp
+  administrative-unit nullable.
 
 ### Phase E — Service, controller và error handling
 
@@ -721,11 +744,12 @@ hoặc dấu gạch ngang sai vị trí
 ### Phase H — Smoke test và diff review
 
 - [x] Chạy PostgreSQL theo `infra/compose.yaml` và start backend tạm trên cổng 8081.
-- [x] Kiểm tra Flyway V1–V8 và Hibernate `validate` trong log.
+- [x] Kiểm tra Flyway V1–V10 và Hibernate `validate` trong log.
 - [x] Gọi detail API với active, inactive, missing và case-mismatch slug.
 - [x] Gọi category endpoint với dữ liệu và kiểm tra ordering.
 - [x] Kiểm tra format `HH:mm`, `closed` và missing-day behavior.
-- [x] Review diff FEAT-002; không secret, không sửa migration cũ hoặc mở rộng feature scope.
+- [x] Review diff FEAT-002; không secret; V2/V6 là ngoại lệ sửa migration đã
+  được owner duyệt cho workflow drop/recreate.
 
 ### Phase I — Cập nhật tài liệu
 
@@ -763,7 +787,7 @@ hoặc dấu gạch ngang sai vị trí
 
 ### 15.4. Regression tests
 
-- `GET /api/v1/places` giữ nguyên DTO.
+- `GET /api/v1/places` giữ contract 12 field hiện hành.
 - Active filter, ordering và empty collection của FEAT-001 không đổi.
 - Startup và seed cũ không bị phá.
 
@@ -792,7 +816,8 @@ Development log cần lưu:
 | Semantics `unknown` bị hiểu là `closed` | Scheduling loại sai địa điểm | Quy định rõ ở BR-008, contract và tests |
 | JPA eager collection/N+1 | Response chậm, query khó kiểm soát | Relations `LAZY`, map trong service, query-count test |
 | Multiple bag fetch/cartesian product | Lỗi hoặc dữ liệu lặp | Không ép join-fetch nhiều bag; dùng bounded lazy loads cho một aggregate hoặc strategy đã test |
-| Sửa migration FEAT-001 | Flyway checksum mismatch | Chỉ tạo migration version mới |
+| Chạy trên database còn checksum V2/V6 cũ | Flyway checksum mismatch | Drop/recreate database; refactor không hỗ trợ upgrade tại chỗ |
+| Administrative unit chưa xác minh bị tự gán | Detail hiển thị dữ liệu sai | Giữ cả hai field `null` cho đến khi mapping thủ công |
 | Seed hard-code identity ID | Hỏng khi dữ liệu khác môi trường | Lookup place bằng slug trong seed |
 | Giờ mở cửa thay đổi ngoài đời | Demo/báo cáo sai | Gắn nhãn demo, sau này thêm provenance/monitoring workflow riêng |
 | Error envelope trùng lặp | API không nhất quán | Inspect common package trước và tái sử dụng handler hiện có |
@@ -808,10 +833,11 @@ Development log cần lưu:
 | DEC-004 | Missing day = unknown. | Không biến thiếu dữ liệu thành thông tin đóng cửa sai. |
 | DEC-005 | Detail của inactive place trả cùng 404 như missing. | Không lộ trạng thái nội bộ. |
 | DEC-006 | Category catalog là endpoint riêng. | Cho frontend dùng chip/preferences và chuẩn bị FEAT-003. |
-| DEC-007 | Không đổi list response FEAT-001. | Giữ backward compatibility và tránh payload/N+1 không cần thiết. |
+| DEC-007 | Ngoài administrative-unit refactor, không đổi list response FEAT-001. | Giữ các semantics catalog còn lại và tránh payload/N+1 không cần thiết. |
 | DEC-008 | Không trả `isOpenNow`. | Cần ngày, timezone, holiday và clock semantics riêng. |
 | DEC-009 | Bounded lazy loads trong read-only transaction được chấp nhận cho một detail aggregate. | Tối đa vài truy vấn rõ ràng, tránh fetch graph phức tạp ở quy mô MVP. |
-| DEC-010 | Detail có đúng 15 field; nested collection luôn dùng `[]`, không dùng `null`. | Contract rõ và dễ render trên frontend. |
+| DEC-010 | Detail có đúng 16 field; hai administrative-unit field có thể `null`, nested collection luôn dùng `[]`, không dùng `null`. | Contract rõ và dễ render trên frontend. |
+| DEC-016 | Detail dùng `administrativeUnitName` và `administrativeUnitType` thay field location cũ. | Domain không còn phụ thuộc đơn vị hành chính cấp quận và vẫn phân biệt ward, commune, special zone. |
 | DEC-011 | Category catalog là root array không pagination, sort `name ASC, id ASC` và trả toàn bộ category. | Quy mô taxonomy MVP nhỏ; category chưa có trạng thái active. |
 | DEC-012 | `LocalTime` serialize chính xác `HH:mm`; giờ là local time TP.HCM, không timezone conversion. | Giữ contract tuần đơn giản cho MVP. |
 | DEC-013 | Not-found dùng Spring `ProblemDetail` và `code=PLACE_NOT_FOUND`; missing, malformed và inactive không phân biệt. | Contract ổn định, không lộ trạng thái nội bộ. |
@@ -825,7 +851,8 @@ Feature chỉ được đánh dấu `done` khi:
 - [x] FEAT-001 baseline đã `done` và FEAT-002 spec đã được phê duyệt.
 - [x] Implementation không vượt phạm vi mục 4.
 - [x] Migration chạy thành công trên database sạch và database đã có FEAT-001.
-- [x] Không migration cũ nào bị sửa; restart không seed trùng.
+- [x] V2/V6 được sửa có chủ đích cho clean rebuild; các migration còn lại giữ
+  nguyên và restart không seed trùng.
 - [x] Hibernate `ddl-auto=validate` thành công.
 - [x] Detail API đúng contract, chỉ trả active place và dùng 404 thống nhất.
 - [x] Category API đúng ordering và empty behavior.
@@ -845,10 +872,10 @@ Sau FEAT-002, tạo spec riêng cho:
 
 **FEAT-003 — Place Search, Filter & Pagination MVP**
 
-Candidate filters:
+Các filter FEAT-003 hiện hành:
 
 - `keyword`
-- `district`
+- `administrativeUnitName`
 - `category`
 - `indoor`
 - `maxCost`
@@ -875,7 +902,8 @@ FEAT-003 phải chốt pagination envelope, default page size, normalization key
 | Ngày | Phiên bản | Thay đổi |
 | --- | --- | --- |
 | 2026-07-17 | 0.1 | Tạo đặc tả FEAT-002; ưu tiên dữ liệu nghiệp vụ địa điểm trước search/filter. |
-| 2026-07-20 | 0.2 | Khóa endpoint, 15-field payload, sorting, no-pagination category catalog, opening-hour semantics, ProblemDetail, demo fixtures, test/acceptance criteria; chuyển trạng thái sang `approved`. |
+| 2026-07-20 | 0.2 | Khóa endpoint, payload lúc triển khai ban đầu, sorting, no-pagination category catalog, opening-hour semantics, ProblemDetail, demo fixtures, test/acceptance criteria; chuyển trạng thái sang `approved`. |
 | 2026-07-20 | 0.3 | Owner phê duyệt file-by-file implementation plan; giữ trạng thái `approved` và chưa viết production code trong phiên requirements. |
 | 2026-07-20 | 0.4 | Preflight xác nhận live database có V1–V6, 6 places/5 active và V7/V8 chưa tồn tại; chuyển sang `in-progress`. |
 | 2026-07-20 | 1.0 | Hoàn tất V7–V8, application slice, 28 automated tests, clean verify, query-count test và runtime smoke test; chuyển sang `done`. |
+| 2026-07-27 | 1.1 | Đồng bộ detail/list contract thành cặp administrative-unit nullable, detail 16 field, quy tắc không tự mapping và clean migration V1–V10. |

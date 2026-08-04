@@ -9,7 +9,7 @@ priority: P0
 project: SaigonPlanTravel
 owner: Nguyễn Bá Tân
 created: 2026-07-17
-updated: 2026-07-20
+updated: 2026-07-27
 target_milestone: MVP 2026-08-30
 canonical_path: docs/01-Requirements/Features/FEAT-003-place-search-filter-pagination.md
 tags:
@@ -31,12 +31,17 @@ related:
 
 # FEAT-003 — Place Search, Filter & Pagination MVP
 
-> [!note] Frontend consumer (2026-07-21)
+> [!note] Frontend consumer (cập nhật 2026-07-27)
 > `/places` dùng URL search parameters cho các filter và gọi route thực tế
 > `GET /api/v1/places`. Filter change reset page về 0; không gọi `/search`.
 
 > [!summary]
-> Mở rộng public `GET /api/v1/places` hiện có bằng năm filter tùy chọn để frontend khám phá active places theo từ khóa, quận/huyện, category, không gian trong nhà và ngân sách. Feature giữ nguyên pagination envelope, summary payload, defaults và fixed ordering của FEAT-001; giữ nguyên detail/category contracts của FEAT-002.
+> Mở rộng public `GET /api/v1/places` hiện có bằng năm filter tùy chọn để
+> frontend khám phá active places theo từ khóa, tên đơn vị hành chính, category,
+> không gian trong nhà và ngân sách. Không có filter theo
+> `administrativeUnitType`. Feature giữ nguyên pagination envelope, summary
+> payload, defaults và fixed ordering của FEAT-001; giữ nguyên detail/category
+> contracts của FEAT-002.
 
 ## 1. Trạng thái và phê duyệt
 
@@ -81,7 +86,7 @@ mở rộng endpoint catalog hiện có và giữ backward compatibility:
 
 ### 4.1. Trong phạm vi
 
-- Mở rộng `GET /api/v1/places` bằng `keyword`, `district`, `category`,
+- Mở rộng `GET /api/v1/places` bằng `keyword`, `administrativeUnitName`, `category`,
   `indoor`, `maxCost`.
 - Mọi filter có giá trị kết hợp bằng AND.
 - Keyword tìm trên năm text fields bằng OR.
@@ -98,7 +103,7 @@ mở rộng endpoint catalog hiện có và giữ backward compatibility:
 ### 4.2. Ngoài phạm vi
 
 - Endpoint `/api/v1/places/search`.
-- Thay đổi 7-field page envelope hoặc 11-field summary.
+- Thay đổi 7-field page envelope hoặc 12-field summary hiện hành.
 - Client-defined sorting hoặc relevance score.
 - Fuzzy search, typo tolerance, synonym, autocomplete, highlight.
 - Full-text search, trigram, Elasticsearch/OpenSearch.
@@ -106,7 +111,8 @@ mở rộng endpoint catalog hiện có và giữ backward compatibility:
 - Price range; chỉ có một budget ceiling.
 - Filter theo giờ mở cửa, ngày/giờ, khoảng cách, bounding box hoặc route time.
 - Cursor pagination, caching, analytics hoặc personalized ranking.
-- Frontend, admin API, authentication/authorization.
+- Admin API, authentication/authorization.
+- Filter theo `administrativeUnitType`.
 - Recommendation, scheduling, RAG hoặc AI reranking.
 - Seed thêm hàng chục place giả vào live database.
 
@@ -115,7 +121,7 @@ mở rộng endpoint catalog hiện có và giữ backward compatibility:
 ### 5.1. Endpoint
 
 ```http
-GET /api/v1/places?keyword=&district=&category=&indoor=&maxCost=&page=&size=
+GET /api/v1/places?keyword=&administrativeUnitName=&category=&indoor=&maxCost=&page=&size=
 Accept: application/json
 ```
 
@@ -127,7 +133,7 @@ Không request body và không authentication trong MVP. Tất cả query parame
 | Parameter | Kiểu | Default | Validation | Semantics |
 | --- | --- | --- | --- | --- |
 | `keyword` | string | absent | tối đa 100 ký tự sau chuẩn hóa | literal substring trên 5 fields |
-| `district` | string | absent | tối đa 100 ký tự sau chuẩn hóa | exact normalized match |
+| `administrativeUnitName` | string | absent | tối đa 100 ký tự sau chuẩn hóa | exact normalized match |
 | `category` | string | absent | tối đa 120, lowercase slug regex | exact category slug |
 | `indoor` | boolean | absent | chỉ `true`/`false` | exact boolean match |
 | `maxCost` | decimal | absent | `0..100000000` | `place.minCost <= maxCost` |
@@ -152,7 +158,8 @@ Response tái sử dụng chính xác `PlacePageResponse` FEAT-001:
       "name": "Demo Art Space",
       "slug": "demo-art-space",
       "shortDescription": "Dữ liệu minh họa, chưa được xác minh",
-      "district": "Quận 1",
+      "administrativeUnitName": null,
+      "administrativeUnitType": null,
       "latitude": 10.7750000,
       "longitude": 106.7000000,
       "estimatedVisitMinutes": 90,
@@ -171,7 +178,8 @@ Response tái sử dụng chính xác `PlacePageResponse` FEAT-001:
 ```
 
 - Envelope có đúng 7 fields.
-- Mỗi content item có đúng 11 fields.
+- Mỗi content item có đúng 12 fields; hai administrative-unit field có thể là
+  `null` nhưng vẫn hiện diện trong JSON.
 - Không thêm `address`, categories, opening hours hoặc `numberOfElements`.
 - Không trả Entity hoặc Spring `Page` trực tiếp.
 
@@ -225,17 +233,19 @@ field error an toàn. Không trả SQL, stack trace hoặc connection data.
 | BR-001 | Public catalog luôn bắt buộc `active=true`. |
 | BR-002 | Các filter khác loại kết hợp AND; năm keyword fields kết hợp OR. |
 | BR-003 | Text được NFC normalize, trim và collapse whitespace. |
-| BR-004 | Keyword/district dùng `lower(unaccent(...))` cho cột và input. |
+| BR-004 | Keyword/administrative-unit name dùng `lower(unaccent(...))` cho cột và input. |
 | BR-005 | Keyword là literal substring; `%`, `_`, `\` phải được escape. |
-| BR-006 | District là exact normalized match, không phải substring. |
+| BR-006 | Administrative-unit name là exact normalized match, không phải substring. |
 | BR-007 | Một request chỉ nhận một category lowercase slug. |
 | BR-008 | Category hợp lệ nhưng không tồn tại trả empty page. |
 | BR-009 | `indoor=false` là filter có mặt, không được coi là absent. |
 | BR-010 | Budget phù hợp khi `min_cost <= maxCost`, inclusive. |
 | BR-011 | Sorting luôn là `name ASC, id ASC`; không relevance/client sort. |
-| BR-012 | Blank normalized keyword/district được coi là absent. |
+| BR-012 | Blank normalized keyword/administrative-unit name được coi là absent. |
 | BR-013 | Category join không được duplicate place hoặc làm sai total count. |
 | BR-014 | Dữ liệu demo không được trình bày như dữ liệu đã xác minh. |
+| BR-015 | Không filter theo `administrativeUnitType`; type chỉ là metadata response. |
+| BR-016 | Place có administrative-unit chưa biết giữ cả name/type là `null`; không tự suy diễn mapping. |
 
 ## 7. Chuẩn hóa và query semantics
 
@@ -247,14 +257,15 @@ Keyword tìm literal substring trên:
 2. `short_description`;
 3. `full_description`;
 4. `address`;
-5. `district`.
+5. `administrative_unit_name`.
 
 Text field `NULL` không làm query lỗi. Không có ranking hoặc highlight.
 
-### 7.2. District
+### 7.2. Administrative-unit name
 
-Ví dụ `quan 1` khớp `Quận 1`; `1` không khớp. Exact match được áp dụng sau
-NFC/trim/collapse/lower/unaccent.
+Ví dụ `don vi demo` khớp `Đơn vị Demo`; `Demo` không khớp. Exact match được
+áp dụng sau NFC/trim/collapse/lower/unaccent. Row có
+`administrative_unit_name IS NULL` không khớp filter có giá trị.
 
 ### 7.3. Category
 
@@ -291,6 +302,11 @@ Preflight ngày 2026-07-20 xác nhận `unaccent` version 1.1 có trong PostgreS
 image nhưng chưa installed; `place_categories` hiện chỉ có PK `(place_id,
 category_id)`. V9 phải chạy trên database sạch và database đã có V1–V8.
 
+Administrative-unit refactor ngày 2026-07-27 không thay đổi V9. Theo quyết
+định owner, V2 và V6 được sửa trực tiếp rồi database được recreate; không tạo
+V11 và không hỗ trợ upgrade tại chỗ từ checksum cũ. Không thêm index cho
+`administrative_unit_name` ở quy mô 30–100 places.
+
 ## 9. Kiến trúc triển khai đã duyệt
 
 - `PlaceRepository` mở rộng `JpaSpecificationExecutor<Place>`.
@@ -309,7 +325,7 @@ category_id)`. V9 phải chạy trên database sạch và database đã có V1�
 | FR-001 | Mở rộng public `GET /api/v1/places`, không thêm `/search`. |
 | FR-002 | Năm filters đều optional và kết hợp theo BR-002. |
 | FR-003 | Không filter phải giữ behavior FEAT-001. |
-| FR-004 | Keyword/district không phân biệt hoa thường và dấu. |
+| FR-004 | Keyword/administrative-unit name không phân biệt hoa thường và dấu. |
 | FR-005 | Category/indoor/cost phải theo BR-007–BR-010. |
 | FR-006 | Pagination/default/limits/response giữ contract mục 5. |
 | FR-007 | Chỉ active places được trả và tính total. |
@@ -321,7 +337,8 @@ category_id)`. V9 phải chạy trên database sạch và database đã có V1�
 
 ## 11. Trường hợp biên
 
-- Keyword/district `null`, empty hoặc whitespace-only.
+- Keyword/administrative-unit name `null`, empty hoặc whitespace-only.
+- Place có cả hai administrative-unit field là `null`.
 - Keyword chứa `%`, `_`, `\` hoặc Unicode có dấu.
 - Một hoặc nhiều DB text fields là `NULL`.
 - `indoor=false`.
@@ -364,9 +381,10 @@ sort và đúng contract FEAT-001.
 
 `%`, `_`, `\` trong keyword được match như ký tự literal, không mở rộng pattern.
 
-### AC-004 — District exact normalized
+### AC-004 — Administrative-unit name exact normalized
 
-`quan 1` khớp `Quận 1`; `1` không khớp.
+`don vi demo` khớp `Đơn vị Demo`; `Demo` không khớp. Place có unit name
+`null` không được đưa vào kết quả của filter có giá trị.
 
 ### AC-005 — Category
 
@@ -409,8 +427,8 @@ fieldErrors; repository không được gọi khi request validation thất bạ
 
 ### AC-014 — Migration
 
-V9 cài `unaccent`, tạo reverse category index, chạy đúng một lần trên database
-sạch/live V8 và không sửa V1–V8.
+V9 cài `unaccent`, tạo reverse category index và chạy đúng một lần. Refactor
+location không thay đổi nội dung V9; V2/V6 là ngoại lệ được owner duyệt riêng.
 
 ### AC-015 — Query/performance
 
@@ -419,8 +437,14 @@ Automated query count không vượt 2, không N+1; local warm response trên fi
 
 ### AC-016 — Regression
 
-28 tests FEAT-001/002 cùng test FEAT-003 mới đều pass; list/detail/categories
-giữ status, shape, ordering và error behavior đã khóa.
+Toàn bộ backend suite đều pass; list/detail/categories giữ status, shape,
+ordering và error behavior đã khóa, với summary 12 field và detail 16 field.
+
+### AC-017 — Không filter theo type hoặc tự tạo option từ null
+
+API không nhận `administrativeUnitType` như filter. Frontend chỉ tạo danh sách
+unit-name options từ active places có name khác `null`; các place chưa mapping
+hiển thị “Chưa xác định”.
 
 ## 14. File-by-file implementation plan đề xuất
 
@@ -450,7 +474,8 @@ giữ status, shape, ordering và error behavior đã khóa.
 
 - [x] Mở rộng `PlaceRepository` bằng `JpaSpecificationExecutor<Place>`.
 - [x] Tạo `backend/src/main/java/com/saigonplantravel/backend/place/repository/specification/PlaceSpecifications.java`.
-- [x] Thêm active predicate bắt buộc và năm optional filter predicates.
+- [x] Thêm active predicate bắt buộc và năm optional filter predicates, trong
+  đó location filter là `administrativeUnitName`.
 - [x] Join category chỉ khi cần; distinct content/count đúng.
 - [x] Không fetch nested collections.
 
@@ -459,7 +484,8 @@ giữ status, shape, ordering và error behavior đã khóa.
 - [x] Mở rộng `PlaceService` để nhận normalized search request, defaults và fixed sort.
 - [x] Mở rộng `PlaceController#getPlaces`; không tạo route/controller `/search`.
 - [x] Mở rộng `GlobalExceptionHandler` bằng `INVALID_REQUEST` và `fieldErrors`.
-- [x] Giữ pagination/list/detail/category contracts hiện có.
+- [x] Giữ pagination/list/detail/category contracts hiện có sau khi đồng bộ
+  summary 12 field và detail 16 field.
 
 ### Phase F — Automated tests
 
@@ -468,6 +494,8 @@ giữ status, shape, ordering và error behavior đã khóa.
 - [x] Mở rộng controller tests cho binding, response và validation errors.
 - [x] Mở rộng PostgreSQL integration tests cho unaccent, five filters, AND,
   wildcard, distinct count, pagination và tối đa 2 queries.
+- [x] Xác minh administrative-unit exact normalized match, keyword search trên
+  unit name và sáu seed rows giữ cặp field `NULL`.
 - [x] Tạo test-only fixture 30 places; không thêm live seed.
 - [x] Chạy `./mvnw clean test` và `./mvnw clean verify`.
 
@@ -491,15 +519,15 @@ giữ status, shape, ordering và error behavior đã khóa.
 ### Web
 
 - Bind mọi parameter, đặc biệt `indoor=false`.
-- 7-field/11-field JSON contract.
+- 7-field/12-field JSON contract.
 - Validation ProblemDetail và fieldErrors.
 - Không filter regression.
 
 ### PostgreSQL integration
 
-- V1–V9, extension/index và migrate lại không trùng.
+- V1–V10 trên clean database, extension/index và migrate lại không trùng.
 - Accent-insensitive matching trên năm fields.
-- District exact, category distinct, budget và inactive exclusion.
+- Administrative-unit name exact, category distinct, budget và inactive exclusion.
 - Pagination/name tie-breaker, wildcard literal và query count tối đa 2.
 
 ### Runtime
@@ -509,19 +537,21 @@ giữ status, shape, ordering và error behavior đã khóa.
 - Invalid type/range/slug và out-of-range page.
 - Query plan và warm timing với dataset được ghi rõ.
 
-## 16. Bằng chứng xác minh ngày 2026-07-20
+## 16. Bằng chứng xác minh
 
-- `./mvnw clean test`: 39 tests, 0 failures/errors/skipped.
-- `./mvnw clean verify`: 39 tests pass, JAR được Spring Boot repackage thành công.
-- Testcontainers PostgreSQL 16 chạy sạch V1–V9; migrate lại không tạo migration
-  mới; Hibernate `ddl-auto=validate` thành công.
+- `./mvnw test` ngày 2026-07-27: 39 tests, 0 failures/errors/skipped.
+- Testcontainers PostgreSQL 16 chạy sạch V1–V10 sau refactor V2/V6; Hibernate
+  `ddl-auto=validate` thành công.
 - Integration fixture 30 matching places xác nhận fixed `name,id` ordering,
   hai trang không trùng, mỗi request dùng 1–2 SQL và dưới 500 ms.
 - Hibernate SQL xác nhận text/category inputs dùng bind parameters (`?`), LIKE
   escape hoạt động với `%`, `_`, `\`.
-- Live database có V1–V9 `success=true`, `unaccent` 1.1 và index
-  `idx_place_categories_category_place(category_id, place_id)`.
-- `EXPLAIN (ANALYZE, BUFFERS)` cho full category/district/indoor/budget query
+- Bằng chứng ngày 2026-07-20 ghi nhận database khi đó có V1–V9,
+  `unaccent` 1.1 và index
+  `idx_place_categories_category_place(category_id, place_id)`; sau refactor,
+  canonical clean baseline gồm thêm V10 authentication.
+- `EXPLAIN (ANALYZE, BUFFERS)` cho full
+  category/administrative-unit-name/indoor/budget query
   trên 6 demo rows: 0.090 ms execution, 15 shared buffer hits. Đây là evidence
   local, không phải production benchmark.
 - Runtime JAR smoke: no-filter, từng filter, full combination, valid empty,
@@ -546,12 +576,14 @@ giữ status, shape, ordering và error behavior đã khóa.
 - [x] File-by-file plan được owner phê duyệt.
 - [x] Implementation không vượt phạm vi mục 4.
 - [x] V9 clean/live/restart và Hibernate validation pass.
-- [x] Năm filters, AND semantics, normalization và validation đúng contract.
+- [x] Năm filters, AND semantics, normalization và validation đúng contract;
+  location chỉ lọc theo `administrativeUnitName`.
 - [x] Pagination/response/sorting và FEAT-001/002 regression đúng.
 - [x] Category content/count distinct và query count tối đa 2.
 - [x] Full tests, clean verify và smoke tests pass.
 - [x] Performance/query-plan evidence được ghi lại.
-- [x] Diff không chứa secret, sửa migration cũ hoặc thay đổi ngoài scope.
+- [x] Diff không chứa secret; V2/V6 được sửa có chủ đích theo quyết định
+  drop/recreate và không tạo V11.
 - [x] API note, DB note, development log và PROJECT_CONTEXT được cập nhật.
 
 ## 19. Tài liệu và khóa luận
@@ -575,6 +607,7 @@ trip/scheduling trong FEAT-003.
 | Ngày | Phiên bản | Thay đổi |
 | --- | --- | --- |
 | 2026-07-17 | 0.1 | Draft endpoint `/places/search`. |
-| 2026-07-20 | 1.0 | Owner khóa mở rộng `/places`, năm filters, 7/11-field response, size 100, unaccent V9, Specification, errors, tests và performance gate; chuyển `approved`. |
+| 2026-07-20 | 1.0 | Owner khóa mở rộng `/places`, năm filters, response contract lúc triển khai ban đầu, size 100, unaccent V9, Specification, errors, tests và performance gate; chuyển `approved`. |
 | 2026-07-20 | 1.1 | Owner duyệt file-by-file plan; chuyển `in-progress`. |
 | 2026-07-20 | 1.2 | Hoàn tất implementation, 39 tests, V9 live/clean, bind-parameter review, smoke/query-plan evidence và chuyển `done`. |
+| 2026-07-27 | 1.3 | Thay location filter cũ bằng `administrativeUnitName`, thêm type metadata nullable, cập nhật search/filter/frontend behavior, clean baseline V1–V10 và xác minh 39 tests pass. |
