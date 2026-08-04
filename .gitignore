@@ -37,6 +37,11 @@ backend/target/
 *.tar.gz
 *.rar
 
+
+# Local AI/vibe coding artifacts
+agents/skills/grill-with-docs/
+AGENTS.md
+
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
