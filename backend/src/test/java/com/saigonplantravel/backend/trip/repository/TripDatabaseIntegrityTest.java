@@ -1,5 +1,7 @@
 package com.saigonplantravel.backend.trip.repository;
 
+import com.saigonplantravel.backend.testsupport.database.DatabaseTestFixtures;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -70,7 +72,14 @@ class TripDatabaseIntegrityTest {
                                 + "MjM0NTY3ODlhYmNkZWY="
         );
     }
-
+    private DatabaseTestFixtures fixtures;
+    @BeforeEach
+    void setUpFixtures() {
+        fixtures =
+                new DatabaseTestFixtures(
+                        jdbcTemplate
+                );
+    }
     private static final LocalDate VALID_DATE =
             LocalDate.of(2099, 8, 20);
 
@@ -104,7 +113,7 @@ class TripDatabaseIntegrityTest {
 
     @Test
     void rejectsInvalidTripRowsWithNamedConstraints() {
-        Long userId = insertUser("constraint-user");
+        Long userId = fixtures.insertUser("constraint-user");
 
         assertInvalidTrip(
                 userId,
@@ -262,13 +271,13 @@ class TripDatabaseIntegrityTest {
     }
     @Test
     void rejectsDuplicateCategoryPreference() {
-        Long userId = insertUser("duplicate-preference");
-        Long categoryId = insertCategory(
+        Long userId = fixtures.insertUser("duplicate-preference");
+        Long categoryId = fixtures.insertCategory(
                 "Duplicate Preference Category",
                 "duplicate-preference-category"
         );
 
-        Long tripId = insertValidTrip(
+        Long tripId = fixtures.insertValidTrip(
                 UUID.randomUUID(),
                 userId
         );
@@ -301,14 +310,14 @@ class TripDatabaseIntegrityTest {
     }
     @Test
     void enforcesTripForeignKeyDeleteBehavior() {
-        Long userId = insertUser("foreign-key-user");
+        Long userId = fixtures.insertUser("foreign-key-user");
 
-        Long categoryId = insertCategory(
+        Long categoryId = fixtures.insertCategory(
                 "Trip FK Category",
                 "trip-fk-category"
         );
 
-        Long tripId = insertValidTrip(
+        Long tripId = fixtures.insertValidTrip(
                 UUID.randomUUID(),
                 userId
         );
@@ -359,48 +368,7 @@ class TripDatabaseIntegrityTest {
     }
 
     //Helper
-    private Long insertUser(String emailPrefix) {
-        return jdbcTemplate.queryForObject(
-                """
-                INSERT INTO users (
-                    public_id,
-                    email,
-                    password_hash,
-                    display_name,
-                    role,
-                    active
-                )
-                VALUES (?, ?, ?, ?, 'USER', TRUE)
-                RETURNING id
-                """,
-                Long.class,
-                UUID.randomUUID(),
-                emailPrefix
-                        + "-"
-                        + UUID.randomUUID()
-                        + "@example.com",
-                "integration-test-password",
-                "Trip Integration User"
-        );
-    }
-    private Long insertCategory(
-            String name,
-            String slug
-    ) {
-        return jdbcTemplate.queryForObject(
-                """
-                INSERT INTO categories (
-                    name,
-                    slug
-                )
-                VALUES (?, ?)
-                RETURNING id
-                """,
-                Long.class,
-                name + " " + UUID.randomUUID(),
-                slug + "-" + UUID.randomUUID()
-        );
-    }
+
     private Long insertTrip(
             UUID publicId,
             Long userId,
@@ -454,25 +422,7 @@ class TripDatabaseIntegrityTest {
                 updatedAt
         );
     }
-    private Long insertValidTrip(
-            UUID publicId,
-            Long userId
-    ) {
-        return insertTrip(
-                publicId,
-                userId,
-                VALID_START,
-                VALID_END,
-                VALID_BUDGET,
-                "Chợ Bến Thành",
-                VALID_LATITUDE,
-                VALID_LONGITUDE,
-                "BALANCED",
-                "MIXED",
-                CREATED_AT,
-                UPDATED_AT
-        );
-    }
+
     private void assertInvalidTrip(
             Long userId,
             LocalTime startTime,

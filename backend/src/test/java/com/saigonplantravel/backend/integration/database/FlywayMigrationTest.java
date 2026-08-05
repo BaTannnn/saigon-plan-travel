@@ -58,7 +58,7 @@ class FlywayMigrationTest {
         assertThat(versions).containsExactly(
                 "1", "2", "3", "4", "5",
                 "6", "7", "8", "9", "10",
-                "11", "12"
+                "11", "12","13","14"
         );
         assertThat(jdbcTemplate.queryForObject(
                 "SELECT count(*) FROM flyway_schema_history WHERE version = '6' AND success",
