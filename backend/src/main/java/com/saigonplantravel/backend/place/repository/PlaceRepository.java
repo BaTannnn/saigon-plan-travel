@@ -3,6 +3,7 @@ package com.saigonplantravel.backend.place.repository;
 import com.saigonplantravel.backend.place.entity.Place;
 import com.saigonplantravel.backend.place.repository.projection.PlaceSchedulingBaseRow;
 import com.saigonplantravel.backend.place.repository.projection.PlaceSchedulingCategoryRow;
+import com.saigonplantravel.backend.place.repository.projection.PlaceSchedulingOpeningHourRow;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -56,6 +57,27 @@ public interface PlaceRepository extends JpaRepository<Place, Long>, JpaSpecific
     findSchedulingCategoryRowsByPreferredCategoryIds(
             @Param("preferredCategoryIds")
             Collection<Long> preferredCategoryIds
+    );
+    @Query("""
+        SELECT
+            openingHour.place.id AS placeId,
+            openingHour.dayOfWeek AS dayOfWeek,
+            openingHour.openTime AS openTime,
+            openingHour.closeTime AS closeTime,
+            openingHour.closed AS closed
+        FROM OpeningHour openingHour
+        WHERE openingHour.place.id IN :placeIds
+          AND openingHour.place.active = true
+          AND openingHour.dayOfWeek = :dayOfWeek
+        ORDER BY openingHour.place.id ASC
+        """)
+    List<PlaceSchedulingOpeningHourRow>
+    findSchedulingOpeningHourRows(
+            @Param("placeIds")
+            Collection<Long> placeIds,
+
+            @Param("dayOfWeek")
+            Short dayOfWeek
     );
     Page<Place> findAllByActiveTrue(Pageable pageable);
 

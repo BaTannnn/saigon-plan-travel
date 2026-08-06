@@ -5,6 +5,7 @@ import com.saigonplantravel.backend.place.dto.PlacePageResponse;
 import com.saigonplantravel.backend.place.dto.PlaceSearchRequest;
 import com.saigonplantravel.backend.place.entity.Category;
 import com.saigonplantravel.backend.place.entity.Place;
+import com.saigonplantravel.backend.place.repository.projection.PlaceSchedulingOpeningHourRow;
 import com.saigonplantravel.backend.place.service.PlaceService;
 import jakarta.persistence.EntityManagerFactory;
 import org.hibernate.SessionFactory;
@@ -26,7 +27,9 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import java.math.BigDecimal;
+import java.time.LocalTime;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -455,7 +458,112 @@ class PlaceRepositoryTest {
         assertThat(firstPageElapsedNanos).isLessThan(500_000_000L);
         assertThat(secondPageElapsedNanos).isLessThan(500_000_000L);
     }
+    @Test
+    void loadsOpeningHoursForRequestedPlacesAndDayWithoutInventingMissingRows() {
+        Long artSpaceId =
+                jdbcTemplate.queryForObject(
+                        """
+                        SELECT id
+                        FROM places
+                        WHERE slug = 'demo-art-space'
+                        """,
+                        Long.class
+                );
 
+        Long cityGardenId =
+                jdbcTemplate.queryForObject(
+                        """
+                        SELECT id
+                        FROM places
+                        WHERE slug = 'demo-city-garden'
+                        """,
+                        Long.class
+                );
+
+        List<PlaceSchedulingOpeningHourRow> mondayRows =
+                placeRepository.findSchedulingOpeningHourRows(
+                        Set.of(
+                                artSpaceId,
+                                cityGardenId
+                        ),
+                        (short) 1
+                );
+
+        assertThat(mondayRows)
+                .extracting(
+                        PlaceSchedulingOpeningHourRow::getPlaceId
+                )
+                .containsExactly(
+                        artSpaceId,
+                        cityGardenId
+                );
+
+        PlaceSchedulingOpeningHourRow artSpaceMonday =
+                findOpeningHourRow(
+                        mondayRows,
+                        artSpaceId
+                );
+
+        assertThat(artSpaceMonday.getClosed())
+                .isFalse();
+
+        assertThat(artSpaceMonday.getOpenTime())
+                .isEqualTo(
+                        LocalTime.of(9, 0)
+                );
+
+        assertThat(artSpaceMonday.getCloseTime())
+                .isEqualTo(
+                        LocalTime.of(17, 0)
+                );
+        List<PlaceSchedulingOpeningHourRow> tuesdayRows =
+                placeRepository.findSchedulingOpeningHourRows(
+                        Set.of(
+                                artSpaceId,
+                                cityGardenId
+                        ),
+                        (short) 2
+                );
+
+        PlaceSchedulingOpeningHourRow artSpaceTuesday =
+                findOpeningHourRow(
+                        tuesdayRows,
+                        artSpaceId
+                );
+
+        assertThat(artSpaceTuesday.getClosed())
+                .isTrue();
+
+        assertThat(artSpaceTuesday.getOpenTime())
+                .isNull();
+
+        assertThat(artSpaceTuesday.getCloseTime())
+                .isNull();
+        List<PlaceSchedulingOpeningHourRow> sundayRows =
+                placeRepository.findSchedulingOpeningHourRows(
+                        Set.of(
+                                artSpaceId,
+                                cityGardenId
+                        ),
+                        (short) 7
+                );
+
+        assertThat(sundayRows)
+                .extracting(
+                        PlaceSchedulingOpeningHourRow::getPlaceId
+                )
+                .containsExactly(
+                        artSpaceId
+                );
+
+        assertThat(sundayRows)
+                .extracting(
+                        PlaceSchedulingOpeningHourRow::getPlaceId
+                )
+                .doesNotContain(
+                        cityGardenId
+                );
+    }
     private void assertInvalidPlace(
             String slug,
             BigDecimal latitude,
@@ -550,5 +658,23 @@ class PlaceRepositoryTest {
                 page,
                 size
         );
+    }
+    private PlaceSchedulingOpeningHourRow findOpeningHourRow(
+            List<PlaceSchedulingOpeningHourRow> rows,
+            Long placeId
+    ) {
+        return rows.stream()
+                .filter(
+                        row -> row
+                                .getPlaceId()
+                                .equals(placeId)
+                )
+                .findFirst()
+                .orElseThrow(
+                        () -> new AssertionError(
+                                "Missing opening-hour row for placeId="
+                                        + placeId
+                        )
+                );
     }
 }
