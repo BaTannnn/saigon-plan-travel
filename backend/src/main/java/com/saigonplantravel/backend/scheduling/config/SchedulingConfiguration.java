@@ -1,15 +1,9 @@
 package com.saigonplantravel.backend.scheduling.config;
 
-import com.saigonplantravel.backend.scheduling.domain.SchedulingAlgorithmVersion;
-import com.saigonplantravel.backend.scheduling.domain.SchedulingPolicy;
+import com.saigonplantravel.backend.scheduling.domain.*;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import com.saigonplantravel.backend.scheduling.domain.DistanceCalculator;
-import com.saigonplantravel.backend.scheduling.domain.HaversineDistanceCalculator;
-import com.saigonplantravel.backend.scheduling.domain.TravelTimeEstimator;
-import com.saigonplantravel.backend.scheduling.domain.PaceDurationPolicy;
-import com.saigonplantravel.backend.scheduling.domain.VisitFeasibilityEvaluator;
 
 @Configuration(
         proxyBeanMethods = false
@@ -58,5 +52,9 @@ public class SchedulingConfiguration {
     public VisitFeasibilityEvaluator
     visitFeasibilityEvaluator() {
         return new VisitFeasibilityEvaluator();
+    }
+    @Bean
+    public CandidateScorer candidateScorer() {
+        return new CandidateScorer();
     }
 }
