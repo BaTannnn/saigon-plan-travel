@@ -1,6 +1,9 @@
 package com.saigonplantravel.backend.scheduling.domain;
 
 import com.saigonplantravel.backend.place.scheduling.OpeningHoursStatus;
+import com.saigonplantravel.backend.scheduling.domain.scoring.CandidateScore;
+import com.saigonplantravel.backend.scheduling.domain.scoring.CandidateScorer;
+import com.saigonplantravel.backend.scheduling.domain.scoring.CandidateScoringInput;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;

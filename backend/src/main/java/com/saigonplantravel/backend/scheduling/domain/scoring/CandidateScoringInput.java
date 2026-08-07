@@ -1,4 +1,4 @@
-package com.saigonplantravel.backend.scheduling.domain;
+package com.saigonplantravel.backend.scheduling.domain.scoring;
 
 import com.saigonplantravel.backend.place.scheduling.OpeningHoursStatus;
 

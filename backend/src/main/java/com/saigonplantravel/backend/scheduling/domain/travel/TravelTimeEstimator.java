@@ -1,4 +1,6 @@
-package com.saigonplantravel.backend.scheduling.domain;
+package com.saigonplantravel.backend.scheduling.domain.travel;
+
+import com.saigonplantravel.backend.scheduling.domain.SchedulingPolicy;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

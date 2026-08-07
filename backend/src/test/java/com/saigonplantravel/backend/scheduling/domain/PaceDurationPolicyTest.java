@@ -1,5 +1,6 @@
 package com.saigonplantravel.backend.scheduling.domain;
 
+import com.saigonplantravel.backend.scheduling.domain.visit.PaceDurationPolicy;
 import com.saigonplantravel.backend.trip.domain.TravelPace;
 import org.junit.jupiter.api.Test;
 

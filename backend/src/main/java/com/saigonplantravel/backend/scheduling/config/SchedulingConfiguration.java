@@ -1,6 +1,13 @@
 package com.saigonplantravel.backend.scheduling.config;
 
 import com.saigonplantravel.backend.scheduling.domain.*;
+import com.saigonplantravel.backend.scheduling.domain.scoring.CandidateRanker;
+import com.saigonplantravel.backend.scheduling.domain.scoring.CandidateScorer;
+import com.saigonplantravel.backend.scheduling.domain.travel.DistanceCalculator;
+import com.saigonplantravel.backend.scheduling.domain.travel.HaversineDistanceCalculator;
+import com.saigonplantravel.backend.scheduling.domain.travel.TravelTimeEstimator;
+import com.saigonplantravel.backend.scheduling.domain.visit.PaceDurationPolicy;
+import com.saigonplantravel.backend.scheduling.domain.visit.VisitFeasibilityEvaluator;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -56,5 +63,9 @@ public class SchedulingConfiguration {
     @Bean
     public CandidateScorer candidateScorer() {
         return new CandidateScorer();
+    }
+    @Bean
+    public CandidateRanker candidateRanker() {
+        return new CandidateRanker();
     }
 }

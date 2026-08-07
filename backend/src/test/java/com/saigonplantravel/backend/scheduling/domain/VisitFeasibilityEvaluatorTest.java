@@ -1,6 +1,10 @@
 package com.saigonplantravel.backend.scheduling.domain;
 
 import com.saigonplantravel.backend.place.scheduling.OpeningHoursSnapshot;
+import com.saigonplantravel.backend.scheduling.domain.visit.VisitFeasibilityEvaluator;
+import com.saigonplantravel.backend.scheduling.domain.visit.VisitFeasibilityInput;
+import com.saigonplantravel.backend.scheduling.domain.visit.VisitFeasibilityResult;
+import com.saigonplantravel.backend.scheduling.domain.visit.VisitRejectionReason;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;

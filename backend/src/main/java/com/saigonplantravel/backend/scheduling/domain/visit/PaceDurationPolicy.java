@@ -1,4 +1,4 @@
-package com.saigonplantravel.backend.scheduling.domain;
+package com.saigonplantravel.backend.scheduling.domain.visit;
 
 import com.saigonplantravel.backend.trip.domain.TravelPace;
 

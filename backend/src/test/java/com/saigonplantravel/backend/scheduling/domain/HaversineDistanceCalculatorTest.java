@@ -1,5 +1,8 @@
 package com.saigonplantravel.backend.scheduling.domain;
 
+import com.saigonplantravel.backend.scheduling.domain.travel.DistanceCalculator;
+import com.saigonplantravel.backend.scheduling.domain.travel.GeoPoint;
+import com.saigonplantravel.backend.scheduling.domain.travel.HaversineDistanceCalculator;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
