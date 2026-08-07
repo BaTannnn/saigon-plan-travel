@@ -1,5 +1,7 @@
 package com.saigonplantravel.backend.scheduling.domain;
 
+import com.saigonplantravel.backend.place.domain.AdministrativeUnitType;
+import com.saigonplantravel.backend.place.scheduling.OpeningHoursSnapshot;
 import com.saigonplantravel.backend.place.scheduling.PlaceSchedulingCandidate;
 import com.saigonplantravel.backend.scheduling.domain.scoring.CandidateRanker;
 import com.saigonplantravel.backend.scheduling.domain.scoring.CandidateScore;
@@ -11,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -207,19 +210,20 @@ class CandidateRankerTest {
             String totalScore
     ) {
         PlaceSchedulingCandidate place =
-                mock(
-                        PlaceSchedulingCandidate.class
-                );
-
-        when(place.placeId())
-                .thenReturn(placeId);
-
-        when(place.name())
-                .thenReturn(name);
-
-        when(place.minCost())
-                .thenReturn(
-                        new BigDecimal(minCost)
+                new PlaceSchedulingCandidate(
+                        placeId,
+                        name,
+                        "place-" + placeId,
+                        "Địa chỉ " + placeId,
+                        "Phường Bến Nghé",
+                        AdministrativeUnitType.WARD,
+                        new BigDecimal("10.776889"),
+                        new BigDecimal("106.700806"),
+                        60,
+                        new BigDecimal(minCost),
+                        true,
+                        Set.of(1L),
+                        OpeningHoursSnapshot.unknown()
                 );
 
         TravelEstimate travel =
