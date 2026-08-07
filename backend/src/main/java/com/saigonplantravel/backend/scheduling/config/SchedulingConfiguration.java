@@ -9,6 +9,8 @@ import com.saigonplantravel.backend.scheduling.domain.DistanceCalculator;
 import com.saigonplantravel.backend.scheduling.domain.HaversineDistanceCalculator;
 import com.saigonplantravel.backend.scheduling.domain.TravelTimeEstimator;
 import com.saigonplantravel.backend.scheduling.domain.PaceDurationPolicy;
+import com.saigonplantravel.backend.scheduling.domain.VisitFeasibilityEvaluator;
+
 @Configuration(
         proxyBeanMethods = false
 )
@@ -51,5 +53,10 @@ public class SchedulingConfiguration {
     @Bean
     public PaceDurationPolicy paceDurationPolicy() {
         return new PaceDurationPolicy();
+    }
+    @Bean
+    public VisitFeasibilityEvaluator
+    visitFeasibilityEvaluator() {
+        return new VisitFeasibilityEvaluator();
     }
 }
