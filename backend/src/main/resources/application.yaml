@@ -29,6 +29,8 @@ management:
 
 app:
   security:
+    cors:
+      allowed-origin: ${CORS_ALLOWED_ORIGIN:http://localhost:3000}
     jwt:
       secret: ${JWT_SECRET}
       issuer: saigon-plan-travel

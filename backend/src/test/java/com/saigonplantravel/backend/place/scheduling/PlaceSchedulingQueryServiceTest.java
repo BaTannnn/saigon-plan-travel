@@ -439,11 +439,7 @@ class PlaceSchedulingQueryServiceTest {
                 );
 
         PlaceSchedulingBaseRow place10 =
-                baseRow(
-                        10L,
-                        "Bảo tàng A",
-                        true
-                );
+                baseRowIdentity(10L);
 
         /*
          * Category row này không hợp lệ vì placeId 999
@@ -518,11 +514,7 @@ class PlaceSchedulingQueryServiceTest {
                 );
 
         PlaceSchedulingBaseRow place10 =
-                baseRow(
-                        10L,
-                        "Bảo tàng A",
-                        true
-                );
+                baseRowIdentity(10L);
 
         when(
                 placeRepository
@@ -594,11 +586,7 @@ class PlaceSchedulingQueryServiceTest {
                 );
 
         PlaceSchedulingBaseRow place10 =
-                baseRow(
-                        10L,
-                        "Bảo tàng A",
-                        true
-                );
+                baseRowIdentity(10L);
 
         PlaceSchedulingCategoryRow place10Category2 =
                 categoryRow(
@@ -677,6 +665,20 @@ class PlaceSchedulingQueryServiceTest {
                         "placeId=10"
                 );
     }
+    private PlaceSchedulingBaseRow baseRowIdentity(
+            Long placeId
+    ) {
+        PlaceSchedulingBaseRow row =
+                mock(
+                        PlaceSchedulingBaseRow.class
+                );
+
+        when(row.getPlaceId())
+                .thenReturn(placeId);
+
+        return row;
+    }
+
     private PlaceSchedulingBaseRow baseRow(
             Long placeId,
             String name,
