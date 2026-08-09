@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { AuthControls } from "@/components/layout/auth-controls";
 import { Badge } from "@/components/ui/badge";
 import { PinIcon } from "@/components/ui/icons";
 
@@ -41,21 +41,7 @@ export function SiteHeader() {
         </span>
       </nav>
 
-      <div
-        className="flex items-center justify-self-end gap-2 font-bold"
-        aria-label="Người dùng Tân"
-      >
-        <Avatar
-          className="size-[42px] border border-border bg-[linear-gradient(145deg,var(--primary-soft),var(--surface))] text-primary-strong max-md:size-[38px]"
-          size="lg"
-          aria-hidden="true"
-        >
-          <AvatarFallback className="bg-transparent font-extrabold text-primary-strong">
-            T
-          </AvatarFallback>
-        </Avatar>
-        <span className="max-md:hidden">Tân</span>
-      </div>
+      <AuthControls />
     </header>
   );
 }

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { SiteHeader } from "@/components/layout/site-header";
+import { AuthProvider } from "@/features/auth/auth-provider";
 import "leaflet/dist/leaflet.css";
 import "./globals.css";
 import { Geist } from "next/font/google";
@@ -26,8 +27,10 @@ export default function RootLayout({
   return (
     <html lang="vi" className={geist.variable}>
       <body>
-        <SiteHeader />
-        {children}
+        <AuthProvider>
+          <SiteHeader />
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

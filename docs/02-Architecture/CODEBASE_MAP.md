@@ -384,11 +384,16 @@ Current source:
 frontend/src/
 ├── app/
 │   ├── page.tsx
+│   ├── login/
+│   ├── register/
 │   └── places/
 ├── components/
 │   ├── layout/
 │   └── ui/
 ├── features/
+│   ├── auth/
+│   │   ├── auth-provider.tsx
+│   │   └── components/
 │   └── places/
 │       ├── components/
 │       ├── map/
@@ -396,10 +401,12 @@ frontend/src/
 │       └── search-params.ts
 ├── lib/api/
 │   ├── api-client.ts
+│   ├── auth-api.ts
 │   ├── category-api.ts
 │   └── place-api.ts
 └── types/
     ├── api.ts
+    ├── auth.ts
     ├── category.ts
     └── place.ts
 ```
@@ -425,6 +432,21 @@ Place detail flow:
 → backend place detail API
 → PlaceDetailView
 ```
+
+Browser authentication flow:
+
+```text
+/register → Auth API → redirect to /login
+/login → Auth API → JWT in sessionStorage → authenticated header state
+reload → AuthProvider → Bearer JWT → GET /api/v1/auth/me → restore current user
+logout / `runAuthenticated` 401 → clear tab session → guest header state
+```
+
+`AuthProvider` is the browser-only session boundary. The root layout and `SiteHeader`
+remain Server Components; only `AuthControls` and the auth forms are Client Components.
+The access token is never placed in server-rendered props. Browser API URLs use the
+build-time public `NEXT_PUBLIC_BACKEND_API_BASE_URL`, while Place Server Components use
+the server-only `BACKEND_API_BASE_URL`.
 
 Do not implement the itinerary UI by copying Place patterns blindly. First stabilize the
 FEAT-005 public response and then model timeline/map state from that contract.
