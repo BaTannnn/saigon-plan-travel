@@ -5,12 +5,9 @@ import {
   readPlacesSearchParams,
   type RawSearchParams,
 } from "@/features/places/search-params";
+import { ApiError } from "@/lib/api/api-client";
 import { getCategories } from "@/lib/api/category-api";
-import {
-  getPlaceCatalog,
-  getPlaces,
-  PlaceApiError,
-} from "@/lib/api/place-api";
+import { getPlaceCatalog, getPlaces } from "@/lib/api/place-api";
 
 export const metadata: Metadata = {
   title: "Khám phá địa điểm",
@@ -28,7 +25,7 @@ async function loadPlacesPage(
 
     return { result, categories, catalog, error: null };
   } catch (error) {
-    if (error instanceof PlaceApiError) {
+    if (error instanceof ApiError) {
       return { result: null, categories: null, catalog: null, error };
     }
     throw error;

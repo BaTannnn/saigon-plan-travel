@@ -389,11 +389,24 @@ frontend/src/
 │   ├── layout/
 │   └── ui/
 ├── features/
-│   ├── map/
 │   └── places/
-├── lib/api/place-api.ts
-└── types/place.ts
+│       ├── components/
+│       ├── map/
+│       ├── formatters.ts
+│       └── search-params.ts
+├── lib/api/
+│   ├── api-client.ts
+│   ├── category-api.ts
+│   └── place-api.ts
+└── types/
+    ├── api.ts
+    ├── category.ts
+    └── place.ts
 ```
+
+`api-client.ts` owns runtime-neutral JSON transport and `ApiError`. Feature API
+modules supply the complete backend URL, cache policy, and optional bearer token;
+the shared client does not read environment variables or browser storage.
 
 Main Place exploration flow:
 

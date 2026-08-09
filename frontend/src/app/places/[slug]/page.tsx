@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { PlaceDetailView } from "@/features/places/components/place-detail-view";
-import { getPlaceDetail, PlaceApiError } from "@/lib/api/place-api";
+import { ApiError } from "@/lib/api/api-client";
+import { getPlaceDetail } from "@/lib/api/place-api";
 
 export const metadata: Metadata = {
   title: "Chi tiết địa điểm",
@@ -11,7 +12,7 @@ async function loadPlaceDetail(slug: string) {
   try {
     return await getPlaceDetail(slug);
   } catch (error) {
-    if (error instanceof PlaceApiError && error.status === 404) {
+    if (error instanceof ApiError && error.status === 404) {
       return null;
     }
     throw error;
