@@ -123,6 +123,28 @@ class VisitFeasibilityEvaluatorTest {
                 .isEqualTo(40);
     }
 
+    @Test
+    void reportsTripWindowBeforeClosingTimeWhenBothAreExceeded() {
+        VisitFeasibilityInput input =
+                new VisitFeasibilityInput(
+                        at(16, 0),
+                        at(17, 0),
+                        0,
+                        120,
+                        OpeningHoursSnapshot.knownOpen(
+                                LocalTime.of(8, 0),
+                                LocalTime.of(16, 30)
+                        )
+                );
+
+        VisitFeasibilityResult result = evaluator.evaluate(input);
+
+        assertThat(result.feasible()).isFalse();
+        assertThat(result.rejectionReason()).isEqualTo(
+                VisitRejectionReason.TRIP_END_TIME_EXCEEDED
+        );
+    }
+
     private static LocalDateTime at(
             int hour,
             int minute

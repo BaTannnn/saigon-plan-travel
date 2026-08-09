@@ -132,24 +132,14 @@ public final class VisitFeasibilityEvaluator {
             LocalDateTime closingAt,
             LocalDateTime tripEndAt
     ) {
-        /*
-         * Xác định giới hạn kết thúc sớm hơn:
-         *
-         * - địa điểm đóng cửa;
-         * - hoặc chuyến đi kết thúc.
-         */
-        if (closingAt.isBefore(tripEndAt)) {
-            if (visitEndAt.isAfter(closingAt)) {
-                return VisitRejectionReason
-                        .PLACE_CLOSING_TIME_EXCEEDED;
-            }
-
-            return null;
-        }
-
         if (visitEndAt.isAfter(tripEndAt)) {
             return VisitRejectionReason
                     .TRIP_END_TIME_EXCEEDED;
+        }
+
+        if (visitEndAt.isAfter(closingAt)) {
+            return VisitRejectionReason
+                    .PLACE_CLOSING_TIME_EXCEEDED;
         }
 
         return null;
