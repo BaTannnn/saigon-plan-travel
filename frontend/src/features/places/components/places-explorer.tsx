@@ -13,12 +13,13 @@ import {
 } from "@/components/ui/sheet";
 import { CategoryChips } from "@/features/places/components/category-chips";
 import { FilterPanel } from "@/features/places/components/filter-panel";
-import { Pagination } from "@/features/places/components/pagination";
 import { PlaceList } from "@/features/places/components/place-list";
+import { PlacesPagination } from "@/features/places/components/places-pagination";
 import { SearchForm } from "@/features/places/components/search-form";
-import { MapShell } from "@/features/map/map-shell";
+import { MapShell } from "@/features/places/map/map-shell";
 import { cn } from "@/lib/utils";
-import type { Category, PlacePage, PlacesSearchFilters } from "@/types/place";
+import type { Category } from "@/types/category";
+import type { PlacePage, PlacesSearchFilters } from "@/types/place";
 
 type PlacesExplorerProps = {
   result: PlacePage;
@@ -144,7 +145,7 @@ export function PlacesExplorer({
           selectedSlug={effectiveSelectedSlug}
           onSelect={selectPlace}
         />
-        <Pagination page={result} filters={filters} />
+        <PlacesPagination page={result} filters={filters} />
       </section>
 
       <section

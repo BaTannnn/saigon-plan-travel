@@ -1,3 +1,5 @@
+import type { Category } from "@/types/category";
+
 export type AdministrativeUnitType = "WARD" | "COMMUNE" | "SPECIAL_ZONE";
 
 export type PlaceSummary = {
@@ -25,12 +27,6 @@ export type PlacePage = {
   last: boolean;
 };
 
-export type Category = {
-  id: number;
-  name: string;
-  slug: string;
-};
-
 export type OpeningHour = {
   dayOfWeek: number;
   closed: boolean;
@@ -53,19 +49,4 @@ export type PlacesSearchFilters = {
   maxCost?: string;
   page: number;
   size: number;
-};
-
-export type ApiFieldError = {
-  field: string;
-  message: string;
-};
-
-export type ApiProblem = {
-  type?: string;
-  title?: string;
-  status?: number;
-  detail?: string;
-  instance?: string;
-  code?: string;
-  fieldErrors?: ApiFieldError[];
 };

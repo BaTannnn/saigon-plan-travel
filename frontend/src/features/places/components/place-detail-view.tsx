@@ -13,7 +13,7 @@ import {
   formatCost,
   formatDuration,
 } from "@/features/places/formatters";
-import { MapShell } from "@/features/map/map-shell";
+import { MapShell } from "@/features/places/map/map-shell";
 import { cn } from "@/lib/utils";
 import type { PlaceDetail } from "@/types/place";
 

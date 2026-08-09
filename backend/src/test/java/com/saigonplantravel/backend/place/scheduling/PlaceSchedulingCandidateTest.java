@@ -61,6 +61,50 @@ class PlaceSchedulingCandidateTest {
     }
 
     @Test
+    void preservesUnknownAdministrativeUnitAsNullPair() {
+        PlaceSchedulingCandidate candidate =
+                new PlaceSchedulingCandidate(
+                        10L,
+                        "Bảo tàng Demo",
+                        "bao-tang-demo",
+                        "Địa chỉ demo, TP.HCM",
+                        null,
+                        null,
+                        new BigDecimal("10.7768890"),
+                        new BigDecimal("106.7008060"),
+                        90,
+                        new BigDecimal("50000.00"),
+                        true,
+                        Set.of(1L),
+                        OpeningHoursSnapshot.unknown()
+                );
+
+        assertThat(candidate.administrativeUnitName()).isNull();
+        assertThat(candidate.administrativeUnitType()).isNull();
+    }
+
+    @Test
+    void rejectsIncompleteAdministrativeUnitPair() {
+        assertThatThrownBy(
+                () -> new PlaceSchedulingCandidate(
+                        10L,
+                        "Bảo tàng Demo",
+                        "bao-tang-demo",
+                        "Địa chỉ demo, TP.HCM",
+                        "Bến Nghé",
+                        null,
+                        new BigDecimal("10.7768890"),
+                        new BigDecimal("106.7008060"),
+                        90,
+                        new BigDecimal("50000.00"),
+                        true,
+                        Set.of(1L),
+                        OpeningHoursSnapshot.unknown()
+                )
+        ).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
     void rejectsInvalidSchedulingValues() {
         assertThatThrownBy(
                 () -> new PlaceSchedulingCandidate(

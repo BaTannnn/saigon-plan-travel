@@ -15,7 +15,8 @@ import {
 } from "@/components/ui/select";
 import { hasActiveFilters } from "@/features/places/search-params";
 import { cn } from "@/lib/utils";
-import type { Category, PlacesSearchFilters } from "@/types/place";
+import type { Category } from "@/types/category";
+import type { PlacesSearchFilters } from "@/types/place";
 
 const ALL_VALUE = "__all__";
 

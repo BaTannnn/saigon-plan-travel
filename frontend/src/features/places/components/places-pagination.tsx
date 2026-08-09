@@ -8,12 +8,12 @@ import {
 import { createPlacesHref } from "@/features/places/search-params";
 import type { PlacePage, PlacesSearchFilters } from "@/types/place";
 
-type PaginationProps = {
+type PlacesPaginationProps = {
   page: PlacePage;
   filters: PlacesSearchFilters;
 };
 
-export function Pagination({ page, filters }: PaginationProps) {
+export function PlacesPagination({ page, filters }: PlacesPaginationProps) {
   if (page.totalPages <= 1) return null;
 
   return (

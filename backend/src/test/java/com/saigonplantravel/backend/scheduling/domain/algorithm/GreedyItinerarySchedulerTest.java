@@ -51,32 +51,7 @@ class GreedyItinerarySchedulerTest {
 
     @Test
     void recomputesRemainingCandidatesFromUpdatedStateAfterEachSelection() {
-        TripSchedulingSnapshot trip =
-                new TripSchedulingSnapshot(
-                        1L,
-                        UUID.fromString(
-                                "11111111-1111-1111-1111-111111111111"
-                        ),
-                        LocalDate.of(
-                                2026,
-                                8,
-                                9
-                        ),
-                        LocalTime.of(8, 0),
-                        LocalTime.of(17, 0),
-                        new BigDecimal("1000.00"),
-                        new BigDecimal("10.0000000"),
-                        new BigDecimal("106.0000000"),
-                        TravelPace.BALANCED,
-                        EnvironmentPreference.MIXED,
-                        Set.of(
-                                1L,
-                                2L
-                        ),
-                        OffsetDateTime.parse(
-                                "2026-08-08T15:00:00+07:00"
-                        )
-                );
+        TripSchedulingSnapshot trip = trip();
 
         /*
          * A match cả 2 preferred categories,
@@ -177,6 +152,74 @@ class GreedyItinerarySchedulerTest {
                         .distanceKilometers()
         ).isLessThan(
                 new BigDecimal("0.200")
+        );
+    }
+
+    @Test
+    void producesSameBusinessOutcomeForPermutedCandidateInput() {
+        PlaceSchedulingCandidate placeA = candidate(
+                10L,
+                "Place A",
+                "10.0000000",
+                "106.0100000",
+                Set.of(1L, 2L)
+        );
+        PlaceSchedulingCandidate placeB = candidate(
+                20L,
+                "Place B",
+                "10.0000000",
+                "106.0110000",
+                Set.of(1L)
+        );
+        PlaceSchedulingCandidate placeC = candidate(
+                30L,
+                "Place C",
+                "10.0000000",
+                "106.0050000",
+                Set.of(1L)
+        );
+        OffsetDateTime generatedAt = OffsetDateTime.parse(
+                "2026-08-08T16:00:00+07:00"
+        );
+
+        GreedySchedulingOutcome first = scheduler.schedule(
+                new SchedulingInput(
+                        trip(),
+                        List.of(placeA, placeB, placeC),
+                        policy,
+                        generatedAt
+                )
+        );
+        GreedySchedulingOutcome permuted = scheduler.schedule(
+                new SchedulingInput(
+                        trip(),
+                        List.of(placeC, placeA, placeB),
+                        policy,
+                        generatedAt
+                )
+        );
+
+        assertThat(permuted).isEqualTo(first);
+    }
+
+    private static TripSchedulingSnapshot trip() {
+        return new TripSchedulingSnapshot(
+                1L,
+                UUID.fromString(
+                        "11111111-1111-1111-1111-111111111111"
+                ),
+                LocalDate.of(2026, 8, 9),
+                LocalTime.of(8, 0),
+                LocalTime.of(17, 0),
+                new BigDecimal("1000.00"),
+                new BigDecimal("10.0000000"),
+                new BigDecimal("106.0000000"),
+                TravelPace.BALANCED,
+                EnvironmentPreference.MIXED,
+                Set.of(1L, 2L),
+                OffsetDateTime.parse(
+                        "2026-08-08T15:00:00+07:00"
+                )
         );
     }
 

@@ -1,6 +1,5 @@
+import type { ApiProblem } from "@/types/api";
 import type {
-  ApiProblem,
-  Category,
   PlaceDetail,
   PlacePage,
   PlacesSearchFilters,
@@ -25,7 +24,7 @@ function getBackendBaseUrl() {
   );
 }
 
-async function requestJson<T>(path: string): Promise<T> {
+export async function requestJson<T>(path: string): Promise<T> {
   let response: Response;
 
   try {
@@ -83,10 +82,6 @@ export async function getPlaces(filters: PlacesSearchFilters) {
 
 export async function getPlaceCatalog() {
   return requestJson<PlacePage>("/api/v1/places?page=0&size=100");
-}
-
-export async function getCategories() {
-  return requestJson<Category[]>("/api/v1/categories");
 }
 
 export async function getPlaceDetail(slug: string) {
