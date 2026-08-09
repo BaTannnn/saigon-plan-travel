@@ -1,6 +1,7 @@
 package com.saigonplantravel.backend.scheduling.config;
 
 import com.saigonplantravel.backend.scheduling.domain.*;
+import com.saigonplantravel.backend.scheduling.domain.algorithm.GreedyItineraryScheduler;
 import com.saigonplantravel.backend.scheduling.domain.scoring.CandidateRanker;
 import com.saigonplantravel.backend.scheduling.domain.scoring.CandidateScorer;
 import com.saigonplantravel.backend.scheduling.domain.travel.DistanceCalculator;
@@ -67,5 +68,22 @@ public class SchedulingConfiguration {
     @Bean
     public CandidateRanker candidateRanker() {
         return new CandidateRanker();
+    }
+    @Bean
+    public GreedyItineraryScheduler
+    greedyItineraryScheduler(
+            TravelTimeEstimator travelTimeEstimator,
+            PaceDurationPolicy paceDurationPolicy,
+            VisitFeasibilityEvaluator visitFeasibilityEvaluator,
+            CandidateScorer candidateScorer,
+            CandidateRanker candidateRanker
+    ) {
+        return new GreedyItineraryScheduler(
+                travelTimeEstimator,
+                paceDurationPolicy,
+                visitFeasibilityEvaluator,
+                candidateScorer,
+                candidateRanker
+        );
     }
 }
