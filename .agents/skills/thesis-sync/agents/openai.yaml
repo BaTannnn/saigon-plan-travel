@@ -1,0 +1,6 @@
+interface:
+  display_name: "Thesis Sync"
+  short_description: "Turn verified implementation evidence into defensible thesis notes"
+  default_prompt: "Use $thesis-sync to update thesis/Obsidian documentation from the implemented and verified project state only. Do not change production code or invent evidence."
+policy:
+  allow_implicit_invocation: true
