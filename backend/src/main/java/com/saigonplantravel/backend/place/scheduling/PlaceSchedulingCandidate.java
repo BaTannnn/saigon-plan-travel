@@ -48,15 +48,19 @@ public record PlaceSchedulingCandidate(
         slug = requireText(slug, "slug");
         address = requireText(address, "address");
 
-        administrativeUnitName = requireText(
-                administrativeUnitName,
-                "administrativeUnitName"
-        );
+        if ((administrativeUnitName == null)
+                != (administrativeUnitType == null)) {
+            throw new IllegalArgumentException(
+                    "administrative unit name and type must both be null or both be present"
+            );
+        }
 
-        Objects.requireNonNull(
-                administrativeUnitType,
-                "administrativeUnitType must not be null"
-        );
+        if (administrativeUnitName != null) {
+            administrativeUnitName = requireText(
+                    administrativeUnitName,
+                    "administrativeUnitName"
+            );
+        }
 
         validateCoordinate(
                 latitude,
