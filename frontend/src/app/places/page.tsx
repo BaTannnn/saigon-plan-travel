@@ -5,8 +5,8 @@ import {
   readPlacesSearchParams,
   type RawSearchParams,
 } from "@/features/places/search-params";
+import { getCategories } from "@/lib/api/category-api";
 import {
-  getCategories,
   getPlaceCatalog,
   getPlaces,
   PlaceApiError,

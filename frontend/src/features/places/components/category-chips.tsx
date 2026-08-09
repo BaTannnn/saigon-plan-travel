@@ -2,7 +2,8 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { createPlacesHref } from "@/features/places/search-params";
 import { cn } from "@/lib/utils";
-import type { Category, PlacesSearchFilters } from "@/types/place";
+import type { Category } from "@/types/category";
+import type { PlacesSearchFilters } from "@/types/place";
 
 type CategoryChipsProps = {
   categories: Category[];
