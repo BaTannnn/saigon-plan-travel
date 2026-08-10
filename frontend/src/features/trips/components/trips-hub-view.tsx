@@ -175,7 +175,7 @@ export function TripsHubView() {
             Bắt đầu với kế hoạch đầu tiên của bạn
           </h2>
           <p className="m-0 max-w-xl leading-7 text-text-secondary">
-            Lưu ngày đi, khung giờ, ngân sách, điểm xuất phát và sở thích trước khi tạo lịch trình.
+            Lưu ngày đi, khung giờ, ngân sách, điểm xuất phát và sở thích của chuyến đi.
           </p>
           <Button asChild variant="accent">
             <Link href="/trips/new">Tạo chuyến đi</Link>

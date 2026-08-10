@@ -22,7 +22,7 @@ Review in this order:
 2. Data/schema/API compatibility.
 3. Authentication/ownership/security boundary.
 4. Module dependency direction.
-5. Determinism/edge cases for scheduling logic.
+5. Determinism and edge cases for business logic.
 6. Transaction/lazy-loading/query implications for JPA code.
 7. Test value and missing regression proof.
 8. Overengineering and simplification opportunities.

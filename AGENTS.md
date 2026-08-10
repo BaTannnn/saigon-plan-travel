@@ -2,9 +2,8 @@
 
 ## Mission
 
-Build a defendable graduation-project MVP for Ho Chi Minh City travel planning.
-The system combines deterministic constrained itinerary scheduling, grounded RAG,
-time-indexed context data, and controlled re-planning.
+Build a defendable graduation-project MVP for Ho Chi Minh City place discovery
+and authenticated trip-preference management.
 
 The owner uses Codex to accelerate engineering, but must still be able to explain
 architecture, data flow, important algorithms, and every material code change.
@@ -47,7 +46,7 @@ clear, **do not restart requirements discovery**. Use `$implement-approved-slice
 
 Examples:
 
-- continue the next FEAT-005 persistence step;
+- continue the next approved Trip persistence step;
 - fix one failing test whose intended behavior is already known;
 - connect an already-defined backend endpoint to the frontend;
 - implement a small part of an approved feature contract.
@@ -56,8 +55,8 @@ Examples:
 
 Use `$grill-with-docs` only when a task introduces or changes material product
 behavior, architecture, database ownership, public API semantics, external
-provider behavior, RAG policy, scheduling rules, weather/context rules, or
-re-planning semantics that are not already settled.
+provider behavior, recommendation policy, or other product semantics that are
+not already settled.
 
 Do not grill the owner for tiny fixes or for decisions already present in source/docs.
 
@@ -88,9 +87,6 @@ Do not write thesis claims that are not supported by source, tests, or measured 
   and regressions; do not create tests for trivial getters/records just for count.
 - Mock repositories/external boundaries. Prefer real immutable records/value
   objects instead of mocking them.
-- Keep deterministic scheduling logic independent from Spring/JPA/network/LLM.
-- RAG may explain decisions; it must not silently replace deterministic itinerary
-  selection in the FEAT-005 baseline.
 
 ## Dirty-worktree safety
 
@@ -110,11 +106,10 @@ The owner often works with uncommitted learning changes.
 - Frontend: Next.js + TypeScript, mobile-first.
 - Database: PostgreSQL; Flyway is migration source of truth.
 - Hibernate: `ddl-auto: validate`.
-- AI service: FastAPI is planned for RAG; do not invent it before the relevant feature.
-- Map baseline: Leaflet/OpenStreetMap; route provider belongs to FEAT-006.
+- Map baseline: Leaflet/OpenStreetMap for place and Trip-origin presentation.
 - REST controllers return DTOs, never JPA entities.
 - Constructor injection by default.
-- Do not leak internal numeric Trip/Itinerary IDs through public API unless the
+- Do not leak internal numeric Trip IDs through public API unless the
   existing contract explicitly allows the field.
 - Never commit `.env`, credentials, tokens, API keys, or provider secrets.
 - Never present demo/unverified place data as verified fact.

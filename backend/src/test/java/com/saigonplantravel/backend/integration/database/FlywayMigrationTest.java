@@ -58,7 +58,7 @@ class FlywayMigrationTest {
         assertThat(versions).containsExactly(
                 "1", "2", "3", "4", "5",
                 "6", "7", "8", "9", "10",
-                "11", "12", "13", "14", "15"
+                "11", "12", "13", "14", "15", "16"
         );
         assertThat(jdbcTemplate.queryForObject(
                 "SELECT count(*) FROM flyway_schema_history WHERE version = '6' AND success",
@@ -111,6 +111,20 @@ class FlywayMigrationTest {
                 "SELECT count(*) FROM trip_category_preferences",
                 Integer.class
         )).isZero();
+        assertThat(jdbcTemplate.queryForObject(
+                """
+                SELECT count(*)
+                FROM pg_tables
+                WHERE schemaname = 'public'
+                  AND tablename IN (
+                    'itineraries',
+                    'itinerary_preferred_categories',
+                    'itinerary_items',
+                    'itinerary_warnings'
+                  )
+                """,
+                Integer.class
+        )).isZero();
 
         MigrateResult rerun = flyway.migrate();
 
@@ -138,6 +152,16 @@ class FlywayMigrationTest {
                 SELECT count(*)
                 FROM flyway_schema_history
                 WHERE version = '11'
+                  AND success
+                """,
+                Integer.class
+        )).isEqualTo(1);
+
+        assertThat(jdbcTemplate.queryForObject(
+                """
+                SELECT count(*)
+                FROM flyway_schema_history
+                WHERE version = '16'
                   AND success
                 """,
                 Integer.class

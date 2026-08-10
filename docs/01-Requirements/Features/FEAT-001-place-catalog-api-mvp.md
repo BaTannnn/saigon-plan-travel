@@ -33,7 +33,7 @@ related:
 > hiển thị “Chưa xác định”.
 
 > [!summary]
-> Xây dựng vertical slice đầu tiên của SaigonPlanTravel để frontend lấy danh sách địa điểm đang hoạt động tại TP.HCM qua `GET /api/v1/places`. Feature bao gồm schema `places`, dữ liệu demo có gắn nhãn, Entity, Repository, Service, Mapper, DTO, Controller và tests tối thiểu. Đây là nền dữ liệu bắt buộc trước khi triển khai bản đồ, lọc địa điểm, lập lịch và RAG.
+> Xây dựng vertical slice đầu tiên của SaigonPlanTravel để frontend lấy danh sách địa điểm đang hoạt động tại TP.HCM qua `GET /api/v1/places`. Feature bao gồm schema `places`, dữ liệu demo có gắn nhãn, Entity, Repository, Service, Mapper, DTO, Controller và tests tối thiểu. Đây là nền dữ liệu cho bản đồ, lọc địa điểm và sở thích Trip.
 
 ## 1. Trạng thái và phê duyệt
 
@@ -60,9 +60,7 @@ SaigonPlanTravel cần dữ liệu địa điểm làm đầu vào cho hầu h�
 
 - Hiển thị marker và card trên bản đồ.
 - Tìm kiếm, lọc và gợi ý địa điểm.
-- Tính thời lượng, chi phí và khoảng cách khi lập lịch.
-- Xây dựng corpus và metadata cho RAG.
-- Chọn địa điểm thay thế khi tái lập lịch.
+- Cung cấp dữ liệu tham khảo khi người dùng chuẩn bị chuyến đi.
 
 Hạ tầng PostgreSQL, Flyway và Spring Boot đã hoạt động; `Place Module` đã được chọn làm vertical slice đầu tiên. Vì vậy, hoàn thành API danh sách địa điểm là bước tiếp theo có giá trị cao nhất và ít phụ thuộc nhất.
 

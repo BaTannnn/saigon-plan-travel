@@ -58,7 +58,7 @@ hoàn tất cùng ngày; feature chuyển từ `approved` qua `in-progress` sang
 ## Ngoài phạm vi
 
 Frontend, `/places/search`, multi-category, client sorting, relevance/fuzzy/full-text,
-distance/open-now filters, recommendation, scheduling và RAG.
+distance/open-now filters và generated recommendation.
 
 ## Tài liệu liên quan
 

@@ -40,7 +40,7 @@ Do not start a requirements interview if these are already clear.
 - Do not create speculative manager/factory/policy/result hierarchies.
 - Add only the smallest useful tests at the correct layer.
 - Prefer real immutable value objects/records in tests; mock external/repository boundaries.
-- Keep controllers thin and pure scheduling code free of framework/network concerns.
+- Keep controllers thin and domain logic free of unnecessary framework/network concerns.
 
 If the task unexpectedly requires a new public contract, migration, dependency,
 architecture decision, or algorithm rule, stop before expanding scope and report it.

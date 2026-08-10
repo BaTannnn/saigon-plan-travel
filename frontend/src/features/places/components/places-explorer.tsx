@@ -83,7 +83,7 @@ export function PlacesExplorer({
           >
             <Link href="/trips/new">
               <CalendarIcon />
-              Tạo lịch trình
+              Tạo chuyến đi
             </Link>
           </Button>
           <div className="mt-3 hidden max-md:block">

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AuthControls } from "@/components/layout/auth-controls";
+import { SiteNavigation } from "@/components/layout/site-navigation";
 import { PinIcon } from "@/components/ui/icons";
 
 export function SiteHeader() {
@@ -16,23 +17,7 @@ export function SiteHeader() {
         <span>SaigonPlanTravel</span>
       </Link>
 
-      <nav
-        className="flex h-full items-center gap-9 max-md:hidden"
-        aria-label="Điều hướng chính"
-      >
-        <Link
-          className="relative flex h-full items-center gap-2 font-bold text-primary-strong after:absolute after:inset-x-0 after:bottom-0 after:h-[3px] after:rounded-t-[3px] after:bg-primary"
-          href="/places"
-        >
-          Khám phá
-        </Link>
-        <Link
-          className="flex h-full items-center gap-2 font-bold text-text-secondary transition-colors hover:text-primary-strong"
-          href="/trips"
-        >
-          Lịch trình
-        </Link>
-      </nav>
+      <SiteNavigation />
 
       <AuthControls />
     </header>

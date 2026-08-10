@@ -10,6 +10,7 @@ import { useAuth } from "@/features/auth/auth-provider";
 import { TripForm } from "@/features/trips/components/trip-form";
 import { TripReview } from "@/features/trips/components/trip-review";
 import { getTripLoadErrorMessage } from "@/features/trips/trip-errors";
+import { TripOriginMapShell } from "@/features/trips/map/trip-origin-map-shell";
 import { ApiError } from "@/lib/api/api-client";
 import { getTrip, replaceTrip } from "@/lib/api/trip-api";
 import type { Category } from "@/types/category";
@@ -70,7 +71,7 @@ export function TripDetailView({ publicId, categories }: TripDetailViewProps) {
   if (status === "loading" || loading) {
     return (
       <main
-        className="mx-auto grid w-[min(900px,calc(100%_-_32px))] gap-4 py-10"
+        className="mx-auto grid w-[min(1120px,calc(100%_-_32px))] gap-4 py-10"
         aria-label="Đang tải chuyến đi"
       >
         <Skeleton className="h-52 rounded-mint-lg" />
@@ -100,32 +101,46 @@ export function TripDetailView({ publicId, categories }: TripDetailViewProps) {
     );
   }
 
+  const centerContent = editing ? (
+    <>
+      <header className="mb-7">
+        <p className="m-0 text-xs font-extrabold tracking-[0.12em] text-primary uppercase">
+          PUT · Thay thế đầy đủ
+        </p>
+        <h1 className="mt-1.5 mb-2 text-[clamp(2rem,5vw,3.2rem)] leading-[1.08] font-bold tracking-[-0.05em]">
+          Chỉnh sửa chuyến đi
+        </h1>
+        <p className="m-0 text-text-secondary">
+          Khi lưu, toàn bộ trường bên dưới sẽ thay thế phiên bản hiện tại.
+        </p>
+      </header>
+      <TripForm
+        categories={categories}
+        initialTrip={trip}
+        submitLabel="Lưu thay đổi"
+        onSubmit={handleReplace}
+        onCancel={() => setEditing(false)}
+      />
+    </>
+  ) : (
+    <TripReview trip={trip} onEdit={() => setEditing(true)} />
+  );
+
   return (
-    <main className="mx-auto w-[min(900px,calc(100%_-_32px))] py-9 pb-16 max-md:py-6">
-      {editing ? (
-        <>
-          <header className="mb-7">
-            <p className="m-0 text-xs font-extrabold tracking-[0.12em] text-primary uppercase">
-              PUT · Thay thế đầy đủ
-            </p>
-            <h1 className="mt-1.5 mb-2 text-[clamp(2rem,5vw,3.2rem)] leading-[1.08] font-bold tracking-[-0.05em]">
-              Chỉnh sửa chuyến đi
-            </h1>
-            <p className="m-0 text-text-secondary">
-              Khi lưu, toàn bộ trường bên dưới sẽ thay thế phiên bản hiện tại.
-            </p>
-          </header>
-          <TripForm
-            categories={categories}
-            initialTrip={trip}
-            submitLabel="Lưu thay đổi"
-            onSubmit={handleReplace}
-            onCancel={() => setEditing(false)}
-          />
-        </>
-      ) : (
-        <TripReview trip={trip} onEdit={() => setEditing(true)} />
-      )}
+    <main className="grid min-h-[calc(100dvh_-_4rem)] grid-cols-1 bg-background md:min-h-[calc(100dvh_-_5rem)] xl:h-[calc(100dvh_-_5rem)] xl:min-h-[680px] xl:grid-cols-[clamp(560px,52vw,760px)_minmax(0,1fr)] xl:overflow-hidden">
+      <section className="min-w-0 px-5 py-8 sm:px-8 md:px-10 xl:min-h-0 xl:overflow-y-auto xl:px-12 xl:py-10">
+        {centerContent}
+      </section>
+      <section
+        className="h-[360px] min-w-0 border-t border-border md:h-[420px] xl:h-auto xl:min-h-0 xl:border-t-0 xl:border-l"
+        aria-label="Bản đồ điểm xuất phát"
+      >
+        <TripOriginMapShell
+          latitude={trip.startLocation.latitude}
+          longitude={trip.startLocation.longitude}
+          label={trip.startLocation.label}
+        />
+      </section>
     </main>
   );
 }

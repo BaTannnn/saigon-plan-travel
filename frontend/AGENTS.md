@@ -20,9 +20,9 @@ These instructions extend the repository root `AGENTS.md`.
 - Leaflet + React Leaflet
 - Mobile-first interface
 
-Current implemented user-facing slice is primarily Place discovery/detail/map.
-Authentication, Trip, itinerary generation, RAG explanation, weather/context, and
-replanning UIs must be added only when their backend contracts are ready.
+Current implemented user-facing scope includes Place discovery/detail/map,
+authentication, and Trip preference management. Scheduling and itinerary UI are
+not product scope.
 
 ## Structure
 
@@ -54,7 +54,6 @@ Do not put feature business logic into generic `components/ui`.
 - Frontend calls SaigonPlanTravel backend contracts, not PostgreSQL or internal services.
 - Do not call OSRM/Open-Meteo/LLM providers directly from browser code when the feature
   specification assigns the integration to Spring/FastAPI.
-- Do not duplicate scheduling feasibility/scoring rules in TypeScript.
 - UI validation may improve UX but backend validation remains authoritative.
 - Keep auth tokens/credentials out of source and logs.
 

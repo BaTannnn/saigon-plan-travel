@@ -343,7 +343,7 @@ export function TripForm({
           <p className="m-0 text-xs font-extrabold tracking-[0.12em] text-primary uppercase">
             Phong cách
           </p>
-          <h2 className="mt-1 text-xl font-bold">Sở thích hành trình</h2>
+          <h2 className="mt-1 text-xl font-bold">Sở thích chuyến đi</h2>
         </div>
 
         <div className="grid grid-cols-2 gap-4 max-md:grid-cols-1">

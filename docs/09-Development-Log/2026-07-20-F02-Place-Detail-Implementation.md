@@ -10,7 +10,7 @@ GET /api/v1/categories
 ```
 
 Feature giữ nguyên contract catalog FEAT-001 và không mở rộng sang search,
-filter, recommendation, scheduling hoặc RAG.
+filter hoặc generated recommendation.
 
 ## Thay đổi kỹ thuật
 
@@ -109,7 +109,7 @@ chứng cục bộ dưới mục tiêu 500 ms, không phải benchmark productio
 - Chương 4: 28-test evidence, PostgreSQL constraint tests, đúng 3 detail queries,
   runtime response time và regression FEAT-001.
 - Hạn chế MVP: dữ liệu là demo chưa xác minh; chưa có lịch ngoại lệ, nhiều
-  interval/ngày, search/filter, scheduling, recommendation hoặc RAG.
+  interval/ngày, search/filter hoặc generated recommendation.
 
 ## Bước tiếp theo
 
