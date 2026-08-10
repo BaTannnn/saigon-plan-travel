@@ -2,6 +2,7 @@
 name: grill-with-docs
 description: Interview the user one question at a time, inspect the repository, and update durable project documentation before implementation. Use for new features, database/API changes, architecture decisions, external integrations, time-indexed data, or any ambiguous task. Do not use for tiny well-scoped fixes.
 ---
+
 # Grill With Docs
 
 Establish shared understanding before code is written.

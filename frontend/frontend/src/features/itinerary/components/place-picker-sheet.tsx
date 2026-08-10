@@ -201,7 +201,7 @@ export function PlacePickerSheet({
               Bộ lọc
             </div>
 
-            <div className="grid grid-cols-1 gap-3">
+            <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
               <div className="grid gap-1.5">
                 <Label className="text-xs text-text-secondary">Khu vực</Label>
                 <Select
@@ -259,9 +259,10 @@ export function PlacePickerSheet({
                 </Label>
                 <Input
                   id="picker-max-cost"
-                  type="text"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
+                  type="number"
+                  min="0"
+                  max="100000000"
+                  step="10000"
                   value={maxCost}
                   onChange={(event) => setMaxCost(event.target.value)}
                   placeholder="Ví dụ: 200000"

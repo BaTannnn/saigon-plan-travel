@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ExploreLanding } from "@/features/places/components/explore-landing";
+import { ExploreLanding } from "@features/components/places/ExploreLanding";
 
 export const metadata: Metadata = {
   title: "Khám phá",
