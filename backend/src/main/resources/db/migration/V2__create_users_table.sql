@@ -17,14 +17,17 @@ CREATE TABLE users
         UNIQUE (email),
 
     CONSTRAINT ck_users_email_not_blank
-        CHECK (LENGTH(TRIM(email)) > 0),
+        CHECK (LENGTH(BTRIM(email)) > 0),
 
     CONSTRAINT ck_users_email_lowercase
         CHECK (email = LOWER(email)),
 
     CONSTRAINT ck_users_display_name_not_blank
-        CHECK (LENGTH(TRIM(display_name)) > 0),
+        CHECK (LENGTH(BTRIM(display_name)) > 0),
 
     CONSTRAINT ck_users_role
-        CHECK (role IN ('USER', 'ADMIN'))
+        CHECK (role IN ('USER', 'ADMIN')),
+
+    CONSTRAINT ck_users_timestamp_order
+        CHECK (updated_at >= created_at)
 );
