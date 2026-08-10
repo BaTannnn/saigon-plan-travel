@@ -6,10 +6,7 @@
 ## 1. Repository state
 
 - Branch: `experiment/feat-005-codex`.
-- The worktree contains uncommitted owner changes in backend Place code and
-  frontend Trip presentation.
-- The approved removal preserves unrelated Place/Trip/frontend work while
-  deleting the retired capability.
+- FEAT-005A is implemented in the working tree and is not yet committed.
 
 ## 2. Implemented backend
 
@@ -18,15 +15,20 @@
   and pagination.
 - `trip`: authenticated create, list, get, and full replacement of owned Trip
   preferences.
+- `itinerary`: authenticated get, append Place, delete item with continuous
+  resequencing, and replace an item's Place for an owned Trip.
 - `common`: shared error handling and infrastructure.
 
-There is no active scheduling module or itinerary API.
+The itinerary is an editable ordered Place list only. There is no scheduling,
+distance, travel-time, timeline, warning, routing, weather, or AI behavior.
 
 ## 3. Database
 
-- V1–V12 establish extensions, Place data, authentication, and Trip data.
-- V13–V15 are retained as immutable historical migrations.
-- V16 removes the historical itinerary tables and their data.
+- V1–V8 establish extensions, Place data, authentication, and Trip data.
+- V9 creates the one-per-Trip `itineraries` table.
+- V10 creates ordered `itinerary_items` with unique Place and sequence
+  constraints per itinerary.
+- V11 seeds demo data.
 - Hibernate remains configured with `ddl-auto: validate`.
 
 ## 4. Implemented frontend
@@ -40,15 +42,12 @@ There is no active scheduling module or itinerary API.
 
 Verified on 2026-08-10:
 
-- `cd backend && ./mvnw -q -DskipTests compile` — passed.
-- `cd backend && ./mvnw -Dtest=FlywayMigrationTest test` — 3 tests passed;
-  V1–V16 migrated on clean PostgreSQL, Hibernate validation passed, and the
-  four historical itinerary tables were absent.
-- `cd backend && ./mvnw test` — 79 tests passed, 0 failures, 0 errors.
-- `cd frontend && npm run lint` — passed with no lint errors.
-- `cd frontend && npm run build` — passed; all current Place/Auth/Trip routes
-  compiled and generated successfully.
+- `cd backend && ./mvnw -DskipTests test` — compilation passed.
+- `cd backend && ./mvnw -Dtest=ItineraryControllerTest test` — 7 tests passed.
+- `cd backend && ./mvnw -Dtest=ItineraryServiceIntegrationTest test` — 8 tests
+  passed against PostgreSQL 16 after all 11 migrations and Hibernate schema
+  validation completed.
+- `cd backend && ./mvnw test` — 94 tests passed, 0 failures, 0 errors.
 
-Docker-backed backend tests and the frontend build were run outside the sandbox
-because Testcontainers requires the Docker socket and Next.js required external
-font access.
+Docker-backed tests were run outside the sandbox because Testcontainers requires
+access to the Docker socket.

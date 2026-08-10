@@ -58,7 +58,7 @@ class FlywayMigrationTest {
         assertThat(versions).containsExactly(
                 "1", "2", "3", "4", "5",
                 "6", "7", "8", "9", "10",
-                "11", "12", "13", "14", "15", "16"
+                "11"
         );
         assertThat(jdbcTemplate.queryForObject(
                 "SELECT count(*) FROM flyway_schema_history WHERE version = '6' AND success",
@@ -118,13 +118,11 @@ class FlywayMigrationTest {
                 WHERE schemaname = 'public'
                   AND tablename IN (
                     'itineraries',
-                    'itinerary_preferred_categories',
-                    'itinerary_items',
-                    'itinerary_warnings'
+                    'itinerary_items'
                   )
                 """,
                 Integer.class
-        )).isZero();
+        )).isEqualTo(2);
 
         MigrateResult rerun = flyway.migrate();
 
@@ -157,46 +155,49 @@ class FlywayMigrationTest {
                 Integer.class
         )).isEqualTo(1);
 
-        assertThat(jdbcTemplate.queryForObject(
-                """
-                SELECT count(*)
-                FROM flyway_schema_history
-                WHERE version = '16'
-                  AND success
-                """,
-                Integer.class
-        )).isEqualTo(1);
-
-        assertThat(jdbcTemplate.queryForObject(
-                """
-                SELECT count(*)
-                FROM flyway_schema_history
-                WHERE version = '12'
-                  AND success
-                """,
-                Integer.class
-        )).isEqualTo(1);
     }
 
     @Test
-    void appliesTripMigrationsAndCreatesTables() {
-        Integer migrationV11Count =
+    void appliesTripAndItineraryMigrationsAndCreatesTables() {
+        Integer migrationV7Count =
                 jdbcTemplate.queryForObject(
                         """
                         SELECT count(*)
                         FROM flyway_schema_history
-                        WHERE version = '11'
+                        WHERE version = '7'
                           AND success
                         """,
                         Integer.class
                 );
 
-        Integer migrationV12Count =
+        Integer migrationV8Count =
                 jdbcTemplate.queryForObject(
                         """
                         SELECT count(*)
                         FROM flyway_schema_history
-                        WHERE version = '12'
+                        WHERE version = '8'
+                          AND success
+                        """,
+                        Integer.class
+                );
+
+        Integer migrationV9Count =
+                jdbcTemplate.queryForObject(
+                        """
+                        SELECT count(*)
+                        FROM flyway_schema_history
+                        WHERE version = '9'
+                          AND success
+                        """,
+                        Integer.class
+                );
+
+        Integer migrationV10Count =
+                jdbcTemplate.queryForObject(
+                        """
+                        SELECT count(*)
+                        FROM flyway_schema_history
+                        WHERE version = '10'
                           AND success
                         """,
                         Integer.class
@@ -222,16 +223,40 @@ class FlywayMigrationTest {
                         Boolean.class
                 );
 
-        assertThat(migrationV11Count)
+        Boolean itinerariesTableExists =
+                jdbcTemplate.queryForObject(
+                        "SELECT to_regclass('public.itineraries') IS NOT NULL",
+                        Boolean.class
+                );
+
+        Boolean itineraryItemsTableExists =
+                jdbcTemplate.queryForObject(
+                        "SELECT to_regclass('public.itinerary_items') IS NOT NULL",
+                        Boolean.class
+                );
+
+        assertThat(migrationV7Count)
                 .isEqualTo(1);
 
-        assertThat(migrationV12Count)
+        assertThat(migrationV8Count)
+                .isEqualTo(1);
+
+        assertThat(migrationV9Count)
+                .isEqualTo(1);
+
+        assertThat(migrationV10Count)
                 .isEqualTo(1);
 
         assertThat(tripsTableExists)
                 .isTrue();
 
         assertThat(preferencesTableExists)
+                .isTrue();
+
+        assertThat(itinerariesTableExists)
+                .isTrue();
+
+        assertThat(itineraryItemsTableExists)
                 .isTrue();
     }
 }
