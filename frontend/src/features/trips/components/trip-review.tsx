@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type {
@@ -79,13 +78,7 @@ export function TripReview({
   return (
     <article>
       <header>
-        <Link
-          className="inline-flex text-sm font-semibold text-text-secondary transition-colors hover:text-primary-strong"
-          href="/trips"
-        >
-          ← Chuyến đi của tôi
-        </Link>
-        <p className="mt-7 mb-0 text-sm font-extrabold tracking-[0.14em] text-primary uppercase">
+        <p className="m-0 text-sm font-extrabold tracking-[0.14em] text-primary uppercase">
           TP.HCM
         </p>
         <h1 className="mt-2 mb-0 text-[clamp(2.2rem,5vw,3.7rem)] leading-[1.05] font-bold tracking-[-0.055em] capitalize">

@@ -1,0 +1,79 @@
+import { requestJson } from "@/lib/api/api-client";
+import type {
+  ItineraryResponse,
+  SaveItineraryItemRequest,
+} from "@/types/itinerary";
+
+const DEFAULT_BROWSER_BACKEND_URL = "http://localhost:8080";
+
+function getBrowserBackendBaseUrl() {
+  return (
+    process.env.NEXT_PUBLIC_BACKEND_API_BASE_URL ??
+    DEFAULT_BROWSER_BACKEND_URL
+  ).replace(/\/$/, "");
+}
+
+function getItineraryUrl(tripPublicId: string, path = "") {
+  return `${getBrowserBackendBaseUrl()}/api/v1/trips/${encodeURIComponent(tripPublicId)}/itinerary${path}`;
+}
+
+export function getItinerary(tripPublicId: string, token: string) {
+  return requestJson<ItineraryResponse>(getItineraryUrl(tripPublicId), {
+    token,
+    cache: "no-store",
+  });
+}
+
+export function addItineraryItem(
+  tripPublicId: string,
+  request: SaveItineraryItemRequest,
+  token: string,
+) {
+  return requestJson<ItineraryResponse>(
+    getItineraryUrl(tripPublicId, "/items"),
+    {
+      method: "POST",
+      body: request,
+      token,
+      cache: "no-store",
+    },
+  );
+}
+
+export function deleteItineraryItem(
+  tripPublicId: string,
+  itemPublicId: string,
+  token: string,
+) {
+  return requestJson<ItineraryResponse>(
+    getItineraryUrl(
+      tripPublicId,
+      `/items/${encodeURIComponent(itemPublicId)}`,
+    ),
+    {
+      method: "DELETE",
+      token,
+      cache: "no-store",
+    },
+  );
+}
+
+export function replaceItineraryItem(
+  tripPublicId: string,
+  itemPublicId: string,
+  request: SaveItineraryItemRequest,
+  token: string,
+) {
+  return requestJson<ItineraryResponse>(
+    getItineraryUrl(
+      tripPublicId,
+      `/items/${encodeURIComponent(itemPublicId)}`,
+    ),
+    {
+      method: "PUT",
+      body: request,
+      token,
+      cache: "no-store",
+    },
+  );
+}

@@ -8,10 +8,11 @@ import type {
 const DEFAULT_BACKEND_URL = "http://localhost:8080";
 
 function getBackendBaseUrl() {
-  return (process.env.BACKEND_API_BASE_URL ?? DEFAULT_BACKEND_URL).replace(
-    /\/$/,
-    "",
-  );
+  return (
+    process.env.NEXT_PUBLIC_BACKEND_API_BASE_URL ??
+    process.env.BACKEND_API_BASE_URL ??
+    DEFAULT_BACKEND_URL
+  ).replace(/\/$/, "");
 }
 
 function requestPlaceJson<T>(path: string) {

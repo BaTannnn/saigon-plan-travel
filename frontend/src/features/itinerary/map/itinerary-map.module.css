@@ -1,0 +1,82 @@
+.root :global(.leaflet-container) {
+  width: 100%;
+  height: 100%;
+  background: var(--primary-soft);
+}
+
+.root :global(.leaflet-control-attribution) {
+  font-family: inherit;
+}
+
+.root :global(.leaflet-control-zoom a) {
+  color: var(--primary-strong);
+}
+
+.root :global(.leaflet-tooltip) {
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 750;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--mint-shadow-sm);
+}
+
+.root :global(.leaflet-tooltip-top::before) {
+  border-top-color: var(--border);
+}
+
+.markerWrapper {
+  background: transparent;
+  border: 0;
+}
+
+.originMarker {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  background: var(--primary-strong);
+  border: 3px solid var(--surface);
+  border-radius: 50% 50% 50% 8px;
+  box-shadow: 0 7px 18px rgb(7 86 79 / 28%);
+  transform: rotate(-45deg);
+}
+
+.originMarker::after {
+  width: 9px;
+  height: 9px;
+  content: "";
+  background: var(--surface);
+  border-radius: 50%;
+}
+
+.itemMarker {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  color: var(--surface);
+  font-size: 0.92rem;
+  font-weight: 900;
+  line-height: 1;
+  background: var(--primary);
+  border: 3px solid var(--surface);
+  border-radius: 50% 50% 50% 8px;
+  box-shadow: 0 7px 18px rgb(7 86 79 / 28%);
+  transform: rotate(-45deg);
+}
+
+.itemMarkerSelected {
+  background: var(--accent);
+  box-shadow:
+    0 0 0 10px rgb(255 107 89 / 18%),
+    0 7px 18px rgb(255 107 89 / 32%);
+}
+
+.itemMarker > b {
+  display: inline-block;
+  font-weight: 900;
+  transform: rotate(45deg);
+}
