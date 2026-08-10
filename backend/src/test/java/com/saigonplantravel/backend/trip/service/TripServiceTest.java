@@ -9,6 +9,7 @@ import com.saigonplantravel.backend.trip.dto.SaveTripRequest;
 import com.saigonplantravel.backend.trip.dto.StartLocationRequest;
 import com.saigonplantravel.backend.trip.dto.StartLocationResponse;
 import com.saigonplantravel.backend.trip.dto.TripResponse;
+import com.saigonplantravel.backend.trip.dto.TripSummaryResponse;
 import com.saigonplantravel.backend.trip.entity.Trip;
 import com.saigonplantravel.backend.trip.exception.InvalidCategoryPreferenceException;
 import com.saigonplantravel.backend.trip.mapper.TripMapper;
@@ -302,6 +303,113 @@ class TripServiceTest {
                         categories
                 );
     }
+
+    @Test
+    void listsOwnedTripsWithOneBatchCategoryLookup() {
+        Long userId = 42L;
+        OffsetDateTime timestamp = OffsetDateTime.parse(
+                "2026-08-01T10:00:00+07:00"
+        );
+
+        Trip firstTrip = new Trip(
+                userId,
+                LocalDate.of(2026, 8, 20),
+                LocalTime.of(8, 0),
+                LocalTime.of(18, 0),
+                new BigDecimal("500000.00"),
+                "Chợ Bến Thành",
+                new BigDecimal("10.7726400"),
+                new BigDecimal("106.6980500"),
+                TravelPace.BALANCED,
+                EnvironmentPreference.MIXED,
+                Set.of(1L),
+                timestamp
+        );
+
+        Trip secondTrip = new Trip(
+                userId,
+                LocalDate.of(2026, 8, 21),
+                LocalTime.of(9, 0),
+                LocalTime.of(17, 0),
+                new BigDecimal("700000.00"),
+                "Bưu điện Thành phố",
+                new BigDecimal("10.7798000"),
+                new BigDecimal("106.6990000"),
+                TravelPace.RELAXED,
+                EnvironmentPreference.INDOOR,
+                Set.of(1L, 2L),
+                timestamp
+        );
+
+        CategoryResponse art = new CategoryResponse(
+                2L,
+                "Nghệ thuật",
+                "nghe-thuat"
+        );
+        CategoryResponse culture = new CategoryResponse(
+                1L,
+                "Văn hóa",
+                "van-hoa"
+        );
+
+        TripSummaryResponse firstSummary =
+                new TripSummaryResponse(
+                        firstTrip.getPublicId(),
+                        firstTrip.getTripDate(),
+                        firstTrip.getStartTime(),
+                        firstTrip.getEndTime(),
+                        firstTrip.getBudget(),
+                        firstTrip.getStartLocationLabel(),
+                        firstTrip.getTravelPace(),
+                        firstTrip.getEnvironmentPreference(),
+                        List.of(culture),
+                        firstTrip.getUpdatedAt()
+                );
+        TripSummaryResponse secondSummary =
+                new TripSummaryResponse(
+                        secondTrip.getPublicId(),
+                        secondTrip.getTripDate(),
+                        secondTrip.getStartTime(),
+                        secondTrip.getEndTime(),
+                        secondTrip.getBudget(),
+                        secondTrip.getStartLocationLabel(),
+                        secondTrip.getTravelPace(),
+                        secondTrip.getEnvironmentPreference(),
+                        List.of(art, culture),
+                        secondTrip.getUpdatedAt()
+                );
+
+        when(tripRepository
+                .findAllByUserIdOrderByTripDateAscStartTimeAscPublicIdAsc(
+                        userId
+                )).thenReturn(List.of(firstTrip, secondTrip));
+        when(categoryService.findCategoriesByIds(
+                Set.of(1L, 2L)
+        )).thenReturn(List.of(art, culture));
+        when(tripMapper.toSummaryResponse(
+                firstTrip,
+                List.of(culture)
+        )).thenReturn(firstSummary);
+        when(tripMapper.toSummaryResponse(
+                secondTrip,
+                List.of(art, culture)
+        )).thenReturn(secondSummary);
+
+        List<TripSummaryResponse> response =
+                tripService.listTrips(userId);
+
+        assertThat(response)
+                .containsExactly(
+                        firstSummary,
+                        secondSummary
+                );
+
+        verify(categoryService).findCategoriesByIds(
+                Set.of(1L, 2L)
+        );
+        verifyNoMoreInteractions(categoryService);
+    }
+
     @Test
     void rejectsUnknownCategoryBeforeSavingTrip() {
         SaveTripRequest request =

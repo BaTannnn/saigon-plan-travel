@@ -5,6 +5,7 @@ import com.saigonplantravel.backend.place.service.CategoryService;
 import com.saigonplantravel.backend.trip.domain.TripPolicy;
 import com.saigonplantravel.backend.trip.dto.SaveTripRequest;
 import com.saigonplantravel.backend.trip.dto.TripResponse;
+import com.saigonplantravel.backend.trip.dto.TripSummaryResponse;
 import com.saigonplantravel.backend.trip.entity.Trip;
 import com.saigonplantravel.backend.trip.exception.InvalidCategoryPreferenceException;
 import com.saigonplantravel.backend.trip.mapper.TripMapper;
@@ -109,6 +110,41 @@ public class TripService implements TripSchedulingQuery {
                 categories
         );
     }
+
+    @Transactional(readOnly = true)
+    public List<TripSummaryResponse> listTrips(Long userId) {
+        List<Trip> trips = tripRepository
+                .findAllByUserIdOrderByTripDateAscStartTimeAscPublicIdAsc(
+                        userId
+                );
+
+        if (trips.isEmpty()) {
+            return List.of();
+        }
+
+        Set<Long> categoryIds = trips.stream()
+                .flatMap(trip -> trip
+                        .getPreferredCategoryIds()
+                        .stream())
+                .collect(Collectors.toSet());
+
+        List<CategoryResponse> categories =
+                categoryService.findCategoriesByIds(
+                        categoryIds
+                );
+
+        return trips.stream()
+                .map(trip -> tripMapper.toSummaryResponse(
+                        trip,
+                        categories.stream()
+                                .filter(category -> trip
+                                        .getPreferredCategoryIds()
+                                        .contains(category.id()))
+                                .toList()
+                ))
+                .toList();
+    }
+
     @Transactional
     public TripResponse replaceTrip(
             Long userId,

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { CalendarIcon, FilterIcon, LayersIcon } from "@/components/ui/icons";
 import {
@@ -72,20 +73,18 @@ export function PlacesExplorer({
         <div>
           <p className={eyebrowClassName}>Khám phá Sài Gòn</p>
           <h1 className="mt-1 mb-[18px] max-w-[520px] text-[clamp(1.65rem,2.2vw,2.35rem)] leading-[1.16] font-bold tracking-[-0.045em] max-md:mb-3.5 max-md:text-[1.65rem]">
-            Chào Tân, hôm nay muốn khám phá đâu?
+            Hôm nay bạn muốn khám phá đâu?
           </h1>
           <Button
-            className="w-full gap-2.5 opacity-80"
-            type="button"
+            asChild
+            className="w-full gap-2.5"
             variant="accent"
             size="lg"
-            disabled
           >
-            <CalendarIcon />
-            Tạo lịch trình
-            <span className="ml-auto rounded-full bg-white/20 px-[7px] py-1 text-[0.66rem]">
-              Sắp ra mắt
-            </span>
+            <Link href="/trips/new">
+              <CalendarIcon />
+              Tạo lịch trình
+            </Link>
           </Button>
           <div className="mt-3 hidden max-md:block">
             <SearchForm filters={filters} />

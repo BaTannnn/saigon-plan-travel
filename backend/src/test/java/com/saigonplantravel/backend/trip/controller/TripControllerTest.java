@@ -14,6 +14,7 @@ import com.saigonplantravel.backend.trip.dto.SaveTripRequest;
 import com.saigonplantravel.backend.trip.dto.StartLocationRequest;
 import com.saigonplantravel.backend.trip.dto.StartLocationResponse;
 import com.saigonplantravel.backend.trip.dto.TripResponse;
+import com.saigonplantravel.backend.trip.dto.TripSummaryResponse;
 import com.saigonplantravel.backend.trip.exception.InvalidCategoryPreferenceException;
 import com.saigonplantravel.backend.trip.exception.TripNotFoundException;
 import com.saigonplantravel.backend.trip.service.TripService;
@@ -230,6 +231,44 @@ class TripControllerTest {
     }
 
     @Test
+    void listsTripsUsingAuthenticatedUserId() throws Exception {
+        UserPrincipal principal = userPrincipal();
+        UUID tripPublicId = UUID.fromString(
+                "7a674ef0-57c8-4d0e-b99b-dccfd342fc98"
+        );
+
+        when(tripService.listTrips(principal.id()))
+                .thenReturn(List.of(
+                        tripSummaryResponse(tripPublicId)
+                ));
+
+        mockMvc.perform(
+                        get("/api/v1/trips")
+                                .with(authenticatedAs(principal))
+                )
+                .andExpect(status().isOk())
+                .andExpect(
+                        content().contentTypeCompatibleWith(
+                                MediaType.APPLICATION_JSON
+                        )
+                )
+                .andExpect(jsonPath("$[0]", aMapWithSize(10)))
+                .andExpect(
+                        jsonPath("$[0].publicId")
+                                .value(tripPublicId.toString())
+                )
+                .andExpect(
+                        jsonPath("$[0].startLocationLabel")
+                                .value("Chợ Bến Thành, Quận 1")
+                )
+                .andExpect(jsonPath("$[0].id").doesNotExist())
+                .andExpect(jsonPath("$[0].userId").doesNotExist())
+                .andExpect(jsonPath("$[0].startLocation").doesNotExist());
+
+        verify(tripService).listTrips(principal.id());
+    }
+
+    @Test
     void replacesTripUsingAuthenticatedUserId()
             throws Exception {
 
@@ -312,6 +351,11 @@ class TripControllerTest {
                         jsonPath("$.title")
                                 .value("Authentication failed")
                 );
+
+        mockMvc.perform(
+                        get("/api/v1/trips")
+                )
+                .andExpect(status().isUnauthorized());
 
         mockMvc.perform(
                         get(
@@ -653,6 +697,34 @@ class TripControllerTest {
                         )
                 ),
                 timestamp,
+                timestamp
+        );
+    }
+
+    private TripSummaryResponse tripSummaryResponse(
+            UUID publicId
+    ) {
+        OffsetDateTime timestamp =
+                OffsetDateTime.parse(
+                        "2026-08-03T10:00:00+07:00"
+                );
+
+        return new TripSummaryResponse(
+                publicId,
+                LocalDate.of(2026, 8, 20),
+                LocalTime.of(8, 0),
+                LocalTime.of(18, 0),
+                new BigDecimal("500000.00"),
+                "Chợ Bến Thành, Quận 1",
+                TravelPace.BALANCED,
+                EnvironmentPreference.MIXED,
+                List.of(
+                        new CategoryResponse(
+                                1L,
+                                "Văn hóa",
+                                "van-hoa"
+                        )
+                ),
                 timestamp
         );
     }

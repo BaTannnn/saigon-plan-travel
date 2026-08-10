@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { AuthControls } from "@/components/layout/auth-controls";
-import { Badge } from "@/components/ui/badge";
 import { PinIcon } from "@/components/ui/icons";
 
 export function SiteHeader() {
@@ -27,18 +26,12 @@ export function SiteHeader() {
         >
           Khám phá
         </Link>
-        <span
-          className="flex h-full cursor-not-allowed items-center gap-2 font-bold text-text-secondary opacity-60"
-          aria-disabled="true"
+        <Link
+          className="flex h-full items-center gap-2 font-bold text-text-secondary transition-colors hover:text-primary-strong"
+          href="/trips"
         >
           Lịch trình
-          <Badge
-            className="rounded-full px-1.5 py-0.5 text-[0.62rem] text-primary-strong"
-            variant="secondary"
-          >
-            Sắp ra mắt
-          </Badge>
-        </span>
+        </Link>
       </nav>
 
       <AuthControls />
