@@ -113,7 +113,7 @@ mở rộng endpoint catalog hiện có và giữ backward compatibility:
 - Cursor pagination, caching, analytics hoặc personalized ranking.
 - Admin API, authentication/authorization.
 - Filter theo `administrativeUnitType`.
-- Recommendation, scheduling, RAG hoặc AI reranking.
+- Generated recommendation hoặc external-service reranking.
 - Seed thêm hàng chục place giả vào live database.
 
 ## 5. API contract
@@ -599,8 +599,8 @@ hiển thị “Chưa xác định”.
 
 ## 20. Feature kế tiếp đề xuất
 
-Sau FEAT-003: **FEAT-004 — Trip Preferences & Draft Trip MVP**. Không triển khai
-trip/scheduling trong FEAT-003.
+Sau FEAT-003: **FEAT-004 — Trip Preferences MVP**. Không triển khai hành vi Trip
+trong FEAT-003.
 
 ## 21. Lịch sử thay đổi
 

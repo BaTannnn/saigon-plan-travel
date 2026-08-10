@@ -3,6 +3,7 @@ package com.saigonplantravel.backend.trip.controller;
 import com.saigonplantravel.backend.auth.security.UserPrincipal;
 import com.saigonplantravel.backend.trip.dto.SaveTripRequest;
 import com.saigonplantravel.backend.trip.dto.TripResponse;
+import com.saigonplantravel.backend.trip.dto.TripSummaryResponse;
 import com.saigonplantravel.backend.trip.service.TripService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URI;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -45,6 +47,13 @@ public class TripController {
         return ResponseEntity
                 .created(location)
                 .body(response);
+    }
+
+    @GetMapping
+    public List<TripSummaryResponse> listTrips(
+            @AuthenticationPrincipal UserPrincipal principal
+    ) {
+        return tripService.listTrips(principal.id());
     }
 
     @GetMapping("/{publicId}")

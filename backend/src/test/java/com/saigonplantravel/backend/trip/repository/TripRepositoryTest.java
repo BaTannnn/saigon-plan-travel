@@ -24,6 +24,8 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -181,6 +183,90 @@ class TripRepositoryTest {
 
         assertThat(preferenceRowCount)
                 .isEqualTo(2);
+    }
+
+    @Test
+    void listsOnlyOwnedTripsInDeterministicOrder() {
+        Long ownerUserId =
+                persistUser("list-owner@example.com");
+        Long anotherUserId =
+                persistUser("list-another@example.com");
+        Set<Long> categoryIds = findCategoryIds(
+                Set.of("van-hoa")
+        );
+
+        Trip laterTrip = newTrip(
+                ownerUserId,
+                LocalDate.of(2026, 8, 21),
+                LocalTime.of(9, 0),
+                "Điểm xuất phát B",
+                categoryIds
+        );
+        Trip tiedTripOne = newTrip(
+                ownerUserId,
+                LocalDate.of(2026, 8, 20),
+                LocalTime.of(8, 0),
+                "Điểm xuất phát A1",
+                categoryIds
+        );
+        Trip tiedTripTwo = newTrip(
+                ownerUserId,
+                LocalDate.of(2026, 8, 20),
+                LocalTime.of(8, 0),
+                "Điểm xuất phát A2",
+                categoryIds
+        );
+        Trip anotherUsersTrip = newTrip(
+                anotherUserId,
+                LocalDate.of(2026, 8, 19),
+                LocalTime.of(7, 0),
+                "Không thuộc chủ sở hữu",
+                categoryIds
+        );
+
+        tripRepository.saveAllAndFlush(
+                List.of(
+                        laterTrip,
+                        tiedTripOne,
+                        tiedTripTwo,
+                        anotherUsersTrip
+                )
+        );
+
+        List<UUID> expectedPublicIds = List.of(
+                        laterTrip,
+                        tiedTripOne,
+                        tiedTripTwo
+                ).stream()
+                .sorted(Comparator
+                        .comparing(Trip::getTripDate)
+                        .thenComparing(Trip::getStartTime)
+                        .thenComparing(trip -> trip
+                                .getPublicId()
+                                .toString()))
+                .map(Trip::getPublicId)
+                .toList();
+
+        entityManager.clear();
+
+        List<Trip> ownedTrips = tripRepository
+                .findAllByUserIdOrderByTripDateAscStartTimeAscPublicIdAsc(
+                        ownerUserId
+                );
+
+        entityManager.clear();
+
+        assertThat(ownedTrips)
+                .extracting(Trip::getPublicId)
+                .containsExactlyElementsOf(expectedPublicIds)
+                .doesNotContain(anotherUsersTrip.getPublicId());
+        assertThat(ownedTrips)
+                .allMatch(trip -> trip.getUserId()
+                        .equals(ownerUserId));
+        assertThat(ownedTrips)
+                .allSatisfy(trip -> assertThat(
+                        trip.getPreferredCategoryIds()
+                ).containsExactlyElementsOf(categoryIds));
     }
 
     @Test
@@ -343,6 +429,31 @@ class TripRepositoryTest {
         entityManager.flush();
 
         return user.getId();
+    }
+
+    private Trip newTrip(
+            Long userId,
+            LocalDate tripDate,
+            LocalTime startTime,
+            String startLocationLabel,
+            Set<Long> categoryIds
+    ) {
+        return new Trip(
+                userId,
+                tripDate,
+                startTime,
+                startTime.plusHours(8),
+                new BigDecimal("500000.00"),
+                startLocationLabel,
+                new BigDecimal("10.7726400"),
+                new BigDecimal("106.6980500"),
+                TravelPace.BALANCED,
+                EnvironmentPreference.MIXED,
+                categoryIds,
+                OffsetDateTime.parse(
+                        "2026-08-03T10:00:00+07:00"
+                )
+        );
     }
 
     private Set<Long> findCategoryIds(

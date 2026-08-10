@@ -246,7 +246,7 @@ cho một chuỗi class cố định đơn giản.
 
 `<Button variant="accent" size="lg">` ghép base class, class của `accent` và
 class của `lg`. Variant `accent` dùng semantic token `--accent` và
-`--shadow-accent`, nên nút Tạo lịch trình vẫn là Mint Map thay vì màu mặc định
+`--shadow-accent`, nên nút Tạo chuyến đi vẫn là Mint Map thay vì màu mặc định
 của shadcn. `asChild` dùng Radix Slot để truyền style/behavior xuống `Link`:
 
 ```tsx
@@ -509,7 +509,7 @@ là Place API, trong khi implementation vẫn phụ thuộc trực tiếp vào:
 
 Vì vậy nó generic về **kiểu response**, nhưng chưa phải transport abstraction
 hoàn toàn tổng quát. Tách sớm sẽ tạo thêm file và tên abstraction trước khi biết
-Trip, Itinerary hoặc AI API có cùng cache/error/auth behavior hay không.
+Trip hoặc API tương lai có cùng cache/error/auth behavior hay không.
 
 Nên tách khi xuất hiện consumer thứ hai có cùng quy trình HTTP, ví dụ
 `trip-api.ts` cũng lặp lại base URL, `fetch`, parse ProblemDetail và error class.

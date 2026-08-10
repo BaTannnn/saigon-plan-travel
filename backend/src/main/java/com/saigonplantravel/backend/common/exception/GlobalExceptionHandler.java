@@ -2,10 +2,10 @@ package com.saigonplantravel.backend.common.exception;
 
 import com.saigonplantravel.backend.auth.exception.EmailAlreadyExistsException;
 import com.saigonplantravel.backend.auth.exception.InvalidCredentialsException;
+import com.saigonplantravel.backend.itinerary.exception.DuplicateItineraryPlaceException;
+import com.saigonplantravel.backend.itinerary.exception.InactiveItineraryPlaceException;
+import com.saigonplantravel.backend.itinerary.exception.ItineraryItemNotFoundException;
 import com.saigonplantravel.backend.place.exception.PlaceNotFoundException;
-import com.saigonplantravel.backend.scheduling.exception.ItineraryNotFoundException;
-import com.saigonplantravel.backend.scheduling.exception.NoFeasibleItineraryException;
-import com.saigonplantravel.backend.scheduling.exception.SchedulingDataConflictException;
 import com.saigonplantravel.backend.trip.exception.InvalidCategoryPreferenceException;
 import com.saigonplantravel.backend.trip.exception.InvalidTripException;
 import com.saigonplantravel.backend.trip.exception.TripNotFoundException;
@@ -267,59 +267,6 @@ public class GlobalExceptionHandler {
         return problem;
     }
 
-    @ExceptionHandler(ItineraryNotFoundException.class)
-    public ProblemDetail handleItineraryNotFound(
-            ItineraryNotFoundException exception,
-            HttpServletRequest request
-    ) {
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
-                HttpStatus.NOT_FOUND,
-                exception.getMessage()
-        );
-        problem.setType(ABOUT_BLANK);
-        problem.setTitle("Itinerary not found");
-        problem.setInstance(URI.create(request.getRequestURI()));
-        problem.setProperty("code", "ITINERARY_NOT_FOUND");
-        return problem;
-    }
-
-    @ExceptionHandler(NoFeasibleItineraryException.class)
-    public ProblemDetail handleNoFeasibleItinerary(
-            NoFeasibleItineraryException exception,
-            HttpServletRequest request
-    ) {
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
-                HttpStatus.UNPROCESSABLE_ENTITY,
-                exception.getMessage()
-        );
-        problem.setType(ABOUT_BLANK);
-        problem.setTitle("No feasible itinerary");
-        problem.setInstance(URI.create(request.getRequestURI()));
-        problem.setProperty("code", "NO_FEASIBLE_ITINERARY");
-        problem.setProperty(
-                "rejectionSummary",
-                exception.getRejectionSummary()
-        );
-        return problem;
-    }
-
-    @ExceptionHandler(SchedulingDataConflictException.class)
-    public ProblemDetail handleSchedulingDataConflict(
-            SchedulingDataConflictException exception,
-            HttpServletRequest request
-    ) {
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
-                HttpStatus.CONFLICT,
-                exception.getMessage()
-        );
-        problem.setType(ABOUT_BLANK);
-        problem.setTitle("Scheduling data conflict");
-        problem.setInstance(URI.create(request.getRequestURI()));
-        problem.setProperty("code", "SCHEDULING_DATA_CONFLICT");
-        return problem;
-    }
-
-
     @ExceptionHandler(PlaceNotFoundException.class)
     public ProblemDetail handlePlaceNotFound(
             PlaceNotFoundException exception,
@@ -333,6 +280,60 @@ public class GlobalExceptionHandler {
         problem.setTitle("Place not found");
         problem.setInstance(URI.create(request.getRequestURI()));
         problem.setProperty("code", "PLACE_NOT_FOUND");
+        return problem;
+    }
+
+    @ExceptionHandler(ItineraryItemNotFoundException.class)
+    public ProblemDetail handleItineraryItemNotFound(
+            ItineraryItemNotFoundException exception,
+            HttpServletRequest request
+    ) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.NOT_FOUND,
+                exception.getMessage()
+        );
+        problem.setType(ABOUT_BLANK);
+        problem.setTitle("Itinerary item not found");
+        problem.setInstance(URI.create(request.getRequestURI()));
+        problem.setProperty(
+                "code",
+                "ITINERARY_ITEM_NOT_FOUND"
+        );
+        return problem;
+    }
+
+    @ExceptionHandler(DuplicateItineraryPlaceException.class)
+    public ProblemDetail handleDuplicateItineraryPlace(
+            DuplicateItineraryPlaceException exception,
+            HttpServletRequest request
+    ) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.CONFLICT,
+                exception.getMessage()
+        );
+        problem.setType(ABOUT_BLANK);
+        problem.setTitle("Duplicate itinerary Place");
+        problem.setInstance(URI.create(request.getRequestURI()));
+        problem.setProperty(
+                "code",
+                "DUPLICATE_ITINERARY_PLACE"
+        );
+        return problem;
+    }
+
+    @ExceptionHandler(InactiveItineraryPlaceException.class)
+    public ProblemDetail handleInactiveItineraryPlace(
+            InactiveItineraryPlaceException exception,
+            HttpServletRequest request
+    ) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.CONFLICT,
+                exception.getMessage()
+        );
+        problem.setType(ABOUT_BLANK);
+        problem.setTitle("Inactive itinerary Place");
+        problem.setInstance(URI.create(request.getRequestURI()));
+        problem.setProperty("code", "ITINERARY_PLACE_INACTIVE");
         return problem;
     }
 

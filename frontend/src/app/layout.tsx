@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { SiteHeader } from "@/components/layout/site-header";
+import { AuthProvider } from "@/features/auth/auth-provider";
 import "leaflet/dist/leaflet.css";
 import "./globals.css";
 import { Geist } from "next/font/google";
@@ -15,7 +16,7 @@ export const metadata: Metadata = {
     template: "%s | SaigonPlanTravel",
   },
   description:
-    "Khám phá địa điểm và chuẩn bị hành trình tại Thành phố Hồ Chí Minh.",
+    "Khám phá địa điểm và lưu sở thích chuyến đi tại Thành phố Hồ Chí Minh.",
 };
 
 export default function RootLayout({
@@ -26,8 +27,10 @@ export default function RootLayout({
   return (
     <html lang="vi" className={geist.variable}>
       <body>
-        <SiteHeader />
-        {children}
+        <AuthProvider>
+          <SiteHeader />
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

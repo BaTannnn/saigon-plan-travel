@@ -35,9 +35,3 @@ app:
       secret: ${JWT_SECRET}
       issuer: saigon-plan-travel
       access-token-expiration: PT1H
-
-scheduling:
-  algorithm-version: GREEDY_V1
-  average-speed-kmh: 18.00
-  fixed-transfer-minutes: 5
-  max-candidates: 100

@@ -22,8 +22,8 @@ related:
 
 - Refactor only the existing frontend UI primitives; this is not a redesign or
   a new product feature.
-- Keep the current Mint Map layout, colors, spacing, typography, responsive
-  behavior and reference image `docs/05-UI-UX/option-2-mint-map.png`.
+- Keep the current Mint Map layout, colors, spacing, typography, and responsive
+  behavior.
 - Keep `/places`, `/places/[slug]`, the backend endpoints, query parameters,
   zero-based pagination, URL-owned filter state and API DTOs unchanged.
 - Keep server-side data fetching and Server Components as the default. Add a
@@ -42,8 +42,8 @@ related:
 ## Out of scope
 
 - Backend, database, Flyway, API contract or TypeScript DTO changes.
-- Authentication, a functional user menu or the disabled itinerary action.
-- FEAT-004–009, mock/fallback place data, a new state-management library or a
+- Authentication or a functional user menu.
+- Trip preference behavior, mock/fallback place data, a new state-management library or a
   new test framework.
 - Replacing the business-specific list/map layout with shadcn Sidebar.
 - Rewriting all of `globals.css` or replacing every native/semantic element.

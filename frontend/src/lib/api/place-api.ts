@@ -1,4 +1,4 @@
-import type { ApiProblem } from "@/types/api";
+import { requestJson } from "@/lib/api/api-client";
 import type {
   PlaceDetail,
   PlacePage,
@@ -7,16 +7,6 @@ import type {
 
 const DEFAULT_BACKEND_URL = "http://localhost:8080";
 
-export class PlaceApiError extends Error {
-  constructor(
-    public readonly status: number,
-    public readonly problem: ApiProblem | null,
-  ) {
-    super(problem?.detail ?? "Không thể kết nối đến Place API.");
-    this.name = "PlaceApiError";
-  }
-}
-
 function getBackendBaseUrl() {
   return (process.env.BACKEND_API_BASE_URL ?? DEFAULT_BACKEND_URL).replace(
     /\/$/,
@@ -24,31 +14,10 @@ function getBackendBaseUrl() {
   );
 }
 
-export async function requestJson<T>(path: string): Promise<T> {
-  let response: Response;
-
-  try {
-    response = await fetch(`${getBackendBaseUrl()}${path}`, {
-      cache: "no-store",
-      headers: { Accept: "application/json" },
-    });
-  } catch {
-    throw new PlaceApiError(0, null);
-  }
-
-  if (!response.ok) {
-    let problem: ApiProblem | null = null;
-
-    try {
-      problem = (await response.json()) as ApiProblem;
-    } catch {
-      // The status still provides a useful failure signal when the body is not JSON.
-    }
-
-    throw new PlaceApiError(response.status, problem);
-  }
-
-  return (await response.json()) as T;
+function requestPlaceJson<T>(path: string) {
+  return requestJson<T>(`${getBackendBaseUrl()}${path}`, {
+    cache: "no-store",
+  });
 }
 
 function appendIfPresent(
@@ -77,13 +46,15 @@ export async function getPlaces(filters: PlacesSearchFilters) {
   appendIfPresent(params, "page", filters.page);
   appendIfPresent(params, "size", filters.size);
 
-  return requestJson<PlacePage>(`/api/v1/places?${params.toString()}`);
+  return requestPlaceJson<PlacePage>(`/api/v1/places?${params.toString()}`);
 }
 
 export async function getPlaceCatalog() {
-  return requestJson<PlacePage>("/api/v1/places?page=0&size=100");
+  return requestPlaceJson<PlacePage>("/api/v1/places?page=0&size=100");
 }
 
 export async function getPlaceDetail(slug: string) {
-  return requestJson<PlaceDetail>(`/api/v1/places/${encodeURIComponent(slug)}`);
+  return requestPlaceJson<PlaceDetail>(
+    `/api/v1/places/${encodeURIComponent(slug)}`,
+  );
 }

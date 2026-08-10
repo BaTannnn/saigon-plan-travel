@@ -1,24 +1,22 @@
 # Kiến trúc tổng thể hệ thống
 
-![[assets/architecture/system-architecture.png]]
-
 ## Tổng quan
 
-Hệ thống SaigonPlanTravel được xây dựng theo kiến trúc client-server,
-kết hợp Spring Boot modular monolith và Python AI Service.
+SaigonPlanTravel sử dụng kiến trúc client-server gồm frontend Next.js, backend
+Spring Boot modular monolith và PostgreSQL.
 
-## Các thành phần
+## Thành phần
 
-- [[Frontend - NextJS]]
-- [[Backend - Spring Boot]]
-- [[AI Service - FastAPI]]
-- [[Database - PostgreSQL]]
-- [[External Services]]
+- Frontend Next.js hiển thị dữ liệu địa điểm, xác thực và Trip preferences.
+- Backend Spring Boot sở hữu nghiệp vụ `auth`, `place` và `trip`.
+- PostgreSQL lưu người dùng, địa điểm, danh mục, giờ mở cửa và Trip.
+- Leaflet/OpenStreetMap hiển thị địa điểm và tọa độ xuất phát của Trip.
 
-## Luồng xử lý
+## Luồng chính
 
-1. Người dùng nhập yêu cầu chuyến đi.
-2. Frontend gửi yêu cầu đến Spring Boot.
-3. Backend xử lý nghiệp vụ lập lịch.
-4. AI Service hỗ trợ RAG và phân tích ngữ cảnh.
-5. Hệ thống trả về lịch trình, bản đồ và giải thích.
+1. Người dùng duyệt địa điểm công khai hoặc đăng nhập.
+2. Frontend gọi REST API của Spring Boot.
+3. Backend xác thực, áp dụng nghiệp vụ và đọc/ghi PostgreSQL.
+4. Backend trả DTO; frontend render danh sách, chi tiết, biểu mẫu hoặc bản đồ.
+
+Hệ thống không có module tạo timeline hoặc kế hoạch di chuyển tự động.

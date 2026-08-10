@@ -4,6 +4,7 @@ import com.saigonplantravel.backend.place.dto.CategoryResponse;
 import com.saigonplantravel.backend.trip.domain.EnvironmentPreference;
 import com.saigonplantravel.backend.trip.domain.TravelPace;
 import com.saigonplantravel.backend.trip.dto.TripResponse;
+import com.saigonplantravel.backend.trip.dto.TripSummaryResponse;
 import com.saigonplantravel.backend.trip.entity.Trip;
 import org.junit.jupiter.api.Test;
 
@@ -115,6 +116,67 @@ class TripMapperTest {
                 .doesNotContain(
                         "id",
                         "userId"
+                );
+    }
+
+    @Test
+    void mapsTripToLightweightSummaryWithoutInternalOrCoordinateFields() {
+        OffsetDateTime timestamp = OffsetDateTime.parse(
+                "2026-08-01T10:00:00+07:00"
+        );
+
+        Trip trip = new Trip(
+                99L,
+                LocalDate.of(2026, 8, 20),
+                LocalTime.of(8, 0),
+                LocalTime.of(18, 0),
+                new BigDecimal("500000.00"),
+                "Chợ Bến Thành",
+                new BigDecimal("10.7726400"),
+                new BigDecimal("106.6980500"),
+                TravelPace.BALANCED,
+                EnvironmentPreference.MIXED,
+                Set.of(1L),
+                timestamp
+        );
+
+        List<CategoryResponse> categories = List.of(
+                new CategoryResponse(
+                        1L,
+                        "Văn hóa",
+                        "van-hoa"
+                )
+        );
+
+        TripSummaryResponse response =
+                mapper.toSummaryResponse(
+                        trip,
+                        categories
+                );
+
+        assertThat(response.publicId())
+                .isEqualTo(trip.getPublicId());
+        assertThat(response.startLocationLabel())
+                .isEqualTo("Chợ Bến Thành");
+        assertThat(response.categoryPreferences())
+                .containsExactlyElementsOf(categories);
+        assertThat(response.updatedAt())
+                .isEqualTo(timestamp);
+
+        List<String> responseFields = Arrays.stream(
+                        TripSummaryResponse.class
+                                .getRecordComponents()
+                )
+                .map(RecordComponent::getName)
+                .toList();
+
+        assertThat(responseFields)
+                .doesNotContain(
+                        "id",
+                        "userId",
+                        "startLatitude",
+                        "startLongitude",
+                        "createdAt"
                 );
     }
 }

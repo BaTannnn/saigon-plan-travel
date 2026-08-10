@@ -36,14 +36,14 @@ related:
 > Administrative unit chưa được mapping hiển thị “Chưa xác định”.
 
 > [!summary]
-> Mở rộng `Place Module` sau FEAT-001 để frontend đọc chi tiết một địa điểm theo `slug`, lấy danh mục công khai và hiển thị lịch mở cửa hằng tuần. Feature bổ sung schema `categories`, `place_categories`, `opening_hours`, dữ liệu demo có gắn nhãn, JPA mapping, DTO, service, REST API và tests. Đây là dữ liệu nền cho màn hình chi tiết, lựa chọn theo sở thích và kiểm tra tính khả thi của lịch trình.
+> Mở rộng `Place Module` sau FEAT-001 để frontend đọc chi tiết một địa điểm theo `slug`, lấy danh mục công khai và hiển thị lịch mở cửa hằng tuần. Feature bổ sung schema `categories`, `place_categories`, `opening_hours`, dữ liệu demo có gắn nhãn, JPA mapping, DTO, service, REST API và tests. Đây là dữ liệu nền cho màn hình chi tiết, lựa chọn theo sở thích và Trip preferences.
 
 ## 1. Trạng thái, quyết định ưu tiên và phê duyệt
 
 | Thuộc tính | Giá trị |
 | --- | --- |
 | Trạng thái | `done` |
-| Độ ưu tiên | `P0 — nền dữ liệu lập lịch` |
+| Độ ưu tiên | `P0 — nền dữ liệu khám phá địa điểm` |
 | Người phụ trách | Nguyễn Bá Tân |
 | Feature phụ thuộc | `FEAT-001 — Place Catalog API MVP` |
 | Backend | Spring Boot modular monolith |
@@ -58,7 +58,7 @@ related:
 FEAT-002 được chọn thay cho Search/Filter/Pagination vì:
 
 - `Category` biểu diễn sở thích và là metadata đầu vào cho recommendation.
-- `OpeningHour` là ràng buộc bắt buộc khi đánh giá một lịch trình có khả thi hay không.
+- `OpeningHour` giúp người dùng tự đánh giá thời điểm ghé thăm phù hợp.
 - Detail API cung cấp nội dung cho bottom sheet/màn hình chi tiết trong prototype mobile-first.
 - Search/filter có thể xây trên các bảng và contract ổn định của feature này trong FEAT-003.
 
@@ -82,7 +82,7 @@ API danh sách của FEAT-001 chỉ cung cấp dữ liệu tóm tắt cho card v
 - Phân biệt “đóng cửa” với “chưa biết giờ mở cửa”.
 - Cung cấp category catalog cho UI và feature lọc tiếp theo.
 
-Nếu scheduling được triển khai trước khi quy tắc giờ mở cửa rõ ràng, thuật toán sẽ phải dựa vào giả định không nhất quán. Vì vậy feature này chuẩn hóa dữ liệu và contract trước, nhưng chưa thực hiện scheduling.
+Feature này chuẩn hóa dữ liệu giờ mở cửa để frontend phân biệt rõ ngày đóng cửa và ngày chưa có dữ liệu.
 
 ## 3. Mục tiêu
 
@@ -99,7 +99,7 @@ Nếu scheduling được triển khai trước khi quy tắc giờ mở cửa r
 - Duy trì Flyway là nguồn sự thật của schema và Hibernate dùng `ddl-auto=validate`.
 - Giữ nguyên contract `GET /api/v1/places` của FEAT-001.
 - Không serialize JPA Entity hoặc collection lazy trực tiếp qua REST.
-- Chuẩn hóa semantics giờ mở cửa để scheduling có thể tái sử dụng sau này.
+- Chuẩn hóa semantics giờ mở cửa cho API và giao diện công khai.
 - Bảo đảm detail endpoint dùng số truy vấn hữu hạn, không N+1.
 
 ### 3.3. Chỉ số hoàn thành
@@ -141,7 +141,7 @@ Nếu scheduling được triển khai trước khi quy tắc giờ mở cửa r
 - Thu thập/cào dữ liệu thật hoặc tự động đồng bộ nguồn ngoài.
 - Ảnh/media/CDN.
 - PostGIS, routing, tính khoảng cách hoặc bản đồ frontend.
-- Scheduling, recommendation, RAG, embedding và pgvector search.
+- Generated recommendation, embedding và vector search.
 - Frontend integration; feature này chỉ chốt backend contract.
 
 > [!important]
@@ -154,12 +154,11 @@ Nếu scheduling được triển khai trước khi quy tắc giờ mở cửa r
 - **Khách du lịch:** xem thông tin chi tiết trước khi chọn địa điểm.
 - **Next.js frontend:** gọi public REST API và render dữ liệu.
 - **Developer/data maintainer:** chuẩn bị dữ liệu demo có cấu trúc và kiểm tra constraint.
-- **Scheduling Module tương lai:** sử dụng semantics giờ mở cửa đã được chuẩn hóa, không gọi trực tiếp API trong feature này.
 
 ### User stories
 
 **US-001 — Xem chi tiết địa điểm**  
-Là một khách du lịch, tôi muốn mở địa điểm theo đường dẫn ổn định để xem mô tả, địa chỉ, chi phí, thời lượng, danh mục và giờ mở cửa trước khi thêm vào lịch trình.
+Là một khách du lịch, tôi muốn mở địa điểm theo đường dẫn ổn định để xem mô tả, địa chỉ, chi phí, thời lượng, danh mục và giờ mở cửa trước khi quyết định ghé thăm.
 
 **US-002 — Xem danh mục địa điểm**  
 Là một khách du lịch, tôi muốn biết địa điểm thuộc nhóm văn hóa, ẩm thực, ngoài trời hoặc nhóm phù hợp khác để đánh giá nhanh mức độ phù hợp.
@@ -813,7 +812,7 @@ Development log cần lưu:
 | Rủi ro | Tác động | Giảm thiểu |
 | --- | --- | --- |
 | Mở rộng taxonomy quá sớm | Mất thời gian, category khó ổn định | Chỉ seed nhóm cần cho prototype; admin/taxonomy management để sau |
-| Semantics `unknown` bị hiểu là `closed` | Scheduling loại sai địa điểm | Quy định rõ ở BR-008, contract và tests |
+| Semantics `unknown` bị hiểu là `closed` | Người dùng hiểu sai dữ liệu | Quy định rõ ở BR-008, contract và tests |
 | JPA eager collection/N+1 | Response chậm, query khó kiểm soát | Relations `LAZY`, map trong service, query-count test |
 | Multiple bag fetch/cartesian product | Lỗi hoặc dữ liệu lặp | Không ép join-fetch nhiều bag; dùng bounded lazy loads cho một aggregate hoặc strategy đã test |
 | Chạy trên database còn checksum V2/V6 cũ | Flyway checksum mismatch | Drop/recreate database; refactor không hỗ trợ upgrade tại chỗ |
@@ -821,7 +820,7 @@ Development log cần lưu:
 | Seed hard-code identity ID | Hỏng khi dữ liệu khác môi trường | Lookup place bằng slug trong seed |
 | Giờ mở cửa thay đổi ngoài đời | Demo/báo cáo sai | Gắn nhãn demo, sau này thêm provenance/monitoring workflow riêng |
 | Error envelope trùng lặp | API không nhất quán | Inspect common package trước và tái sử dụng handler hiện có |
-| Scope kéo sang filter/scheduling | Iteration quá lớn | Giữ mục 4.2 và tạo FEAT-003 riêng |
+| Scope kéo sang filter hoặc feature khác | Iteration quá lớn | Giữ mục 4.2 và tạo FEAT-003 riêng |
 
 ## 17. Quyết định thiết kế đã chốt trong spec
 
@@ -829,7 +828,7 @@ Development log cần lưu:
 | --- | --- | --- |
 | DEC-001 | Detail route dùng `slug`, không dùng numeric ID. | URL ổn định, dễ đọc và không làm lộ sequence ID trong UI. |
 | DEC-002 | `Category` và `OpeningHour` thuộc Place Module trong MVP. | Cùng aggregate/use case; chưa có lý do tách module. |
-| DEC-003 | Một interval/ngày, không hỗ trợ qua nửa đêm. | Đủ cho MVP và giảm edge case trước scheduling. |
+| DEC-003 | Một interval/ngày, không hỗ trợ qua nửa đêm. | Đủ cho MVP và giữ contract tuần đơn giản. |
 | DEC-004 | Missing day = unknown. | Không biến thiếu dữ liệu thành thông tin đóng cửa sai. |
 | DEC-005 | Detail của inactive place trả cùng 404 như missing. | Không lộ trạng thái nội bộ. |
 | DEC-006 | Category catalog là endpoint riêng. | Cho frontend dùng chip/preferences và chuẩn bị FEAT-003. |
@@ -889,7 +888,7 @@ FEAT-003 phải chốt pagination envelope, default page size, normalization key
 - Place detail response cung cấp dữ liệu cho bottom sheet/màn hình chi tiết.
 - Category catalog cung cấp nhãn/chip; filtering là FEAT-003.
 - Opening hours có thể hiển thị trong lịch tuần; UI phải thể hiện `unknown` khác `closed`.
-- Map, itinerary và Copilot trong prototype vẫn dùng dữ liệu mô phỏng cho đến khi có feature integration riêng.
+- Bản đồ khám phá dùng dữ liệu Place công khai; các prototype ngoài scope không phải contract triển khai.
 
 ### Báo cáo khóa luận
 
