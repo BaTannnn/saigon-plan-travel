@@ -386,6 +386,9 @@ frontend/src/
 │   ├── page.tsx
 │   ├── login/
 │   ├── register/
+│   ├── trips/
+│   │   ├── new/
+│   │   └── [publicId]/
 │   └── places/
 ├── components/
 │   ├── layout/
@@ -394,6 +397,9 @@ frontend/src/
 │   ├── auth/
 │   │   ├── auth-provider.tsx
 │   │   └── components/
+│   ├── trips/
+│   │   ├── components/
+│   │   └── trip-errors.ts
 │   └── places/
 │       ├── components/
 │       ├── map/
@@ -403,12 +409,14 @@ frontend/src/
 │   ├── api-client.ts
 │   ├── auth-api.ts
 │   ├── category-api.ts
-│   └── place-api.ts
+│   ├── place-api.ts
+│   └── trip-api.ts
 └── types/
     ├── api.ts
     ├── auth.ts
     ├── category.ts
-    └── place.ts
+    ├── place.ts
+    └── trip.ts
 ```
 
 `api-client.ts` owns runtime-neutral JSON transport and `ApiError`. Feature API
@@ -447,6 +455,26 @@ remain Server Components; only `AuthControls` and the auth forms are Client Comp
 The access token is never placed in server-rendered props. Browser API URLs use the
 build-time public `NEXT_PUBLIC_BACKEND_API_BASE_URL`, while Place Server Components use
 the server-only `BACKEND_API_BASE_URL`.
+
+Trip preference flow:
+
+```text
+/trips/new Server Component
+→ public server-side GET /api/v1/categories
+→ CreateTripView + TripForm Client Components
+→ AuthProvider.runAuthenticated
+→ POST /api/v1/trips
+→ /trips/{publicId}
+→ authenticated GET Trip
+→ review or edit
+→ full SaveTripRequest through PUT
+→ updated persisted Trip review
+```
+
+The route pages use `connection()` before category loading so production builds do not
+require a running backend. Category catalog reads remain public/server-side; Trip
+create/get/replace calls remain authenticated/browser-side. The frontend does not own
+TripPolicy rules and does not provide list/delete/archive or itinerary generation.
 
 Do not implement the itinerary UI by copying Place patterns blindly. First stabilize the
 FEAT-005 public response and then model timeline/map state from that contract.

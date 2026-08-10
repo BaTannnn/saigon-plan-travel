@@ -200,7 +200,20 @@ baseline:
   Place reads continue to use `BACKEND_API_BASE_URL`.
 - The session design has no refresh-token behavior and logout is local token removal.
 
-Trip UI and itinerary timeline/generation UI are not implemented in the current source.
+The FE-F02 Trip preference flow is also implemented:
+
+- `/trips/new` loads categories through the public server-side category client and
+  submits a complete authenticated `SaveTripRequest` through `POST /api/v1/trips`.
+- `/trips/{publicId}` loads the ownership-scoped persisted Trip with a browser Bearer
+  request, renders its stored preferences, and supports edit mode through full
+  `PUT /api/v1/trips/{publicId}` replacement.
+- Trip forms use backend category slugs, expose only useful HTML/category-count UX
+  validation, and map `ProblemDetail.fieldErrors` plus unknown-category extensions.
+- Protected Trip calls run through FE-F01 `runAuthenticated`; `401` clears the tab
+  session and routes the user to login.
+- The itinerary-generation CTA is present but disabled until FE-F03.
+
+Trip list/delete/archive and itinerary timeline/generation UI are not implemented.
 
 FEAT-006 routing, FEAT-007 RAG explanation, FEAT-008 weather context, and FEAT-009
 re-planning remain unimplemented. FEAT-005 performs no route, weather, RAG, LLM, or
