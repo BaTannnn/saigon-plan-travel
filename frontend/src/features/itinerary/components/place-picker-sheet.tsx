@@ -49,8 +49,6 @@ export function PlacePickerSheet({
   const [catalog, setCatalog] = useState<PlaceSummary[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [query, setQuery] = useState("");
-  const [administrativeUnitName, setAdministrativeUnitName] =
-    useState(ALL_VALUE);
   const [category, setCategory] = useState(ALL_VALUE);
   const [indoor, setIndoor] = useState(ALL_VALUE);
   const [maxCost, setMaxCost] = useState("");
@@ -88,7 +86,6 @@ export function PlacePickerSheet({
   useEffect(() => {
     if (!open) {
       setQuery("");
-      setAdministrativeUnitName(ALL_VALUE);
       setCategory(ALL_VALUE);
       setIndoor(ALL_VALUE);
       setMaxCost("");
@@ -97,14 +94,6 @@ export function PlacePickerSheet({
       setError(null);
     }
   }, [catalog, open]);
-
-  const administrativeUnitNames = useMemo(
-    () =>
-      [...new Set(catalog.map((place) => place.administrativeUnitName))]
-        .filter((name): name is string => Boolean(name))
-        .sort((left, right) => left.localeCompare(right, "vi")),
-    [catalog],
-  );
 
   const visiblePlaces = useMemo(() => {
     const excluded = new Set(excludedPlaceIds);
@@ -118,10 +107,6 @@ export function PlacePickerSheet({
 
     const filters: PlacesSearchFilters = {
       keyword: query.trim() || undefined,
-      administrativeUnitName:
-        administrativeUnitName === ALL_VALUE
-          ? undefined
-          : administrativeUnitName,
       category: category === ALL_VALUE ? undefined : category,
       indoor:
         indoor === ALL_VALUE ? undefined : (indoor as "true" | "false"),
@@ -142,7 +127,6 @@ export function PlacePickerSheet({
 
   function resetFilters() {
     setQuery("");
-    setAdministrativeUnitName(ALL_VALUE);
     setCategory(ALL_VALUE);
     setIndoor(ALL_VALUE);
     setMaxCost("");
@@ -202,26 +186,6 @@ export function PlacePickerSheet({
             </div>
 
             <div className="grid grid-cols-1 gap-3">
-              <div className="grid gap-1.5">
-                <Label className="text-xs text-text-secondary">Khu vực</Label>
-                <Select
-                  value={administrativeUnitName}
-                  onValueChange={setAdministrativeUnitName}
-                >
-                  <SelectTrigger className="h-10 w-full bg-surface">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent position="popper">
-                    <SelectItem value={ALL_VALUE}>Tất cả khu vực</SelectItem>
-                    {administrativeUnitNames.map((name) => (
-                      <SelectItem key={name} value={name}>
-                        {name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
               <div className="grid gap-1.5">
                 <Label className="text-xs text-text-secondary">Danh mục</Label>
                 <Select value={category} onValueChange={setCategory}>
@@ -341,8 +305,7 @@ export function PlacePickerSheet({
                             {place.name}
                           </p>
                           <p className="mt-1 mb-0 truncate text-xs text-text-secondary">
-                            {place.administrativeUnitName ?? "TP.HCM"}
-                            {place.indoor ? " · Trong nhà" : " · Ngoài trời"}
+                            {place.indoor ? "Trong nhà" : "Ngoài trời"}
                           </p>
                           {place.shortDescription ? (
                             <p className="mt-1.5 mb-0 line-clamp-2 text-xs leading-5 text-text-secondary">

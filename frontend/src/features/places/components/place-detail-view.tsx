@@ -72,11 +72,7 @@ export function PlaceDetailView({ place }: PlaceDetailViewProps) {
                 </Badge>
               ))}
             </div>
-            <p className={eyebrowClassName}>
-              Đơn vị hành chính:{" "}
-              {place.administrativeUnitName ?? "Chưa xác định"}
-            </p>
-            <h1 className="mt-2 mb-3.5 text-[clamp(2.2rem,5vw,4.5rem)] leading-[1.02] font-bold tracking-[-0.055em] max-md:text-[2.4rem]">
+            <h1 className="mt-0 mb-3.5 text-[clamp(2.2rem,5vw,4.5rem)] leading-[1.02] font-bold tracking-[-0.055em] max-md:text-[2.4rem]">
               {place.name}
             </h1>
             <p className="m-0 max-w-[700px] text-[1.05rem] leading-[1.7] text-text-secondary">
@@ -162,9 +158,6 @@ export function PlaceDetailView({ place }: PlaceDetailViewProps) {
                   <strong>Địa chỉ</strong>
                   <p className="mt-1 mb-0 leading-[1.55] text-text-secondary">
                     {place.address}
-                    {place.administrativeUnitName
-                      ? `, ${place.administrativeUnitName}`
-                      : ""}
                   </p>
                 </div>
               </div>

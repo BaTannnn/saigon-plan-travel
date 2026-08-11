@@ -33,13 +33,6 @@ export function SearchForm({ filters, compact = false }: SearchFormProps) {
         placeholder="Tìm địa điểm"
         maxLength={100}
       />
-      {filters.administrativeUnitName ? (
-        <input
-          type="hidden"
-          name="administrativeUnitName"
-          value={filters.administrativeUnitName}
-        />
-      ) : null}
       {filters.category ? (
         <input type="hidden" name="category" value={filters.category} />
       ) : null}
