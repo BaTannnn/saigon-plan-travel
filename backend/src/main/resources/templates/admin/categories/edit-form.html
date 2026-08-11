@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('Edit category')}">
+    <title>Edit category</title>
+</head>
+<body>
+<nav th:replace="~{admin/fragments :: navbar}"></nav>
+<main class="container py-4 py-lg-5">
+    <a class="link-secondary text-decoration-none" th:href="@{/admin/categories}">&larr; Back to categories</a>
+    <div class="card page-card mt-3">
+        <div class="card-body p-4 p-lg-5">
+        <h1 class="h2 mb-4">Edit category</h1>
+
+    <form method="post" th:action="@{/admin/categories/{slug}(slug=${categorySlug})}" th:object="${categoryForm}">
+        <div class="mb-3">
+            <label class="form-label" for="name">Name</label>
+            <input class="form-control" id="name" type="text" th:field="*{name}">
+            <div class="text-danger small mt-1" th:if="${#fields.hasErrors('name')}"
+                 th:errors="*{name}">Name error</div>
+        </div>
+        <div class="mb-3">
+            <span class="form-label d-block">Slug</span>
+            <code class="d-inline-block bg-light border rounded px-2 py-1"
+                  th:text="${categorySlug}">category-slug</code>
+            <div class="form-text">The slug remains unchanged.</div>
+        </div>
+        <div class="mb-4">
+            <label class="form-label" for="description">Description</label>
+            <textarea class="form-control" id="description" rows="4" th:field="*{description}"></textarea>
+        </div>
+
+        <button class="btn btn-primary" type="submit">Save category</button>
+    </form>
+        </div>
+    </div>
+</main>
+</body>
+</html>
