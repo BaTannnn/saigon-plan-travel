@@ -1,0 +1,46 @@
+{
+  "placeSlug": "buu-dien-trung-tam-sai-gon",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Bưu điện Trung tâm Sài Gòn là một công trình bưu chính và kiến trúc lịch sử nằm tại khu vực trung tâm Thành phố Hồ Chí Minh, cạnh Nhà thờ Đức Bà. Công trình được xây dựng vào cuối thế kỷ XIX và hiện vừa gắn với hoạt động bưu chính vừa là một điểm tham quan quen thuộc trong các chương trình khám phá khu trung tâm thành phố.",
+      "source": {
+        "label": "Sở Quy hoạch - Kiến trúc TP.HCM - Những công trình kiến trúc nổi tiếng Sài Gòn",
+        "uri": "https://qhkt.hochiminhcity.gov.vn/kien-truc-canh-quan/nhung-cong-trinh-kien-truc-noi-tieng-sai-gon-466.html",
+        "retrievedAt": "2026-08-11"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Bưu điện Trung tâm Sài Gòn được xây dựng trong giai đoạn 1886-1891. Tư liệu của Sở Quy hoạch - Kiến trúc Thành phố Hồ Chí Minh ghi nhận công trình được thực hiện theo đồ án của kiến trúc sư Villedieu cùng các cộng sự trong thời kỳ thuộc địa. Qua hơn một thế kỷ, tòa nhà trở thành một trong những công trình kiến trúc lịch sử tiêu biểu còn hiện diện trong khu trung tâm Sài Gòn - Thành phố Hồ Chí Minh.",
+      "source": {
+        "label": "Sở Quy hoạch - Kiến trúc TP.HCM - Những công trình kiến trúc nổi tiếng Sài Gòn",
+        "uri": "https://qhkt.hochiminhcity.gov.vn/kien-truc-canh-quan/nhung-cong-trinh-kien-truc-noi-tieng-sai-gon-466.html",
+        "retrievedAt": "2026-08-11"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Giá trị nổi bật của Bưu điện Trung tâm Sài Gòn nằm ở hình thức kiến trúc cuối thế kỷ XIX và vị trí trong cụm công trình lịch sử ở trung tâm thành phố. Các tài liệu giới thiệu kiến trúc của thành phố xem Bưu điện Trung tâm là một trong những công trình nổi tiếng của Sài Gòn, có phong cách kiến trúc phương Tây kết hợp với các yếu tố phù hợp bối cảnh địa phương và tạo nên diện mạo đặc trưng của khu vực Công xã Paris.",
+      "source": {
+        "label": "Sở Quy hoạch - Kiến trúc TP.HCM - Những công trình kiến trúc nổi tiếng Sài Gòn",
+        "uri": "https://qhkt.hochiminhcity.gov.vn/kien-truc-canh-quan/nhung-cong-trinh-kien-truc-noi-tieng-sai-gon-466.html",
+        "retrievedAt": "2026-08-11"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Bưu điện Trung tâm Sài Gòn thường xuất hiện như một điểm dừng trong các chương trình tham quan khu trung tâm Thành phố Hồ Chí Minh. Khi đến đây, trải nghiệm chính là tiếp cận một công trình bưu chính vẫn gắn với đời sống đô thị đồng thời quan sát không gian kiến trúc lịch sử. Vị trí gần Nhà thờ Đức Bà và các điểm trung tâm khác cũng giúp địa điểm dễ kết hợp trong một hành trình đi bộ khám phá khu vực.",
+      "source": {
+        "label": "Sở Du lịch TP.HCM - Chương trình tham quan trung tâm thành phố",
+        "uri": "https://sodulich.hochiminhcity.gov.vn/Home/moduleId/564/id/4841/ma/CBHT/controller/HanhChinhDuKhach/action/Detail",
+        "retrievedAt": "2026-08-11"
+      }
+    }
+  ]
+}

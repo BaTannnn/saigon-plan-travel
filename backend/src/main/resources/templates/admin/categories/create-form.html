@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('Create category')}">
+    <title>Create category</title>
+</head>
+<body>
+<nav th:replace="~{admin/fragments :: navbar}"></nav>
+<main class="container py-4 py-lg-5">
+    <a class="link-secondary text-decoration-none" th:href="@{/admin/categories}">&larr; Back to categories</a>
+    <div class="card page-card mt-3">
+        <div class="card-body p-4 p-lg-5">
+        <h1 class="h2 mb-4">Create category</h1>
+
+    <form method="post" th:action="@{/admin/categories}" th:object="${categoryForm}">
+        <ul class="alert alert-danger" th:if="${#fields.hasGlobalErrors()}">
+            <li th:each="error : ${#fields.globalErrors()}" th:text="${error}">Validation error</li>
+        </ul>
+
+        <div class="mb-3">
+            <label class="form-label" for="name">Name</label>
+            <input class="form-control" id="name" type="text" th:field="*{name}">
+            <div class="text-danger small mt-1" th:if="${#fields.hasErrors('name')}"
+                 th:errors="*{name}">Name error</div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="slug">Slug</label>
+            <input class="form-control" id="slug" type="text" th:field="*{slug}">
+            <div class="text-danger small mt-1" th:if="${#fields.hasErrors('slug')}"
+                 th:errors="*{slug}">Slug error</div>
+        </div>
+        <div class="mb-4">
+            <label class="form-label" for="description">Description</label>
+            <textarea class="form-control" id="description" rows="4" th:field="*{description}"></textarea>
+        </div>
+
+        <button class="btn btn-primary" type="submit">Create category</button>
+    </form>
+        </div>
+    </div>
+</main>
+</body>
+</html>

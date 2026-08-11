@@ -1,0 +1,46 @@
+{
+  "placeSlug": "bao-tang-my-thuat-tphcm",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Bảo tàng Mỹ thuật Thành phố Hồ Chí Minh là một thiết chế văn hóa chuyên sưu tầm, bảo quản, trưng bày và giới thiệu các giá trị mỹ thuật. Bảo tàng được thành lập năm 1987 và chính thức mở cửa phục vụ công chúng vào năm 1989. Nội dung trưng bày bao quát cả mỹ thuật cổ - cận đại và mỹ thuật hiện đại, phản ánh nhiều giai đoạn và dòng chảy nghệ thuật của Thành phố Hồ Chí Minh, Nam Bộ và Việt Nam.",
+      "source": {
+        "label": "Bảo tàng Mỹ thuật TP.HCM - Tham quan",
+        "uri": "https://www.baotangmythuattphcm.com.vn/tham-quan",
+        "retrievedAt": "2026-08-11"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Từ khi thành lập, Bảo tàng Mỹ thuật Thành phố Hồ Chí Minh tập trung xây dựng các bộ sưu tập và thực hiện chức năng bảo tồn, tôn vinh di sản mỹ thuật. Các sưu tập trải dài từ mỹ thuật cổ, cận đại đến hiện đại, trong đó có tác phẩm của nhiều thế hệ nghệ sĩ và những hiện vật phản ánh đặc trưng mỹ thuật Thành phố Hồ Chí Minh và khu vực Nam Bộ. Bên cạnh trưng bày thường xuyên, bảo tàng còn tổ chức các trưng bày chuyên đề để giới thiệu những lát cắt khác nhau của di sản nghệ thuật.",
+      "source": {
+        "label": "Bảo tàng Mỹ thuật TP.HCM - Kỷ niệm 35 năm thành lập",
+        "uri": "https://baotangmythuattphcm.com.vn/ky-niem-35-nam-thanh-lap-bao-tang-my-thuat-tphcm",
+        "retrievedAt": "2026-08-11"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Không gian kiến trúc của Bảo tàng Mỹ thuật Thành phố Hồ Chí Minh mang dấu ấn kiến trúc Pháp cuối thế kỷ XIX - đầu thế kỷ XX và kết hợp các yếu tố trang trí phương Đông. Những chi tiết như mái ngói, cột ốp gốm và trang trí gốm trên mái tạo nên đặc trưng thẩm mỹ riêng cho khu nhà. Bản thân công trình vì vậy cũng là một phần đáng chú ý trong trải nghiệm tìm hiểu mỹ thuật và kiến trúc tại bảo tàng.",
+      "source": {
+        "label": "Bảo tàng Mỹ thuật TP.HCM - Bản đồ & Lối vào",
+        "uri": "https://baotangmythuattphcm.com.vn/ban-do-loi-vao",
+        "retrievedAt": "2026-08-11"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Khách tham quan có thể khám phá nhiều nhóm nội dung mỹ thuật trong các tòa nhà của bảo tàng. Nhà 1 tập trung vào mỹ thuật hiện đại, Nhà 2 dành cho trưng bày chuyên đề và triển lãm thường xuyên, còn Nhà 3 giới thiệu mỹ thuật cổ - cận đại với hiện vật từ nhiều chất liệu như gốm, đồng, gỗ và đá. Cách tổ chức này tạo điều kiện để người xem tiếp cận cả tác phẩm nghệ thuật, sưu tập chuyên đề và bối cảnh phát triển mỹ thuật qua nhiều thời kỳ.",
+      "source": {
+        "label": "Bảo tàng Mỹ thuật TP.HCM - Thông tin trưng bày",
+        "uri": "https://baotangmythuattphcm.com.vn/thong-tin",
+        "retrievedAt": "2026-08-11"
+      }
+    }
+  ]
+}

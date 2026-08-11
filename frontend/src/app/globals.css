@@ -1,26 +1,114 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f6faf8;
+  --foreground: #103f3a;
+  --card: #ffffff;
+  --card-foreground: #103f3a;
+  --popover: #ffffff;
+  --popover-foreground: #103f3a;
+  --primary: #08796d;
+  --primary-foreground: #ffffff;
+  --primary-strong: #07564f;
+  --primary-soft: #ddf4ec;
+  --secondary: #ddf4ec;
+  --secondary-foreground: #07564f;
+  --muted: #ddf4ec;
+  --muted-foreground: #617773;
+  --accent: #ff6b59;
+  --accent-foreground: #ffffff;
+  --accent-soft: #ffe4df;
+  --destructive: #ff6b59;
+  --border: #cfe4de;
+  --input: #cfe4de;
+  --ring: #08796d;
+  --surface: var(--card);
+  --text-primary: #103f3a;
+  --text-secondary: #617773;
+  --mint-shadow-sm: 0 8px 24px rgb(7 86 79 / 8%);
+  --mint-shadow-md: 0 16px 44px rgb(7 86 79 / 14%);
+  --mint-shadow-accent: 0 10px 22px rgb(255 107 89 / 20%);
+  --radius: 0.75rem;
+  --mint-radius-md: 18px;
+  --mint-radius-lg: 24px;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --font-heading: var(--font-geist-sans);
   --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-strong: var(--primary-strong);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --shadow-mint-sm: var(--mint-shadow-sm);
+  --shadow-mint-md: var(--mint-shadow-md);
+  --shadow-mint-accent: var(--mint-shadow-accent);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+  --radius-mint-md: var(--mint-radius-md);
+  --radius-mint-lg: var(--mint-radius-lg);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    @apply bg-background font-sans text-foreground;
+  }
+
+  body {
+    @apply min-h-dvh min-w-80 bg-background text-foreground;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  a,
+  button,
+  input,
+  select,
+  summary {
+    @apply focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/35;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }

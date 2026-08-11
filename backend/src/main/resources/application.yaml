@@ -4,12 +4,10 @@ server:
 spring:
   application:
     name: saigon-plan-travel-backend
-
   datasource:
     url: ${JDBC_DB_URL}
     username: ${JDBC_DB_USERNAME}
     password: ${JDBC_DB_PASSWORD}
-
   jpa:
     open-in-view: false
     hibernate:
@@ -28,3 +26,12 @@ management:
   endpoint:
     health:
       show-details: always
+
+app:
+  security:
+    cors:
+      allowed-origin: ${CORS_ALLOWED_ORIGIN:http://localhost:3000}
+    jwt:
+      secret: ${JWT_SECRET}
+      issuer: saigon-plan-travel
+      access-token-expiration: PT1H

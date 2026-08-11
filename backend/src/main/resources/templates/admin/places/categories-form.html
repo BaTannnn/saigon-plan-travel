@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('Edit Place categories')}">
+    <title>Edit Place categories</title>
+</head>
+<body>
+<nav th:replace="~{admin/fragments :: navbar}"></nav>
+<main class="container py-4 py-lg-5">
+    <a class="link-secondary text-decoration-none"
+       th:href="@{/admin/places/{slug}(slug=${place.slug})}">&larr; Back to place detail</a>
+    <div class="card page-card mt-3">
+    <div class="card-body p-4 p-lg-5">
+    <h1 class="h2 mb-2">Edit categories for <span th:text="${place.name}">Place name</span></h1>
+    <p class="text-secondary mb-4">Select any existing categories. Leaving all unchecked removes every category assignment.</p>
+
+    <form method="post"
+          th:action="@{/admin/places/{slug}/categories/edit(slug=${place.slug})}"
+          th:object="${categoryForm}">
+        <div class="alert alert-light border" th:if="${availableCategories.isEmpty()}">
+            No categories are available.
+        </div>
+        <fieldset class="row g-2" th:unless="${availableCategories.isEmpty()}">
+            <legend class="form-label fs-6">Categories</legend>
+            <div class="col-sm-6 col-lg-4" th:each="category : ${availableCategories}">
+                <div class="form-check border rounded p-3 ps-5 h-100">
+                    <input class="form-check-input" type="checkbox" th:field="*{categorySlugs}"
+                           th:value="${category.slug}">
+                    <label class="form-check-label" th:for="${#ids.prev('categorySlugs')}"
+                           th:text="${category.name}">Category</label>
+                </div>
+            </div>
+        </fieldset>
+        <p class="text-danger small mt-2" th:if="${#fields.hasErrors('categorySlugs')}"
+           th:errors="*{categorySlugs}">Category error</p>
+
+        <button class="btn btn-primary mt-4" type="submit">Save categories</button>
+    </form>
+    </div>
+    </div>
+</main>
+</body>
+</html>

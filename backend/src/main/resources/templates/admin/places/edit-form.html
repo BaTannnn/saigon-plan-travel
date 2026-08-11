@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('Edit Place')}">
+    <title>Edit Place</title>
+</head>
+<body>
+<nav th:replace="~{admin/fragments :: navbar}"></nav>
+<main class="container py-4 py-lg-5">
+    <a class="link-secondary text-decoration-none"
+       th:href="@{/admin/places/{slug}(slug=${placeSlug})}">&larr; Back to place detail</a>
+    <div class="card page-card mt-3">
+    <div class="card-body p-4 p-lg-5">
+    <h1 class="h2 mb-2">Edit Place</h1>
+    <p class="text-secondary">
+        Slug: <strong th:text="${placeSlug}">place-slug</strong>.
+        Status: <strong th:text="${placeActive ? 'Active' : 'Inactive'}">Active</strong>.
+    </p>
+    <p class="text-secondary mb-4">Slug and status are unchanged by this form. Categories and opening hours are not included yet.</p>
+
+    <form method="post" th:action="@{/admin/places/{slug}(slug=${placeSlug})}" th:object="${placeForm}">
+        <div class="row g-3">
+        <div class="col-12">
+            <label class="form-label" for="name">Name</label>
+            <input class="form-control" id="name" type="text" th:field="*{name}" maxlength="150" required>
+            <p class="text-danger small mt-1 mb-0" th:if="${#fields.hasErrors('name')}"
+               th:errors="*{name}">Name error</p>
+        </div>
+        <div class="col-12">
+            <label class="form-label" for="shortDescription">Short description</label>
+            <textarea class="form-control" id="shortDescription" rows="2"
+                      th:field="*{shortDescription}" maxlength="500"></textarea>
+            <p class="text-danger small mt-1 mb-0" th:if="${#fields.hasErrors('shortDescription')}"
+               th:errors="*{shortDescription}">
+                Short description error
+            </p>
+        </div>
+        <div class="col-12">
+            <label class="form-label" for="fullDescription">Full description</label>
+            <textarea class="form-control" id="fullDescription" rows="5" th:field="*{fullDescription}"></textarea>
+        </div>
+        <div class="col-12">
+            <label class="form-label" for="address">Address</label>
+            <input class="form-control" id="address" type="text" th:field="*{address}" maxlength="255" required>
+            <p class="text-danger small mt-1 mb-0" th:if="${#fields.hasErrors('address')}"
+               th:errors="*{address}">Address error</p>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="latitude">Latitude</label>
+            <input class="form-control" id="latitude" type="number" th:field="*{latitude}"
+                   min="-90" max="90" step="0.0000001" required>
+            <p class="text-danger small mt-1 mb-0" th:if="${#fields.hasErrors('latitude')}"
+               th:errors="*{latitude}">Latitude error</p>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="longitude">Longitude</label>
+            <input class="form-control" id="longitude" type="number" th:field="*{longitude}" min="-180" max="180"
+                   step="0.0000001" required>
+            <p class="text-danger small mt-1 mb-0" th:if="${#fields.hasErrors('longitude')}"
+               th:errors="*{longitude}">Longitude error</p>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" for="estimatedVisitMinutes">Estimated visit minutes</label>
+            <input class="form-control" id="estimatedVisitMinutes" type="number"
+                   th:field="*{estimatedVisitMinutes}" min="1" required>
+            <p class="text-danger small mt-1 mb-0" th:if="${#fields.hasErrors('estimatedVisitMinutes')}"
+               th:errors="*{estimatedVisitMinutes}">
+                Estimated visit minutes error
+            </p>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" for="minCost">Minimum cost</label>
+            <input class="form-control" id="minCost" type="number" th:field="*{minCost}"
+                   min="0" step="0.01" required>
+            <p class="text-danger small mt-1 mb-0" th:if="${#fields.hasErrors('minCost')}"
+               th:errors="*{minCost}">Minimum cost error</p>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" for="maxCost">Maximum cost</label>
+            <input class="form-control" id="maxCost" type="number" th:field="*{maxCost}"
+                   min="0" step="0.01" required>
+            <p class="text-danger small mt-1 mb-0" th:if="${#fields.hasErrors('maxCost')}"
+               th:errors="*{maxCost}">Maximum cost error</p>
+        </div>
+        <fieldset class="col-12">
+            <legend class="form-label fs-6">Environment</legend>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" id="indoor" type="radio" th:field="*{indoor}" value="true" required>
+                <label class="form-check-label" for="indoor">Indoor</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" id="outdoor" type="radio" th:field="*{indoor}" value="false" required>
+                <label class="form-check-label" for="outdoor">Outdoor</label>
+            </div>
+            <p class="text-danger small mt-1 mb-0" th:if="${#fields.hasErrors('indoor')}"
+               th:errors="*{indoor}">Environment error</p>
+        </fieldset>
+        </div>
+
+        <button class="btn btn-primary mt-4" type="submit">Save changes</button>
+    </form>
+    </div>
+    </div>
+</main>
+</body>
+</html>

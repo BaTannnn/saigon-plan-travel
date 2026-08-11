@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('Admin categories')}">
+    <title>Admin categories</title>
+</head>
+<body>
+<nav th:replace="~{admin/fragments :: navbar}"></nav>
+<main class="container py-4 py-lg-5">
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-4">
+        <div>
+            <p class="text-primary fw-semibold mb-1">Catalog management</p>
+            <h1 class="h2 mb-1">Categories</h1>
+            <p class="text-secondary mb-0">Organize places into reusable discovery groups.</p>
+        </div>
+        <a class="btn btn-primary" th:href="@{/admin/categories/new}">Create category</a>
+    </div>
+
+    <div class="alert alert-light border" th:if="${categories.isEmpty()}">No categories.</div>
+    <div class="card page-card" th:unless="${categories.isEmpty()}">
+        <div class="table-responsive">
+        <table class="table table-hover mb-0">
+        <thead class="table-light">
+        <tr>
+            <th>Name</th>
+            <th>Slug</th>
+            <th>Description</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="category : ${categories}" th:id="${'category-' + category.slug}">
+            <td th:text="${category.name}">Category</td>
+            <td><code th:text="${category.slug}">category-slug</code></td>
+            <td th:text="${category.description ?: 'No description'}">No description</td>
+            <td><a class="btn btn-sm btn-outline-primary"
+                   th:href="@{/admin/categories/{slug}/edit(slug=${category.slug})}">Edit</a></td>
+        </tr>
+        </tbody>
+        </table>
+        </div>
+    </div>
+</main>
+</body>
+</html>

@@ -1,9 +1,0 @@
-# Obsidian local state
-docs/.obsidian/workspace.json
-docs/.obsidian/workspace-mobile.json
-docs/.obsidian/cache/
-docs/.trash/
-
-# OS files
-.DS_Store
-Thumbs.db
