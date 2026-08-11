@@ -22,6 +22,14 @@ permanently retired by owner decision on 2026-08-10.
 - Authenticated creation, listing, retrieval, and full replacement of owned
   Trip preferences.
 - Next.js interfaces for place discovery, authentication, and Trip preferences.
+- `ROLE_ADMIN`-protected Thymeleaf Place administration with an all-status
+  catalog, detail, basic creation, and basic editing. Public Place queries remain
+  active-only. Admin can explicitly activate or deactivate a Place through
+  CSRF-protected form actions and replace a Place's assignments from the existing
+  Category catalog. Admin can also replace the weekly opening-hour data while
+  preserving the distinction between an explicitly closed day and an unknown day.
+  The admin Category catalog supports listing, creation, and editing; deletion
+  is not part of the current slice.
 - Leaflet/OpenStreetMap presentation for places and a Trip's selected origin.
 
 Explicitly out of scope:
@@ -70,7 +78,9 @@ Explicitly out of scope:
 
 ## 6. Security and evidence
 
-- Authentication uses stateless JWT Bearer tokens.
+- REST authentication uses stateless JWT Bearer tokens. Thymeleaf admin pages
+  under `/admin/**` use session-backed form authentication, require `ROLE_ADMIN`,
+  and retain CSRF protection.
 - Credentials and secrets must not be persisted in source or logs.
 - Public errors use the project's `ProblemDetail` conventions.
 - Demo data must not be presented as verified real-world fact.

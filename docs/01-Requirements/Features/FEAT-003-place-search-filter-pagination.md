@@ -148,7 +148,7 @@ Category regex:
 
 ### 5.3. Response
 
-Response tái sử dụng chính xác `PlacePageResponse` FEAT-001:
+Response tái sử dụng chính xác `PageResponse<PlaceSummaryResponse>` FEAT-001:
 
 ```json
 {
@@ -514,7 +514,7 @@ hiển thị “Chưa xác định”.
 - Normalization và wildcard escaping.
 - Defaults 0/20, size max 100 và fixed sort.
 - Từng predicate cùng AND composition.
-- Page → `PlacePageResponse` mapping.
+- Page → `PageResponse<PlaceSummaryResponse>` mapping.
 
 ### Web
 

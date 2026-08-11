@@ -169,7 +169,7 @@ sequenceDiagram
     API->>SVC: getActivePlaces(page, size)
     SVC->>DB: Lấy active places theo name, id
     DB-->>SVC: Place entities
-    SVC-->>API: PlacePageResponse
+    SVC-->>API: PageResponse<PlaceSummaryResponse>
     API-->>FE: 200 OK + pagination envelope
 ```
 
@@ -342,7 +342,7 @@ public record PlaceSummaryResponse(
 `PlaceSummaryResponse` có đúng 12 field. Hai administrative-unit field luôn có
 trong JSON và có thể là `null`.
 
-`PlacePageResponse` có đúng 7 field cấp cao: `content`, `page`, `size`,
+`PageResponse<PlaceSummaryResponse>` có đúng 7 field cấp cao: `content`, `page`, `size`,
 `totalElements`, `totalPages`, `first`, `last`.
 
 Không trả các trường sau trong summary response:
