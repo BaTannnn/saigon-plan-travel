@@ -39,4 +39,21 @@ public class OpeningHour {
 
     @Column(nullable = false)
     private Boolean closed;
+
+    OpeningHour(Place place, Short dayOfWeek) {
+        this.place = place;
+        this.dayOfWeek = dayOfWeek;
+    }
+
+    void markClosed() {
+        this.closed = true;
+        this.openTime = null;
+        this.closeTime = null;
+    }
+
+    void markOpen(LocalTime openTime, LocalTime closeTime) {
+        this.closed = false;
+        this.openTime = openTime;
+        this.closeTime = closeTime;
+    }
 }

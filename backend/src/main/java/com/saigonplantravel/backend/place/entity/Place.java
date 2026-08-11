@@ -2,6 +2,7 @@ package com.saigonplantravel.backend.place.entity;
 
 import static jakarta.persistence.FetchType.LAZY;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -13,8 +14,10 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
+import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -81,7 +84,7 @@ public class Place {
             inverseJoinColumns = @JoinColumn(name = "category_id"))
     private Set<Category> categories = new HashSet<>();
 
-    @OneToMany(mappedBy = "place", fetch = LAZY)
+    @OneToMany(mappedBy = "place", fetch = LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OpeningHour> openingHours = new ArrayList<>();
 
     public Place(
@@ -114,9 +117,59 @@ public class Place {
         this.active = true;
     }
 
-    public void updateBasicInformation(String name, String shortDescription, String address) {
+    public void updateBasicInformation(
+            String name,
+            String shortDescription,
+            String fullDescription,
+            String address,
+            BigDecimal latitude,
+            BigDecimal longitude,
+            Integer estimatedVisitMinutes,
+            BigDecimal minCost,
+            BigDecimal maxCost,
+            Boolean indoor) {
         this.name = name;
         this.shortDescription = shortDescription;
+        this.fullDescription = fullDescription;
         this.address = address;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.estimatedVisitMinutes = estimatedVisitMinutes;
+        this.minCost = minCost;
+        this.maxCost = maxCost;
+        this.indoor = indoor;
+    }
+
+    public void updateDescriptions(String shortDescription, String fullDescription) {
+        this.shortDescription = shortDescription;
+        this.fullDescription = fullDescription;
+    }
+
+    public void replaceCategories(Collection<Category> categories) {
+        this.categories.clear();
+        this.categories.addAll(categories);
+    }
+
+    public void markClosed(Short dayOfWeek) {
+        openingHour(dayOfWeek).markClosed();
+    }
+
+    public void markOpen(Short dayOfWeek, LocalTime openTime, LocalTime closeTime) {
+        openingHour(dayOfWeek).markOpen(openTime, closeTime);
+    }
+
+    public void removeOpeningHour(Short dayOfWeek) {
+        openingHours.removeIf(openingHour -> openingHour.getDayOfWeek().equals(dayOfWeek));
+    }
+
+    private OpeningHour openingHour(Short dayOfWeek) {
+        return openingHours.stream()
+                .filter(openingHour -> openingHour.getDayOfWeek().equals(dayOfWeek))
+                .findFirst()
+                .orElseGet(() -> {
+                    OpeningHour openingHour = new OpeningHour(this, dayOfWeek);
+                    openingHours.add(openingHour);
+                    return openingHour;
+                });
     }
 }

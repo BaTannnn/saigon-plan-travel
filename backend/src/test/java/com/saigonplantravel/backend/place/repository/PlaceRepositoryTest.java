@@ -3,14 +3,24 @@ package com.saigonplantravel.backend.place.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.saigonplantravel.backend.place.dto.AdminPlaceDetailResponse;
+import com.saigonplantravel.backend.place.dto.AdminPlaceSummaryResponse;
+import com.saigonplantravel.backend.place.dto.CategoryCreateRequest;
+import com.saigonplantravel.backend.place.dto.OpeningHourResponse;
+import com.saigonplantravel.backend.place.dto.OpeningHourState;
+import com.saigonplantravel.backend.place.dto.PageResponse;
 import com.saigonplantravel.backend.place.dto.PlaceDetailResponse;
-import com.saigonplantravel.backend.place.dto.PlacePageResponse;
+import com.saigonplantravel.backend.place.dto.PlaceOpeningHoursRequest;
 import com.saigonplantravel.backend.place.dto.PlaceSearchRequest;
+import com.saigonplantravel.backend.place.dto.PlaceSummaryResponse;
 import com.saigonplantravel.backend.place.entity.Category;
 import com.saigonplantravel.backend.place.entity.Place;
+import com.saigonplantravel.backend.place.service.CategoryService;
 import com.saigonplantravel.backend.place.service.PlaceService;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import java.math.BigDecimal;
+import java.time.LocalTime;
 import java.util.List;
 import org.hibernate.SessionFactory;
 import org.hibernate.stat.Statistics;
@@ -57,7 +67,13 @@ class PlaceRepositoryTest {
     private PlaceService placeService;
 
     @Autowired
+    private CategoryService categoryService;
+
+    @Autowired
     private EntityManagerFactory entityManagerFactory;
+
+    @Autowired
+    private EntityManager entityManager;
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -156,10 +172,117 @@ class PlaceRepositoryTest {
     }
 
     @Test
+    @Transactional
+    void administrationCanListAndOpenInactivePlaceWhilePublicQueriesStillHideIt() {
+        PlaceSearchRequest request = searchRequest(null, null, null, null, 0, 100);
+
+        PageResponse<AdminPlaceSummaryResponse> adminPlaces = placeService.getPlacesForAdministration(0, 100);
+        AdminPlaceDetailResponse inactivePlace =
+                placeService.getPlaceDetailForAdministrationBySlug("demo-temporarily-hidden-place");
+        PageResponse<PlaceSummaryResponse> publicPlaces = placeService.searchPlaces(request);
+
+        assertThat(adminPlaces.content())
+                .filteredOn(place -> !place.active())
+                .extracting(place -> place.slug())
+                .containsExactly("demo-temporarily-hidden-place");
+        assertThat(inactivePlace.active()).isFalse();
+        assertThat(publicPlaces.content())
+                .extracting(place -> place.slug())
+                .doesNotContain("demo-temporarily-hidden-place");
+        assertThatThrownBy(() -> placeService.getPlaceDetailBySlug("demo-temporarily-hidden-place"))
+                .hasMessage("Place not found");
+    }
+
+    @Test
+    @Transactional
+    void statusChangesImmediatelyControlPublicPlaceVisibility() {
+        String slug = "demo-temporarily-hidden-place";
+
+        placeService.activatePlace(slug);
+
+        assertThat(placeService.getPlaceDetailBySlug(slug).slug()).isEqualTo(slug);
+        assertThat(placeRepository.findBySlug(slug))
+                .get()
+                .extracting(Place::getActive)
+                .isEqualTo(true);
+
+        placeService.deactivatePlace(slug);
+
+        assertThatThrownBy(() -> placeService.getPlaceDetailBySlug(slug))
+                .isInstanceOf(com.saigonplantravel.backend.place.exception.PlaceNotFoundException.class)
+                .hasMessage("Place not found");
+        assertThat(placeRepository.findBySlug(slug))
+                .get()
+                .extracting(Place::getActive)
+                .isEqualTo(false);
+    }
+
+    @Test
+    @Transactional
+    void categoryAssignmentChangesImmediatelyReachPublicPlaceDetail() {
+        String slug = "demo-art-space";
+
+        placeService.replacePlaceCategories(slug, List.of("khoa-hoc"));
+
+        assertThat(placeService.getPlaceDetailBySlug(slug).categories())
+                .extracting(category -> category.slug())
+                .containsExactly("khoa-hoc");
+
+        placeService.replacePlaceCategories(slug, List.of());
+
+        assertThat(placeService.getPlaceDetailBySlug(slug).categories()).isEmpty();
+    }
+
+    @Test
+    @Transactional
+    void openingHourReplacementPersistsOpenClosedAndUnknownStates() {
+        String slug = "demo-art-space";
+        List<PlaceOpeningHoursRequest.Day> days = List.of(
+                new PlaceOpeningHoursRequest.Day(
+                        (short) 1, OpeningHourState.OPEN, LocalTime.of(10, 0), LocalTime.of(18, 0)),
+                new PlaceOpeningHoursRequest.Day((short) 2, OpeningHourState.CLOSED, null, null),
+                new PlaceOpeningHoursRequest.Day((short) 3, OpeningHourState.UNKNOWN, null, null),
+                new PlaceOpeningHoursRequest.Day((short) 4, OpeningHourState.UNKNOWN, null, null),
+                new PlaceOpeningHoursRequest.Day((short) 5, OpeningHourState.UNKNOWN, null, null),
+                new PlaceOpeningHoursRequest.Day((short) 6, OpeningHourState.UNKNOWN, null, null),
+                new PlaceOpeningHoursRequest.Day((short) 7, OpeningHourState.UNKNOWN, null, null));
+
+        placeService.replacePlaceOpeningHours(slug, days);
+        entityManager.flush();
+        entityManager.clear();
+
+        assertThat(placeService.getPlaceDetailBySlug(slug).openingHours())
+                .containsExactly(
+                        new OpeningHourResponse((short) 1, false, LocalTime.of(10, 0), LocalTime.of(18, 0)),
+                        new OpeningHourResponse((short) 2, true, null, null));
+    }
+
+    @Test
     void returnsAllCategoriesInStableOrder() {
         assertThat(categoryRepository.findAllByOrderByNameAscIdAsc())
                 .extracting(Category::getName)
                 .containsExactly("Khoa học", "Lịch sử", "Nghệ thuật", "Ngoài trời", "Văn hóa");
+    }
+
+    @Test
+    @Transactional
+    void createdCategoryReachesAdministrativeAndPublicCatalogs() {
+        categoryService.createCategory(
+                new CategoryCreateRequest("  Trải nghiệm  ", "  trai-nghiem  ", "  Trải nghiệm demo  "));
+        entityManager.clear();
+
+        assertThat(categoryService.getCategoriesForAdministration())
+                .filteredOn(category -> category.slug().equals("trai-nghiem"))
+                .singleElement()
+                .satisfies(category -> {
+                    assertThat(category.name()).isEqualTo("Trải nghiệm");
+                    assertThat(category.description()).isEqualTo("Trải nghiệm demo");
+                });
+        assertThat(categoryService.getCategories())
+                .filteredOn(category -> category.slug().equals("trai-nghiem"))
+                .singleElement()
+                .extracting(category -> category.name())
+                .isEqualTo("Trải nghiệm");
     }
 
     @Test
@@ -249,7 +372,8 @@ class PlaceRepositoryTest {
         insertSearchPlace("search-full-description", "Search Full", null, "Nội dung Bảo tàng", "Địa chỉ demo", true);
         insertSearchPlace("search-address", "Search Address", null, null, "Đường Bảo tàng", true);
 
-        PlacePageResponse response = placeService.searchPlaces(searchRequest("BAO TANG", null, null, null, 0, 100));
+        PageResponse<PlaceSummaryResponse> response =
+                placeService.searchPlaces(searchRequest("BAO TANG", null, null, null, 0, 100));
 
         assertThat(response.content())
                 .extracting(item -> item.slug())
@@ -262,7 +386,7 @@ class PlaceRepositoryTest {
     void treatsLikeWildcardsAsLiteralCharacters() {
         insertSearchPlace("literal-wildcards", "Demo 50%_path\\name", null, null, "Địa chỉ demo", true);
 
-        PlacePageResponse response =
+        PageResponse<PlaceSummaryResponse> response =
                 placeService.searchPlaces(searchRequest("50%_path\\name", null, null, null, 0, 100));
 
         assertThat(response.content()).extracting(item -> item.slug()).containsExactly("literal-wildcards");
@@ -271,7 +395,7 @@ class PlaceRepositoryTest {
     @Test
     @Transactional
     void combinesAllFiltersAndExcludesInactivePlaces() {
-        PlacePageResponse response =
+        PageResponse<PlaceSummaryResponse> response =
                 placeService.searchPlaces(searchRequest("demo", "van-hoa", true, new BigDecimal("100000"), 0, 100));
 
         assertThat(response.content())
@@ -308,7 +432,8 @@ class PlaceRepositoryTest {
                 entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
         statistics.clear();
 
-        PlacePageResponse response = placeService.searchPlaces(searchRequest(null, "van-hoa", null, null, 0, 1));
+        PageResponse<PlaceSummaryResponse> response =
+                placeService.searchPlaces(searchRequest(null, "van-hoa", null, null, 0, 1));
 
         assertThat(response.content()).hasSize(1);
         assertThat(response.totalElements()).isEqualTo(2);
@@ -335,13 +460,13 @@ class PlaceRepositoryTest {
 
         statistics.clear();
         long firstPageStartedAt = System.nanoTime();
-        PlacePageResponse firstPage = placeService.searchPlaces(firstPageRequest);
+        PageResponse<PlaceSummaryResponse> firstPage = placeService.searchPlaces(firstPageRequest);
         long firstPageElapsedNanos = System.nanoTime() - firstPageStartedAt;
         assertThat(statistics.getPrepareStatementCount()).isBetween(1L, 2L);
 
         statistics.clear();
         long secondPageStartedAt = System.nanoTime();
-        PlacePageResponse secondPage = placeService.searchPlaces(secondPageRequest);
+        PageResponse<PlaceSummaryResponse> secondPage = placeService.searchPlaces(secondPageRequest);
         long secondPageElapsedNanos = System.nanoTime() - secondPageStartedAt;
         assertThat(statistics.getPrepareStatementCount()).isBetween(1L, 2L);
 

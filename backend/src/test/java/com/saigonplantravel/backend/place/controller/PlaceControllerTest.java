@@ -18,8 +18,8 @@ import com.saigonplantravel.backend.common.security.SecurityConfig;
 import com.saigonplantravel.backend.common.security.jwt.JwtService;
 import com.saigonplantravel.backend.place.dto.CategoryResponse;
 import com.saigonplantravel.backend.place.dto.OpeningHourResponse;
+import com.saigonplantravel.backend.place.dto.PageResponse;
 import com.saigonplantravel.backend.place.dto.PlaceDetailResponse;
-import com.saigonplantravel.backend.place.dto.PlacePageResponse;
 import com.saigonplantravel.backend.place.dto.PlaceSearchRequest;
 import com.saigonplantravel.backend.place.dto.PlaceSummaryResponse;
 import com.saigonplantravel.backend.place.exception.PlaceNotFoundException;
@@ -59,7 +59,7 @@ class PlaceControllerTest {
     void usesDefaultPaginationAndReturnsLockedResponseContract() throws Exception {
         PlaceSummaryResponse place = demoPlace();
         when(placeService.searchPlaces(any(PlaceSearchRequest.class)))
-                .thenReturn(new PlacePageResponse(List.of(place), 0, 20, 1, 1, true, true));
+                .thenReturn(new PageResponse<>(List.of(place), 0, 20, 1, 1, true, true));
 
         mockMvc.perform(get("/api/v1/places"))
                 .andExpect(status().isOk())
@@ -91,7 +91,7 @@ class PlaceControllerTest {
     @Test
     void acceptsCustomPaginationAndAllowsEmptyPage() throws Exception {
         when(placeService.searchPlaces(any(PlaceSearchRequest.class)))
-                .thenReturn(new PlacePageResponse(List.of(), 3, 10, 5, 1, false, true));
+                .thenReturn(new PageResponse<>(List.of(), 3, 10, 5, 1, false, true));
 
         mockMvc.perform(get("/api/v1/places").param("page", "3").param("size", "10"))
                 .andExpect(status().isOk())
@@ -133,8 +133,8 @@ class PlaceControllerTest {
     void acceptsBoundaryPageSizes() throws Exception {
         when(placeService.searchPlaces(any(PlaceSearchRequest.class)))
                 .thenReturn(
-                        new PlacePageResponse(List.of(), 0, 1, 0, 0, true, true),
-                        new PlacePageResponse(List.of(), 0, 100, 0, 0, true, true));
+                        new PageResponse<>(List.of(), 0, 1, 0, 0, true, true),
+                        new PageResponse<>(List.of(), 0, 100, 0, 0, true, true));
 
         mockMvc.perform(get("/api/v1/places").param("size", "1"))
                 .andExpect(status().isOk())
@@ -169,7 +169,7 @@ class PlaceControllerTest {
     @Test
     void bindsAndNormalizesAllSearchFilters() throws Exception {
         when(placeService.searchPlaces(any(PlaceSearchRequest.class)))
-                .thenReturn(new PlacePageResponse(List.of(), 2, 10, 0, 0, false, true));
+                .thenReturn(new PageResponse<>(List.of(), 2, 10, 0, 0, false, true));
 
         mockMvc.perform(get("/api/v1/places")
                         .param("keyword", "  Bảo   tàng  ")

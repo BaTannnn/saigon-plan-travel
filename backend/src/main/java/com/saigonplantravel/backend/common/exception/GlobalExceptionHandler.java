@@ -5,6 +5,7 @@ import com.saigonplantravel.backend.auth.exception.InvalidCredentialsException;
 import com.saigonplantravel.backend.itinerary.exception.DuplicateItineraryPlaceException;
 import com.saigonplantravel.backend.itinerary.exception.InactiveItineraryPlaceException;
 import com.saigonplantravel.backend.itinerary.exception.ItineraryItemNotFoundException;
+import com.saigonplantravel.backend.place.exception.CategoryNotFoundException;
 import com.saigonplantravel.backend.place.exception.PlaceNotFoundException;
 import com.saigonplantravel.backend.trip.exception.InvalidCategoryPreferenceException;
 import com.saigonplantravel.backend.trip.exception.InvalidTripException;
@@ -25,6 +26,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice
@@ -73,6 +75,22 @@ public class GlobalExceptionHandler {
                 .map(this::toFieldValidationError)
                 .sorted(Comparator.comparing(FieldValidationError::field))
                 .toList();
+        return validationProblem(fieldErrors, request);
+    }
+
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    public ProblemDetail handleMethodValidation(
+            HandlerMethodValidationException exception, HttpServletRequest request) {
+        List<FieldValidationError> fieldErrors = exception.getParameterValidationResults().stream()
+                .flatMap(result -> result.getResolvableErrors().stream()
+                        .map(error -> new FieldValidationError(
+                                result.getMethodParameter().getParameterName(), error.getDefaultMessage())))
+                .sorted(Comparator.comparing(FieldValidationError::field))
+                .toList();
+        return validationProblem(fieldErrors, request);
+    }
+
+    private ProblemDetail validationProblem(List<FieldValidationError> fieldErrors, HttpServletRequest request) {
         boolean paginationOnly = !fieldErrors.isEmpty()
                 && fieldErrors.stream().allMatch(error -> PAGINATION_FIELDS.contains(error.field()));
 
@@ -167,6 +185,16 @@ public class GlobalExceptionHandler {
         problem.setTitle("Place not found");
         problem.setInstance(URI.create(request.getRequestURI()));
         problem.setProperty("code", "PLACE_NOT_FOUND");
+        return problem;
+    }
+
+    @ExceptionHandler(CategoryNotFoundException.class)
+    public ProblemDetail handleCategoryNotFound(CategoryNotFoundException exception, HttpServletRequest request) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, exception.getMessage());
+        problem.setType(ABOUT_BLANK);
+        problem.setTitle("Category not found");
+        problem.setInstance(URI.create(request.getRequestURI()));
+        problem.setProperty("code", "CATEGORY_NOT_FOUND");
         return problem;
     }
 

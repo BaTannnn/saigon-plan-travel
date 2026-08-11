@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.saigonplantravel.backend.place.dto.AdminPlaceDetailResponse;
+import com.saigonplantravel.backend.place.dto.AdminPlaceSummaryResponse;
 import com.saigonplantravel.backend.place.dto.CategoryResponse;
 import com.saigonplantravel.backend.place.dto.OpeningHourResponse;
 import com.saigonplantravel.backend.place.dto.PlaceDetailResponse;
@@ -32,8 +34,11 @@ class PlaceMapperTest {
         when(place.getMinCost()).thenReturn(BigDecimal.ZERO);
         when(place.getMaxCost()).thenReturn(new BigDecimal("100000.00"));
         when(place.getIndoor()).thenReturn(true);
+        when(place.getActive()).thenReturn(false);
 
-        PlaceSummaryResponse response = new PlaceMapper().toSummaryResponse(place);
+        PlaceMapper mapper = new PlaceMapper();
+        PlaceSummaryResponse response = mapper.toSummaryResponse(place);
+        AdminPlaceSummaryResponse adminResponse = mapper.toAdminSummaryResponse(place);
 
         assertThat(response)
                 .isEqualTo(new PlaceSummaryResponse(
@@ -47,6 +52,8 @@ class PlaceMapperTest {
                         BigDecimal.ZERO,
                         new BigDecimal("100000.00"),
                         true));
+        assertThat(adminResponse.active()).isFalse();
+        assertThat(adminResponse.slug()).isEqualTo(response.slug());
     }
 
     @Test
@@ -71,8 +78,11 @@ class PlaceMapperTest {
         when(place.getIndoor()).thenReturn(true);
         when(place.getCategories()).thenReturn(Set.of(culture, art));
         when(place.getOpeningHours()).thenReturn(List.of(tuesdayClosed, mondayOpen));
+        when(place.getActive()).thenReturn(false);
 
-        PlaceDetailResponse response = new PlaceMapper().toDetailResponse(place);
+        PlaceMapper mapper = new PlaceMapper();
+        PlaceDetailResponse response = mapper.toDetailResponse(place);
+        AdminPlaceDetailResponse adminResponse = mapper.toAdminDetailResponse(place);
 
         assertThat(response.categories())
                 .containsExactly(
@@ -85,6 +95,9 @@ class PlaceMapperTest {
         assertThat(response.shortDescription()).isNull();
         assertThat(response.fullDescription()).isNull();
         assertThat(response.address()).isEqualTo("Địa chỉ demo 1");
+        assertThat(adminResponse.active()).isFalse();
+        assertThat(adminResponse.categories()).isEqualTo(response.categories());
+        assertThat(adminResponse.openingHours()).isEqualTo(response.openingHours());
     }
 
     private Category category(Long id, String name, String slug) {

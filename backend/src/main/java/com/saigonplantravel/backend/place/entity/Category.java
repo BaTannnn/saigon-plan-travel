@@ -35,4 +35,15 @@ public class Category {
 
     @Column(name = "updated_at", nullable = false, insertable = false, updatable = false)
     private OffsetDateTime updatedAt;
+
+    public Category(String name, String slug, String description) {
+        this.name = name;
+        this.slug = slug;
+        this.description = description;
+    }
+
+    public void updateDetails(String name, String description) {
+        this.name = name;
+        this.description = description;
+    }
 }

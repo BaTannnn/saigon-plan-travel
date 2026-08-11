@@ -8,7 +8,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 public interface PlaceRepository extends JpaRepository<Place, Long>, JpaSpecificationExecutor<Place> {
+    boolean existsBySlug(String slug);
+
     Page<Place> findAllByActiveTrue(Pageable pageable);
+
+    Optional<Place> findBySlug(String slug);
 
     Optional<Place> findBySlugAndActiveTrue(String slug);
 }

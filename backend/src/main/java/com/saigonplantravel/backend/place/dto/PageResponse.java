@@ -2,8 +2,8 @@ package com.saigonplantravel.backend.place.dto;
 
 import java.util.List;
 
-public record PlacePageResponse(
-        List<PlaceSummaryResponse> content,
+public record PageResponse<T>(
+        List<T> content,
         int page,
         int size,
         long totalElements,
