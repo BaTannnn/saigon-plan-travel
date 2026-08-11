@@ -7,8 +7,6 @@ CREATE TABLE places
     short_description          VARCHAR(500),
     full_description           TEXT,
     address                    VARCHAR(255)   NOT NULL,
-    administrative_unit_name   VARCHAR(100),
-    administrative_unit_type   VARCHAR(20),
     latitude                   NUMERIC(10, 7) NOT NULL,
     longitude                  NUMERIC(10, 7) NOT NULL,
     estimated_visit_minutes    INTEGER        NOT NULL,
@@ -49,24 +47,6 @@ CREATE TABLE places
     CONSTRAINT ck_places_max_cost
         CHECK (max_cost >= min_cost),
 
-    CONSTRAINT ck_places_administrative_unit_pair
-        CHECK (
-            (administrative_unit_name IS NULL AND administrative_unit_type IS NULL)
-            OR
-            (administrative_unit_name IS NOT NULL AND administrative_unit_type IS NOT NULL)
-        ),
-
-    CONSTRAINT ck_places_administrative_unit_name_not_blank
-        CHECK (
-            administrative_unit_name IS NULL
-            OR LENGTH(BTRIM(administrative_unit_name)) > 0
-        ),
-
-    CONSTRAINT ck_places_administrative_unit_type
-        CHECK (
-            administrative_unit_type IS NULL
-            OR administrative_unit_type IN ('WARD', 'COMMUNE', 'SPECIAL_ZONE')
-        ),
 
     CONSTRAINT ck_places_timestamp_order
         CHECK (updated_at >= created_at)
