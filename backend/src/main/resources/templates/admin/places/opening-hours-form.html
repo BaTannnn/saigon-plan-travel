@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('Edit Place opening hours')}">
+    <title>Edit Place opening hours</title>
+</head>
+<body>
+<nav th:replace="~{admin/fragments :: navbar}"></nav>
+<main class="container py-4 py-lg-5">
+    <a class="link-secondary text-decoration-none"
+       th:href="@{/admin/places/{slug}(slug=${place.slug})}">&larr; Back to place detail</a>
+    <div class="card page-card mt-3">
+    <div class="card-body p-4 p-lg-5">
+    <h1 class="h2 mb-2">Edit opening hours for <span th:text="${place.name}">Place name</span></h1>
+    <p class="text-secondary mb-4">Unknown means no opening-hour data is stored for that day.</p>
+
+    <form method="post"
+          th:action="@{/admin/places/{slug}/opening-hours/edit(slug=${place.slug})}"
+          th:object="${openingHoursForm}">
+        <ul class="alert alert-danger" th:if="${#fields.hasAnyErrors()}">
+            <li th:each="error : ${#fields.allErrors()}" th:text="${error}">Validation error</li>
+        </ul>
+
+        <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+            <tr>
+                <th>Day</th>
+                <th>State</th>
+                <th>Open</th>
+                <th>Close</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="day, iteration : *{days}">
+                <td>
+                    <span th:text="${day.dayLabel}">Monday</span>
+                    <input type="hidden" th:field="*{days[__${iteration.index}__].dayOfWeek}">
+                </td>
+                <td>
+                    <select class="form-select" th:field="*{days[__${iteration.index}__].state}">
+                        <option th:each="state : ${openingHourStates}"
+                                th:value="${state}"
+                                th:text="${state}">UNKNOWN</option>
+                    </select>
+                </td>
+                <td><input class="form-control" type="time"
+                           th:field="*{days[__${iteration.index}__].openTime}"></td>
+                <td><input class="form-control" type="time"
+                           th:field="*{days[__${iteration.index}__].closeTime}"></td>
+            </tr>
+            </tbody>
+        </table>
+        </div>
+
+        <button class="btn btn-primary" type="submit">Save opening hours</button>
+    </form>
+    </div>
+    </div>
+</main>
+</body>
+</html>
