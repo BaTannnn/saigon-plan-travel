@@ -6,3 +6,4 @@ pgvector
 langchain-google-genai
 fastapi
 uvicorn[standard]
+psycopg-pool

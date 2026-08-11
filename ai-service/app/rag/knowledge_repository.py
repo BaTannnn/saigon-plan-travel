@@ -3,7 +3,7 @@ from datetime import date
 
 from pgvector import Vector
 
-from app.db.postgres import connect
+from app.db.postgres import get_connection
 
 
 @dataclass
@@ -62,7 +62,7 @@ def upsert_chunk(
               IS DISTINCT FROM EXCLUDED.content_hash
     """
 
-    with connect() as connection:
+    with get_connection() as connection:
         with connection.cursor() as cursor:
             cursor.execute(
                 query,
@@ -107,7 +107,7 @@ def search_similar_chunks(
 
     vector = Vector(query_embedding)
 
-    with connect() as connection:
+    with get_connection() as connection:
         with connection.cursor() as cursor:
             cursor.execute(
                 query,
