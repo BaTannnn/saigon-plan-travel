@@ -1,10 +1,7 @@
 package com.saigonplantravel.backend.place.entity;
 
-import com.saigonplantravel.backend.place.domain.AdministrativeUnitType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -51,13 +48,6 @@ public class Place {
     @Column(nullable = false, length = 255)
     private String address;
 
-    @Column(name = "administrative_unit_name", length = 100)
-    private String administrativeUnitName;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "administrative_unit_type", length = 20)
-    private AdministrativeUnitType administrativeUnitType;
-
     @Column(nullable = false, precision = 10, scale = 7)
     private BigDecimal latitude;
 
@@ -100,8 +90,6 @@ public class Place {
             String name,
             String slug,
             String address,
-            String administrativeUnitName,
-            AdministrativeUnitType administrativeUnitType,
             BigDecimal latitude,
             BigDecimal longitude,
             Integer estimatedVisitMinutes,
@@ -112,8 +100,6 @@ public class Place {
         this.name = name;
         this.slug = slug;
         this.address = address;
-        this.administrativeUnitName = administrativeUnitName;
-        this.administrativeUnitType = administrativeUnitType;
         this.latitude = latitude;
         this.longitude = longitude;
         this.estimatedVisitMinutes = estimatedVisitMinutes;

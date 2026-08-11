@@ -151,12 +151,6 @@ public final class DatabaseTestFixtures {
         String address =
                 "Test address, TP.HCM";
 
-        String administrativeUnitName =
-                "Bến Nghé";
-
-        String administrativeUnitType =
-                "WARD";
-
         BigDecimal latitude =
                 new BigDecimal("10.7768890");
 
@@ -175,8 +169,6 @@ public final class DatabaseTestFixtures {
                             name,
                             slug,
                             address,
-                            administrative_unit_name,
-                            administrative_unit_type,
                             latitude,
                             longitude,
                             estimated_visit_minutes,
@@ -186,8 +178,8 @@ public final class DatabaseTestFixtures {
                             active
                         )
                         VALUES (
-                            ?, ?, ?, ?, ?, ?,
-                            ?, ?, ?, ?, ?, TRUE
+                            ?, ?, ?, ?, ?,
+                            ?, ?, ?, ?, TRUE
                         )
                         RETURNING id
                         """,
@@ -195,8 +187,6 @@ public final class DatabaseTestFixtures {
                         name,
                         slug,
                         address,
-                        administrativeUnitName,
-                        administrativeUnitType,
                         latitude,
                         longitude,
                         estimatedVisitMinutes,
@@ -210,8 +200,6 @@ public final class DatabaseTestFixtures {
                 name,
                 slug,
                 address,
-                administrativeUnitName,
-                administrativeUnitType,
                 latitude,
                 longitude,
                 estimatedVisitMinutes,
@@ -224,8 +212,6 @@ public final class DatabaseTestFixtures {
             String name,
             String slug,
             String address,
-            String administrativeUnitName,
-            String administrativeUnitType,
             BigDecimal latitude,
             BigDecimal longitude,
             int estimatedVisitMinutes,

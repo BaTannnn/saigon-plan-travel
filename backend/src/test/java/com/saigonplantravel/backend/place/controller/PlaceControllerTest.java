@@ -11,7 +11,6 @@ import com.saigonplantravel.backend.place.dto.PlaceDetailResponse;
 import com.saigonplantravel.backend.place.dto.PlacePageResponse;
 import com.saigonplantravel.backend.place.dto.PlaceSearchRequest;
 import com.saigonplantravel.backend.place.dto.PlaceSummaryResponse;
-import com.saigonplantravel.backend.place.domain.AdministrativeUnitType;
 import com.saigonplantravel.backend.place.exception.PlaceNotFoundException;
 import com.saigonplantravel.backend.place.service.PlaceService;
 import org.junit.jupiter.api.Test;
@@ -68,15 +67,11 @@ class PlaceControllerTest {
         mockMvc.perform(get("/api/v1/places"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", aMapWithSize(7)))
-                .andExpect(jsonPath("$.content[0]", aMapWithSize(12)))
+                .andExpect(jsonPath("$.content[0]", aMapWithSize(10)))
                 .andExpect(jsonPath("$.content[0].id").value(1))
                 .andExpect(jsonPath("$.content[0].name").value("Demo Place"))
                 .andExpect(jsonPath("$.content[0].slug").value("demo-place"))
                 .andExpect(jsonPath("$.content[0].shortDescription").value(nullValue()))
-                .andExpect(jsonPath("$.content[0].administrativeUnitName")
-                        .value("Phường Demo"))
-                .andExpect(jsonPath("$.content[0].administrativeUnitType")
-                        .value("WARD"))
                 .andExpect(jsonPath("$.content[0].latitude").value(10.0000000))
                 .andExpect(jsonPath("$.content[0].longitude").value(106.0000000))
                 .andExpect(jsonPath("$.content[0].estimatedVisitMinutes").value(60))
@@ -183,7 +178,6 @@ class PlaceControllerTest {
 
         mockMvc.perform(get("/api/v1/places")
                         .param("keyword", "  Bảo   tàng  ")
-                        .param("administrativeUnitName", "  Phường   Demo ")
                         .param("category", "van-hoa")
                         .param("indoor", "false")
                         .param("maxCost", "100000")
@@ -197,8 +191,6 @@ class PlaceControllerTest {
         verify(placeService).searchPlaces(requestCaptor.capture());
         PlaceSearchRequest request = requestCaptor.getValue();
         org.assertj.core.api.Assertions.assertThat(request.keyword()).isEqualTo("Bảo tàng");
-        org.assertj.core.api.Assertions.assertThat(request.administrativeUnitName())
-                .isEqualTo("Phường Demo");
         org.assertj.core.api.Assertions.assertThat(request.category()).isEqualTo("van-hoa");
         org.assertj.core.api.Assertions.assertThat(request.indoor()).isFalse();
         org.assertj.core.api.Assertions.assertThat(request.maxCost())
@@ -209,15 +201,6 @@ class PlaceControllerTest {
 
     @Test
     void returnsInvalidRequestWithFieldErrorsForSearchFilters() throws Exception {
-        mockMvc.perform(get("/api/v1/places")
-                        .param("administrativeUnitName", "a".repeat(101)))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().contentType("application/problem+json"))
-                .andExpect(jsonPath("$.title").value("Invalid request"))
-                .andExpect(jsonPath("$.code").value("INVALID_REQUEST"))
-                .andExpect(jsonPath("$.fieldErrors[0].field")
-                        .value("administrativeUnitName"));
-
         mockMvc.perform(get("/api/v1/places").param("category", "Invalid-Slug"))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType("application/problem+json"))
@@ -252,8 +235,6 @@ class PlaceControllerTest {
                 null,
                 null,
                 "Địa chỉ demo 1",
-                "Phường Demo",
-                AdministrativeUnitType.WARD,
                 new BigDecimal("10.7750000"),
                 new BigDecimal("106.7000000"),
                 90,
@@ -275,15 +256,13 @@ class PlaceControllerTest {
 
         mockMvc.perform(get("/api/v1/places/demo-art-space"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", aMapWithSize(16)))
+                .andExpect(jsonPath("$", aMapWithSize(14)))
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.name").value("Demo Art Space"))
                 .andExpect(jsonPath("$.slug").value("demo-art-space"))
                 .andExpect(jsonPath("$.shortDescription").value(nullValue()))
                 .andExpect(jsonPath("$.fullDescription").value(nullValue()))
                 .andExpect(jsonPath("$.address").value("Địa chỉ demo 1"))
-                .andExpect(jsonPath("$.administrativeUnitName").value("Phường Demo"))
-                .andExpect(jsonPath("$.administrativeUnitType").value("WARD"))
                 .andExpect(jsonPath("$.estimatedVisitMinutes").value(90))
                 .andExpect(jsonPath("$.indoor").value(true))
                 .andExpect(jsonPath("$.categories[0]", aMapWithSize(3)))
@@ -328,8 +307,6 @@ class PlaceControllerTest {
                 "Demo Place",
                 "demo-place",
                 null,
-                "Phường Demo",
-                AdministrativeUnitType.WARD,
                 new BigDecimal("10.0000000"),
                 new BigDecimal("106.0000000"),
                 60,

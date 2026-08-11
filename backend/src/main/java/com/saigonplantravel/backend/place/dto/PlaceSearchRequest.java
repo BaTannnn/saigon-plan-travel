@@ -13,11 +13,6 @@ import java.math.BigDecimal;
 public record PlaceSearchRequest(
         @Size(max = 100, message = "keyword must contain at most 100 characters")
         String keyword,
-        @Size(
-                max = 100,
-                message = "administrativeUnitName must contain at most 100 characters"
-        )
-        String administrativeUnitName,
         @Size(max = 120, message = "category must contain at most 120 characters")
         @Pattern(
                 regexp = "^[a-z0-9]+(?:-[a-z0-9]+)*$",
@@ -37,7 +32,6 @@ public record PlaceSearchRequest(
 
     public PlaceSearchRequest {
         keyword = PlaceSearchNormalizer.normalizeText(keyword);
-        administrativeUnitName = PlaceSearchNormalizer.normalizeText(administrativeUnitName);
     }
 
     public int resolvedPage() {

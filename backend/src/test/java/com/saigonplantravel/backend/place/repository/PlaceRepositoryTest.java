@@ -110,36 +110,6 @@ class PlaceRepositoryTest {
                 60, BigDecimal.ZERO, BigDecimal.ZERO, null);
         assertInvalidPlace("demo-art-space", new BigDecimal("10"), new BigDecimal("106"),
                 60, BigDecimal.ZERO, BigDecimal.ZERO, true);
-        assertInvalidSql("""
-                INSERT INTO places (
-                    name, slug, address, administrative_unit_name,
-                    latitude, longitude, estimated_visit_minutes,
-                    min_cost, max_cost, indoor, active
-                ) VALUES (
-                    'Missing unit type', 'missing-unit-type', 'Demo address', 'Đơn vị Demo',
-                    10.7, 106.6, 60, 0, 0, TRUE, TRUE
-                )
-                """);
-        assertInvalidSql("""
-                INSERT INTO places (
-                    name, slug, address, administrative_unit_name, administrative_unit_type,
-                    latitude, longitude, estimated_visit_minutes,
-                    min_cost, max_cost, indoor, active
-                ) VALUES (
-                    'Blank unit name', 'blank-unit-name', 'Demo address', '   ', 'WARD',
-                    10.7, 106.6, 60, 0, 0, TRUE, TRUE
-                )
-                """);
-        assertInvalidSql("""
-                INSERT INTO places (
-                    name, slug, address, administrative_unit_name, administrative_unit_type,
-                    latitude, longitude, estimated_visit_minutes,
-                    min_cost, max_cost, indoor, active
-                ) VALUES (
-                    'Invalid unit type', 'invalid-unit-type', 'Demo address', 'Đơn vị Demo', 'CITY',
-                    10.7, 106.6, 60, 0, 0, TRUE, TRUE
-                )
-                """);
     }
 
     @Test
@@ -229,14 +199,13 @@ class PlaceRepositoryTest {
 
     @Test
     @Transactional
-    void searchesKeywordAcrossEveryTextFieldWithoutCaseOrVietnameseDiacritics() {
+    void searchesKeywordAcrossSupportedTextFieldsWithoutCaseOrVietnameseDiacritics() {
         insertSearchPlace(
                 "search-name",
                 "Bảo tàng Name",
                 null,
                 null,
                 "Địa chỉ demo",
-                "Đơn vị Demo",
                 true
         );
         insertSearchPlace(
@@ -245,7 +214,6 @@ class PlaceRepositoryTest {
                 "Không gian Bảo tàng",
                 null,
                 "Địa chỉ demo",
-                "Đơn vị Demo",
                 true
         );
         insertSearchPlace(
@@ -254,7 +222,6 @@ class PlaceRepositoryTest {
                 null,
                 "Nội dung Bảo tàng",
                 "Địa chỉ demo",
-                "Đơn vị Demo",
                 true
         );
         insertSearchPlace(
@@ -263,22 +230,11 @@ class PlaceRepositoryTest {
                 null,
                 null,
                 "Đường Bảo tàng",
-                "Đơn vị Demo",
-                true
-        );
-        insertSearchPlace(
-                "search-administrative-unit",
-                "Search Administrative Unit",
-                null,
-                null,
-                "Địa chỉ demo",
-                "Đơn vị Bảo tàng",
                 true
         );
 
         PlacePageResponse response = placeService.searchPlaces(searchRequest(
                 "BAO TANG",
-                null,
                 null,
                 null,
                 null,
@@ -289,11 +245,10 @@ class PlaceRepositoryTest {
         assertThat(response.content())
                 .extracting(item -> item.slug())
                 .containsExactlyInAnyOrder(
-                        "search-name",
-                        "search-short-description",
-                        "search-full-description",
-                        "search-address",
-                        "search-administrative-unit"
+                "search-name",
+                "search-short-description",
+                "search-full-description",
+                "search-address"
                 );
     }
 
@@ -306,13 +261,11 @@ class PlaceRepositoryTest {
                 null,
                 null,
                 "Địa chỉ demo",
-                "Đơn vị Demo",
                 true
         );
 
         PlacePageResponse response = placeService.searchPlaces(searchRequest(
                 "50%_path\\name",
-                null,
                 null,
                 null,
                 null,
@@ -328,16 +281,8 @@ class PlaceRepositoryTest {
     @Test
     @Transactional
     void combinesAllFiltersAndExcludesInactivePlaces() {
-        assignAdministrativeUnit(
-                "Đơn vị Demo",
-                "demo-art-space",
-                "demo-history-hall",
-                "demo-temporarily-hidden-place"
-        );
-
         PlacePageResponse response = placeService.searchPlaces(searchRequest(
                 "demo",
-                "don vi demo",
                 "van-hoa",
                 true,
                 new BigDecimal("100000"),
@@ -354,31 +299,19 @@ class PlaceRepositoryTest {
 
     @Test
     @Transactional
-    void appliesAdministrativeUnitCategoryIndoorAndBudgetSemanticsIndividually() {
-        assignAdministrativeUnit("Đơn vị Demo", "demo-art-space", "demo-history-hall");
-
+    void appliesCategoryIndoorAndBudgetSemanticsIndividually() {
         assertThat(placeService.searchPlaces(searchRequest(
-                null, "Demo", null, null, null, 0, 100
+                null, "khong-ton-tai", null, null, 0, 100
         )).content()).isEmpty();
 
         assertThat(placeService.searchPlaces(searchRequest(
-                null, "don vi demo", null, null, null, 0, 100
-        )).content())
-                .extracting(item -> item.slug())
-                .containsExactly("demo-art-space", "demo-history-hall");
-
-        assertThat(placeService.searchPlaces(searchRequest(
-                null, null, "khong-ton-tai", null, null, 0, 100
-        )).content()).isEmpty();
-
-        assertThat(placeService.searchPlaces(searchRequest(
-                null, null, null, false, null, 0, 100
+                null, null, false, null, 0, 100
         )).content())
                 .extracting(item -> item.slug())
                 .containsExactly("demo-city-garden", "demo-riverside-walk");
 
         assertThat(placeService.searchPlaces(searchRequest(
-                null, null, null, null, BigDecimal.ZERO, 0, 100
+                null, null, null, BigDecimal.ZERO, 0, 100
         )).content())
                 .extracting(item -> item.slug())
                 .containsExactly("demo-city-garden", "demo-riverside-walk");
@@ -390,7 +323,6 @@ class PlaceRepositoryTest {
         statistics.clear();
 
         PlacePageResponse response = placeService.searchPlaces(searchRequest(
-                null,
                 null,
                 "van-hoa",
                 null,
@@ -414,16 +346,15 @@ class PlaceRepositoryTest {
                     "Fixture search target",
                     null,
                     "Test address " + index,
-                    "Đơn vị Demo",
                     true
             );
         }
 
         PlaceSearchRequest firstPageRequest = searchRequest(
-                "fixture search target", null, null, null, null, 0, 10
+                "fixture search target", null, null, null, 0, 10
         );
         PlaceSearchRequest secondPageRequest = searchRequest(
-                "fixture search target", null, null, null, null, 1, 10
+                "fixture search target", null, null, null, 1, 10
         );
         Statistics statistics = entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
 
@@ -468,16 +399,13 @@ class PlaceRepositoryTest {
                 """
                         INSERT INTO places (
                             name, slug, address,
-                            administrative_unit_name, administrative_unit_type,
                             latitude, longitude,
                             estimated_visit_minutes, min_cost, max_cost, indoor, active
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, TRUE)
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, TRUE)
                         """,
                 "Constraint Test Place",
                 slug,
                 "Demo test address",
-                "Đơn vị Demo",
-                "WARD",
                 latitude,
                 longitude,
                 visitMinutes,
@@ -498,42 +426,27 @@ class PlaceRepositoryTest {
             String shortDescription,
             String fullDescription,
             String address,
-            String administrativeUnitName,
             boolean active
     ) {
         jdbcTemplate.update(
                 """
                         INSERT INTO places (
                             name, slug, short_description, full_description, address,
-                            administrative_unit_name, administrative_unit_type,
                             latitude, longitude, estimated_visit_minutes, min_cost, max_cost,
                             indoor, active
-                        ) VALUES (?, ?, ?, ?, ?, ?, 'WARD', 10.7000000, 106.6000000, 60, 0, 100000, TRUE, ?)
+                        ) VALUES (?, ?, ?, ?, ?, 10.7000000, 106.6000000, 60, 0, 100000, TRUE, ?)
                         """,
                 name,
                 slug,
                 shortDescription,
                 fullDescription,
                 address,
-                administrativeUnitName,
                 active
         );
     }
 
-    private void assignAdministrativeUnit(String name, String... slugs) {
-        for (String slug : slugs) {
-            jdbcTemplate.update(
-                    "UPDATE places SET administrative_unit_name = ?, "
-                            + "administrative_unit_type = 'WARD' WHERE slug = ?",
-                    name,
-                    slug
-            );
-        }
-    }
-
     private PlaceSearchRequest searchRequest(
             String keyword,
-            String administrativeUnitName,
             String category,
             Boolean indoor,
             BigDecimal maxCost,
@@ -542,7 +455,6 @@ class PlaceRepositoryTest {
     ) {
         return new PlaceSearchRequest(
                 keyword,
-                administrativeUnitName,
                 category,
                 indoor,
                 maxCost,

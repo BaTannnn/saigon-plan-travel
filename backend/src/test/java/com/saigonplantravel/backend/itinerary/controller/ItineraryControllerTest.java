@@ -13,7 +13,6 @@ import com.saigonplantravel.backend.itinerary.dto.SaveItineraryItemRequest;
 import com.saigonplantravel.backend.itinerary.exception.DuplicateItineraryPlaceException;
 import com.saigonplantravel.backend.itinerary.exception.ItineraryItemNotFoundException;
 import com.saigonplantravel.backend.itinerary.service.ItineraryService;
-import com.saigonplantravel.backend.place.domain.AdministrativeUnitType;
 import com.saigonplantravel.backend.place.dto.PlaceSummaryResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -276,8 +275,6 @@ class ItineraryControllerTest {
                 "Chợ Bến Thành",
                 "cho-ben-thanh",
                 "A landmark market",
-                "Bến Thành",
-                AdministrativeUnitType.WARD,
                 new BigDecimal("10.7726400"),
                 new BigDecimal("106.6980500"),
                 90,
