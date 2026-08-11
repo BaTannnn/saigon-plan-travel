@@ -155,9 +155,6 @@ export function ItineraryMap({
           className="absolute bottom-7 left-1/2 z-[500] grid min-w-[min(330px,calc(100%_-_100px))] -translate-x-1/2 rounded-mint-md border border-border bg-surface px-[18px] py-3.5 shadow-mint-md max-md:bottom-[90px] max-md:min-w-[calc(100%_-_32px)]"
           aria-live="polite"
         >
-          <p className="mb-0.5 text-xs text-text-secondary">
-            {selectedItem.place.administrativeUnitName ?? "Chưa xác định"}
-          </p>
           <strong>
             {selectedItem.sequenceNo}. {selectedItem.place.name}
           </strong>

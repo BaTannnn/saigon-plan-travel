@@ -69,24 +69,18 @@ function FilterSelect({
 
 type FilterPanelProps = {
   categories: Category[];
-  administrativeUnitNames: string[];
   filters: PlacesSearchFilters;
   className?: string;
 };
 
 export function FilterPanel({
   categories,
-  administrativeUnitNames,
   filters,
   className,
 }: FilterPanelProps) {
-  const administrativeUnitNameId = useId();
   const categoryId = useId();
   const indoorId = useId();
   const maxCostId = useId();
-  const [administrativeUnitName, setAdministrativeUnitName] = useState(
-    filters.administrativeUnitName ?? ALL_VALUE,
-  );
   const [category, setCategory] = useState(filters.category ?? ALL_VALUE);
   const [indoor, setIndoor] = useState(filters.indoor ?? ALL_VALUE);
 
@@ -112,13 +106,6 @@ export function FilterPanel({
         ) : null}
         <input
           type="hidden"
-          name="administrativeUnitName"
-          value={
-            administrativeUnitName === ALL_VALUE ? "" : administrativeUnitName
-          }
-        />
-        <input
-          type="hidden"
           name="category"
           value={category === ALL_VALUE ? "" : category}
         />
@@ -126,18 +113,6 @@ export function FilterPanel({
           type="hidden"
           name="indoor"
           value={indoor === ALL_VALUE ? "" : indoor}
-        />
-
-        <FilterSelect
-          id={administrativeUnitNameId}
-          label="Đơn vị hành chính"
-          value={administrativeUnitName}
-          allLabel="Tất cả đơn vị hành chính"
-          options={administrativeUnitNames.map((item) => ({
-            value: item,
-            label: item,
-          }))}
-          onValueChange={setAdministrativeUnitName}
         />
 
         <FilterSelect

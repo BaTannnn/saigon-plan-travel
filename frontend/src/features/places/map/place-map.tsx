@@ -145,9 +145,6 @@ export function PlaceMap({
           className="absolute bottom-7 left-1/2 z-[500] grid min-w-[min(320px,calc(100%_-_100px))] -translate-x-1/2 rounded-mint-md border border-border bg-surface px-[18px] py-3.5 shadow-mint-md max-md:bottom-[90px] max-md:min-w-[calc(100%_-_32px)]"
           aria-live="polite"
         >
-          <p className="mb-0.5 text-xs text-text-secondary">
-            {selectedPlace.administrativeUnitName ?? "Chưa xác định"}
-          </p>
           <strong>{selectedPlace.name}</strong>
           <Link
             className="mt-1.5 text-[0.78rem] font-extrabold text-primary"

@@ -4,7 +4,6 @@ import com.saigonplantravel.backend.place.dto.PlaceDetailResponse;
 import com.saigonplantravel.backend.place.dto.PlacePageResponse;
 import com.saigonplantravel.backend.place.dto.PlaceSearchRequest;
 import com.saigonplantravel.backend.place.dto.PlaceSummaryResponse;
-import com.saigonplantravel.backend.place.domain.AdministrativeUnitType;
 import com.saigonplantravel.backend.place.entity.Place;
 import com.saigonplantravel.backend.place.exception.PlaceNotFoundException;
 import com.saigonplantravel.backend.place.mapper.PlaceMapper;
@@ -47,8 +46,6 @@ class PlaceServiceTest {
                 "Demo Place",
                 "demo-place",
                 null,
-                "Phường Demo",
-                AdministrativeUnitType.WARD,
                 new BigDecimal("10.0000000"),
                 new BigDecimal("106.0000000"),
                 60,
@@ -110,8 +107,6 @@ class PlaceServiceTest {
                 "Demo Place",
                 "demo-place",
                 null,
-                "Phường Demo",
-                AdministrativeUnitType.WARD,
                 new BigDecimal("10.0000000"),
                 new BigDecimal("106.0000000"),
                 60,
@@ -133,7 +128,6 @@ class PlaceServiceTest {
                         "   ",
                         null,
                         null,
-                        false,
                         new BigDecimal("100000"),
                         null,
                         null
@@ -162,8 +156,6 @@ class PlaceServiceTest {
                 null,
                 null,
                 "Địa chỉ demo 1",
-                "Phường Demo",
-                AdministrativeUnitType.WARD,
                 new BigDecimal("10.7750000"),
                 new BigDecimal("106.7000000"),
                 90,

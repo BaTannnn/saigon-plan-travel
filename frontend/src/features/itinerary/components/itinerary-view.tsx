@@ -228,8 +228,7 @@ export function ItineraryView({
                           {item.place.name}
                         </strong>
                         <span className="mt-1 block truncate text-xs text-text-secondary">
-                          {item.place.administrativeUnitName ?? "TP.HCM"}
-                          {item.place.indoor ? " · Trong nhà" : " · Ngoài trời"}
+                          {item.place.indoor ? "Trong nhà" : "Ngoài trời"}
                         </span>
                       </span>
                     </button>

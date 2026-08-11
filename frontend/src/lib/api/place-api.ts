@@ -36,11 +36,6 @@ function appendIfPresent(
 export async function getPlaces(filters: PlacesSearchFilters) {
   const params = new URLSearchParams();
   appendIfPresent(params, "keyword", filters.keyword);
-  appendIfPresent(
-    params,
-    "administrativeUnitName",
-    filters.administrativeUnitName,
-  );
   appendIfPresent(params, "category", filters.category);
   appendIfPresent(params, "indoor", filters.indoor);
   appendIfPresent(params, "maxCost", filters.maxCost);

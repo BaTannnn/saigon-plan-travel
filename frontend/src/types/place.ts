@@ -1,14 +1,10 @@
 import type { Category } from "@/types/category";
 
-export type AdministrativeUnitType = "WARD" | "COMMUNE" | "SPECIAL_ZONE";
-
 export type PlaceSummary = {
   id: number;
   name: string;
   slug: string;
   shortDescription: string | null;
-  administrativeUnitName: string | null;
-  administrativeUnitType: AdministrativeUnitType | null;
   latitude: number;
   longitude: number;
   estimatedVisitMinutes: number;
@@ -43,7 +39,6 @@ export type PlaceDetail = PlaceSummary & {
 
 export type PlacesSearchFilters = {
   keyword?: string;
-  administrativeUnitName?: string;
   category?: string;
   indoor?: "true" | "false";
   maxCost?: string;

@@ -58,7 +58,7 @@ class FlywayMigrationTest {
         assertThat(versions).containsExactly(
                 "1", "2", "3", "4", "5",
                 "6", "7", "8", "9", "10",
-                "11"
+                "11", "13", "14"
         );
         assertThat(jdbcTemplate.queryForObject(
                 "SELECT count(*) FROM flyway_schema_history WHERE version = '6' AND success",
@@ -75,11 +75,13 @@ class FlywayMigrationTest {
                 Integer.class
         )).isEqualTo(5);
         assertThat(jdbcTemplate.queryForObject(
-                "SELECT count(*) FROM places "
-                        + "WHERE administrative_unit_name IS NULL "
-                        + "AND administrative_unit_type IS NULL",
+                "SELECT count(*) FROM information_schema.columns "
+                        + "WHERE table_schema = 'public' "
+                        + "AND table_name = 'places' "
+                        + "AND column_name IN ("
+                        + "'administrative_unit_name', 'administrative_unit_type')",
                 Integer.class
-        )).isEqualTo(6);
+        )).isZero();
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM users", Integer.class))
                 .isZero();
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM categories", Integer.class))

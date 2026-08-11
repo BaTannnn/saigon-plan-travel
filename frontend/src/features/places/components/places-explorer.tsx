@@ -25,7 +25,6 @@ import type { PlacePage, PlacesSearchFilters } from "@/types/place";
 type PlacesExplorerProps = {
   result: PlacePage;
   categories: Category[];
-  administrativeUnitNames: string[];
   filters: PlacesSearchFilters;
 };
 
@@ -35,7 +34,6 @@ const eyebrowClassName =
 export function PlacesExplorer({
   result,
   categories,
-  administrativeUnitNames,
   filters,
 }: PlacesExplorerProps) {
   const [selectedSlug, setSelectedSlug] = useState<string | null>(
@@ -43,7 +41,6 @@ export function PlacesExplorer({
   );
   const [mobileView, setMobileView] = useState<"list" | "map">("list");
   const filterPanelKey = [
-    filters.administrativeUnitName,
     filters.category,
     filters.indoor,
     filters.maxCost,
@@ -96,7 +93,6 @@ export function PlacesExplorer({
           <FilterPanel
             key={`desktop-${filterPanelKey}`}
             categories={categories}
-            administrativeUnitNames={administrativeUnitNames}
             filters={filters}
           />
         </div>
@@ -132,7 +128,6 @@ export function PlacesExplorer({
                 className="border-0 shadow-none [&_[data-slot=button]]:min-h-12 [&_[data-slot=input]]:h-12 [&_[data-slot=select-trigger]]:h-12"
                 key={`mobile-${filterPanelKey}`}
                 categories={categories}
-                administrativeUnitNames={administrativeUnitNames}
                 filters={filters}
               />
             </SheetContent>
