@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('Admin places')}">
+    <title>Admin places</title>
+</head>
+<body>
+<nav th:replace="~{admin/fragments :: navbar}"></nav>
+<main class="container py-4 py-lg-5">
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-4">
+        <div>
+            <p class="text-primary fw-semibold mb-1">Catalog management</p>
+            <h1 class="h2 mb-1">Places administration</h1>
+            <p class="text-secondary mb-0">Place catalog, including active and inactive records.</p>
+        </div>
+        <a class="btn btn-primary" th:href="@{/admin/places/new}">Create Place</a>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <p class="mb-0">Total places: <strong th:text="${placesPage.totalElements}">0</strong></p>
+        <a class="link-secondary" th:href="@{/admin/categories}">Manage categories</a>
+    </div>
+
+    <div class="alert alert-light border" th:if="${placesPage.content.isEmpty()}">No places found.</div>
+
+    <div class="card page-card" th:unless="${placesPage.content.isEmpty()}">
+        <div class="table-responsive">
+        <table class="table table-hover mb-0">
+        <thead class="table-light">
+        <tr>
+            <th>Name</th>
+            <th>Slug</th>
+            <th>Visit minutes</th>
+            <th>Minimum cost</th>
+            <th>Maximum cost</th>
+            <th>Environment</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="place : ${placesPage.content}">
+            <td>
+                <a th:href="@{/admin/places/{slug}(slug=${place.slug})}"
+                   th:text="${place.name}">Place name</a>
+            </td>
+            <td><code th:text="${place.slug}">place-slug</code></td>
+            <td th:text="${place.estimatedVisitMinutes}">0</td>
+            <td th:text="${place.minCost}">0</td>
+            <td th:text="${place.maxCost}">0</td>
+            <td th:text="${place.indoor ? 'Indoor' : 'Outdoor'}">Indoor</td>
+            <td>
+                <span class="badge"
+                      th:classappend="${place.active} ? 'text-bg-success' : 'text-bg-secondary'"
+                      th:text="${place.active ? 'Active' : 'Inactive'}">Active</span>
+            </td>
+            <td><a class="btn btn-sm btn-outline-primary"
+                   th:href="@{/admin/places/{slug}/edit(slug=${place.slug})}">Edit</a></td>
+        </tr>
+        </tbody>
+        </table>
+        </div>
+    </div>
+
+    <nav class="d-flex justify-content-center align-items-center gap-3 mt-4" aria-label="Place pagination">
+        <a class="btn btn-sm btn-outline-secondary" th:if="${!placesPage.first}"
+           th:href="@{/admin/places(page=${placesPage.page - 1},size=${placesPage.size})}">&larr; Previous</a>
+        <span class="text-secondary">
+            Page
+            <span th:text="${placesPage.totalPages == 0 ? 0 : placesPage.page + 1}">0</span>
+            of
+            <span th:text="${placesPage.totalPages}">0</span>
+        </span>
+        <a class="btn btn-sm btn-outline-secondary" th:if="${!placesPage.last}"
+           th:href="@{/admin/places(page=${placesPage.page + 1},size=${placesPage.size})}">Next &rarr;</a>
+    </nav>
+</main>
+</body>
+</html>

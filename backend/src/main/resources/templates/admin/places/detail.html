@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{admin/fragments :: head('Admin place detail')}">
+    <title>Admin place detail</title>
+</head>
+<body>
+<nav th:replace="~{admin/fragments :: navbar}"></nav>
+<main class="container py-4 py-lg-5">
+    <a class="link-secondary text-decoration-none" th:href="@{/admin/places}">&larr; Back to places</a>
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-start gap-3 mt-3 mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <h1 class="h2 mb-0" th:text="${place.name}">Place name</h1>
+                <span class="badge"
+                      th:classappend="${place.active} ? 'text-bg-success' : 'text-bg-secondary'"
+                      th:text="${place.active ? 'Active' : 'Inactive'}">Active</span>
+            </div>
+            <code th:text="${place.slug}">place-slug</code>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-outline-primary"
+               th:href="@{/admin/places/{slug}/edit(slug=${place.slug})}">Edit information</a>
+            <a class="btn btn-outline-primary"
+               th:href="@{/admin/places/{slug}/categories/edit(slug=${place.slug})}">Edit categories</a>
+            <a class="btn btn-outline-primary"
+               th:href="@{/admin/places/{slug}/opening-hours/edit(slug=${place.slug})}">Edit opening hours</a>
+            <form class="m-0" th:if="${place.active}" method="post"
+                  th:action="@{/admin/places/{slug}/deactivate(slug=${place.slug})}">
+                <button class="btn btn-outline-danger" type="submit">Deactivate Place</button>
+            </form>
+            <form class="m-0" th:unless="${place.active}" method="post"
+                  th:action="@{/admin/places/{slug}/activate(slug=${place.slug})}">
+                <button class="btn btn-success" type="submit">Activate Place</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card page-card mb-4">
+    <div class="card-body p-4">
+    <h2 class="h5 mb-3">Basic information</h2>
+    <dl class="row mb-0">
+        <dt class="col-sm-4">Slug</dt>
+        <dd class="col-sm-8" th:text="${place.slug}">place-slug</dd>
+        <dt class="col-sm-4">Status</dt>
+        <dd class="col-sm-8" th:text="${place.active ? 'Active' : 'Inactive'}">Active</dd>
+        <dt class="col-sm-4">Short description</dt>
+        <dd class="col-sm-8" th:text="${place.shortDescription ?: 'No data'}">No data</dd>
+        <dt class="col-sm-4">Full description</dt>
+        <dd class="col-sm-8" th:text="${place.fullDescription ?: 'No data'}">No data</dd>
+        <dt class="col-sm-4">Address</dt>
+        <dd class="col-sm-8" th:text="${place.address}">Address</dd>
+        <dt class="col-sm-4">Latitude</dt>
+        <dd class="col-sm-8" th:text="${place.latitude}">0</dd>
+        <dt class="col-sm-4">Longitude</dt>
+        <dd class="col-sm-8" th:text="${place.longitude}">0</dd>
+        <dt class="col-sm-4">Estimated visit minutes</dt>
+        <dd class="col-sm-8" th:text="${place.estimatedVisitMinutes}">0</dd>
+        <dt class="col-sm-4">Minimum cost</dt>
+        <dd class="col-sm-8" th:text="${place.minCost}">0</dd>
+        <dt class="col-sm-4">Maximum cost</dt>
+        <dd class="col-sm-8" th:text="${place.maxCost}">0</dd>
+        <dt class="col-sm-4">Environment</dt>
+        <dd class="col-sm-8" th:text="${place.indoor ? 'Indoor' : 'Outdoor'}">Indoor</dd>
+    </dl>
+    </div>
+    </div>
+
+    <div class="row g-4">
+    <section class="col-lg-5">
+        <div class="card page-card h-100"><div class="card-body p-4">
+        <h2 class="h5">Categories</h2>
+        <p th:if="${place.categories.isEmpty()}">No categories.</p>
+        <div class="d-flex flex-wrap gap-2" th:unless="${place.categories.isEmpty()}">
+            <span class="badge text-bg-primary" th:each="category : ${place.categories}"
+                  th:text="${category.name}">Category</span>
+        </div>
+        </div></div>
+    </section>
+
+    <section class="col-lg-7">
+        <div class="card page-card h-100"><div class="card-body p-4">
+        <h2 class="h5">Opening hours</h2>
+        <p th:if="${place.openingHours.isEmpty()}">No opening-hour data.</p>
+        <div class="table-responsive" th:unless="${place.openingHours.isEmpty()}">
+        <table class="table table-sm mb-0">
+            <thead class="table-light">
+            <tr>
+                <th>ISO day</th>
+                <th>Status</th>
+                <th>Open</th>
+                <th>Close</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="openingHour : ${place.openingHours}">
+                <td th:text="${openingHour.dayOfWeek}">1</td>
+                <td th:text="${openingHour.closed ? 'Closed' : 'Open'}">Open</td>
+                <td th:text="${openingHour.closed ? '—' : openingHour.openTime}">09:00</td>
+                <td th:text="${openingHour.closed ? '—' : openingHour.closeTime}">17:00</td>
+            </tr>
+            </tbody>
+        </table>
+        </div>
+        </div></div>
+    </section>
+    </div>
+</main>
+</body>
+</html>
