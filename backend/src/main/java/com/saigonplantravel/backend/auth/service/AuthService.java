@@ -20,19 +20,17 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
-    public AuthService(UserAccountRepository userAccountRepository,
-                       PasswordEncoder passwordEncoder,
-                       JwtService jwtService) {
+    public AuthService(
+            UserAccountRepository userAccountRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
         this.userAccountRepository = userAccountRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
     }
-    private AuthenticationResult authenticate(LoginRequest request){
-        UserAccount userAccount = userAccountRepository.findByEmail(request.email())
-                .orElseThrow(InvalidCredentialsException::new);
-        boolean passwordMatches = passwordEncoder.matches(
-                request.password(),
-                userAccount.getPasswordHash());
+
+    private AuthenticationResult authenticate(LoginRequest request) {
+        UserAccount userAccount =
+                userAccountRepository.findByEmail(request.email()).orElseThrow(InvalidCredentialsException::new);
+        boolean passwordMatches = passwordEncoder.matches(request.password(), userAccount.getPasswordHash());
         if (!passwordMatches) {
             throw new InvalidCredentialsException();
         }
@@ -45,21 +43,18 @@ public class AuthService {
     }
 
     @Transactional
-    public RegisterResponse register(RegisterRequest registerRequest){
-        if(userAccountRepository.existsByEmail(registerRequest.email())){
+    public RegisterResponse register(RegisterRequest registerRequest) {
+        if (userAccountRepository.existsByEmail(registerRequest.email())) {
             throw new EmailAlreadyExistsException();
         }
         String passwordHash = passwordEncoder.encode(registerRequest.password());
-        UserAccount userAccount = new UserAccount(
-                registerRequest.email(),
-                passwordHash,
-                registerRequest.displayName()
-        );
+        UserAccount userAccount = new UserAccount(registerRequest.email(), passwordHash, registerRequest.displayName());
         UserAccount savedUserAccount = userAccountRepository.save(userAccount);
         return RegisterResponse.from(savedUserAccount);
     }
+
     @Transactional(readOnly = true)
-    public LoginResponse login(LoginRequest request){
+    public LoginResponse login(LoginRequest request) {
         AuthenticationResult authenticationResult = authenticate(request);
         String accesToken = jwtService.generateAccessToken(authenticationResult);
         return new LoginResponse(
@@ -69,7 +64,6 @@ public class AuthService {
                 authenticationResult.publicId(),
                 authenticationResult.email(),
                 authenticationResult.displayName(),
-                authenticationResult.role()
-        );
+                authenticationResult.role());
     }
 }

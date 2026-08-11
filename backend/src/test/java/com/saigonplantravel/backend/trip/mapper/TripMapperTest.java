@@ -1,13 +1,13 @@
 package com.saigonplantravel.backend.trip.mapper;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.saigonplantravel.backend.place.dto.CategoryResponse;
 import com.saigonplantravel.backend.trip.domain.EnvironmentPreference;
 import com.saigonplantravel.backend.trip.domain.TravelPace;
 import com.saigonplantravel.backend.trip.dto.TripResponse;
 import com.saigonplantravel.backend.trip.dto.TripSummaryResponse;
 import com.saigonplantravel.backend.trip.entity.Trip;
-import org.junit.jupiter.api.Test;
-
 import java.lang.reflect.RecordComponent;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -16,8 +16,7 @@ import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
 
 class TripMapperTest {
 
@@ -25,10 +24,7 @@ class TripMapperTest {
 
     @Test
     void mapsTripToDraftResponseWithoutInternalIdentifiers() {
-        OffsetDateTime createdAt =
-                OffsetDateTime.parse(
-                        "2026-08-01T10:00:00+07:00"
-                );
+        OffsetDateTime createdAt = OffsetDateTime.parse("2026-08-01T10:00:00+07:00");
 
         Trip trip = new Trip(
                 99L,
@@ -42,88 +38,49 @@ class TripMapperTest {
                 TravelPace.BALANCED,
                 EnvironmentPreference.MIXED,
                 Set.of(1L, 3L),
-                createdAt
-        );
+                createdAt);
 
         List<CategoryResponse> categories = List.of(
-                new CategoryResponse(
-                        3L,
-                        "Nghệ thuật",
-                        "nghe-thuat"
-                ),
-                new CategoryResponse(
-                        1L,
-                        "Văn hóa",
-                        "van-hoa"
-                )
-        );
+                new CategoryResponse(3L, "Nghệ thuật", "nghe-thuat"), new CategoryResponse(1L, "Văn hóa", "van-hoa"));
 
-        TripResponse response =
-                mapper.toResponse(
-                        trip,
-                        categories
-                );
+        TripResponse response = mapper.toResponse(trip, categories);
 
-        assertThat(response.publicId())
-                .isEqualTo(trip.getPublicId());
+        assertThat(response.publicId()).isEqualTo(trip.getPublicId());
 
-        assertThat(response.tripDate())
-                .isEqualTo(LocalDate.of(2026, 8, 20));
+        assertThat(response.tripDate()).isEqualTo(LocalDate.of(2026, 8, 20));
 
-        assertThat(response.startTime())
-                .isEqualTo(LocalTime.of(8, 0));
+        assertThat(response.startTime()).isEqualTo(LocalTime.of(8, 0));
 
-        assertThat(response.endTime())
-                .isEqualTo(LocalTime.of(18, 0));
+        assertThat(response.endTime()).isEqualTo(LocalTime.of(18, 0));
 
-        assertThat(response.budget())
-                .isEqualByComparingTo("500000.00");
+        assertThat(response.budget()).isEqualByComparingTo("500000.00");
 
-        assertThat(response.startLocation().label())
-                .isEqualTo("Chợ Bến Thành");
+        assertThat(response.startLocation().label()).isEqualTo("Chợ Bến Thành");
 
-        assertThat(response.startLocation().latitude())
-                .isEqualByComparingTo("10.7726400");
+        assertThat(response.startLocation().latitude()).isEqualByComparingTo("10.7726400");
 
-        assertThat(response.startLocation().longitude())
-                .isEqualByComparingTo("106.6980500");
+        assertThat(response.startLocation().longitude()).isEqualByComparingTo("106.6980500");
 
-        assertThat(response.travelPace())
-                .isEqualTo(TravelPace.BALANCED);
+        assertThat(response.travelPace()).isEqualTo(TravelPace.BALANCED);
 
-        assertThat(response.environmentPreference())
-                .isEqualTo(
-                        EnvironmentPreference.MIXED
-                );
+        assertThat(response.environmentPreference()).isEqualTo(EnvironmentPreference.MIXED);
 
-        assertThat(response.categoryPreferences())
-                .containsExactlyElementsOf(categories);
+        assertThat(response.categoryPreferences()).containsExactlyElementsOf(categories);
 
-        assertThat(response.createdAt())
-                .isEqualTo(createdAt);
+        assertThat(response.createdAt()).isEqualTo(createdAt);
 
-        assertThat(response.updatedAt())
-                .isEqualTo(createdAt);
+        assertThat(response.updatedAt()).isEqualTo(createdAt);
 
-        List<String> responseFields = Arrays.stream(
-                        TripResponse.class
-                                .getRecordComponents()
-                )
+        List<String> responseFields = Arrays.stream(TripResponse.class.getRecordComponents())
                 .map(RecordComponent::getName)
                 .toList();
 
-        assertThat(responseFields)
-                .doesNotContain(
-                        "id",
-                        "userId"
-                );
+        assertThat(responseFields).doesNotContain("id", "userId");
     }
 
     @Test
     void mapsTripToLightweightSummaryWithoutInternalOrCoordinateFields() {
-        OffsetDateTime timestamp = OffsetDateTime.parse(
-                "2026-08-01T10:00:00+07:00"
-        );
+        OffsetDateTime timestamp = OffsetDateTime.parse("2026-08-01T10:00:00+07:00");
 
         Trip trip = new Trip(
                 99L,
@@ -137,46 +94,21 @@ class TripMapperTest {
                 TravelPace.BALANCED,
                 EnvironmentPreference.MIXED,
                 Set.of(1L),
-                timestamp
-        );
+                timestamp);
 
-        List<CategoryResponse> categories = List.of(
-                new CategoryResponse(
-                        1L,
-                        "Văn hóa",
-                        "van-hoa"
-                )
-        );
+        List<CategoryResponse> categories = List.of(new CategoryResponse(1L, "Văn hóa", "van-hoa"));
 
-        TripSummaryResponse response =
-                mapper.toSummaryResponse(
-                        trip,
-                        categories
-                );
+        TripSummaryResponse response = mapper.toSummaryResponse(trip, categories);
 
-        assertThat(response.publicId())
-                .isEqualTo(trip.getPublicId());
-        assertThat(response.startLocationLabel())
-                .isEqualTo("Chợ Bến Thành");
-        assertThat(response.categoryPreferences())
-                .containsExactlyElementsOf(categories);
-        assertThat(response.updatedAt())
-                .isEqualTo(timestamp);
+        assertThat(response.publicId()).isEqualTo(trip.getPublicId());
+        assertThat(response.startLocationLabel()).isEqualTo("Chợ Bến Thành");
+        assertThat(response.categoryPreferences()).containsExactlyElementsOf(categories);
+        assertThat(response.updatedAt()).isEqualTo(timestamp);
 
-        List<String> responseFields = Arrays.stream(
-                        TripSummaryResponse.class
-                                .getRecordComponents()
-                )
+        List<String> responseFields = Arrays.stream(TripSummaryResponse.class.getRecordComponents())
                 .map(RecordComponent::getName)
                 .toList();
 
-        assertThat(responseFields)
-                .doesNotContain(
-                        "id",
-                        "userId",
-                        "startLatitude",
-                        "startLongitude",
-                        "createdAt"
-                );
+        assertThat(responseFields).doesNotContain("id", "userId", "startLatitude", "startLongitude", "createdAt");
     }
 }

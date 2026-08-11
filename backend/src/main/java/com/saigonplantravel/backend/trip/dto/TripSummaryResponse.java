@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.saigonplantravel.backend.place.dto.CategoryResponse;
 import com.saigonplantravel.backend.trip.domain.EnvironmentPreference;
 import com.saigonplantravel.backend.trip.domain.TravelPace;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -15,23 +14,16 @@ import java.util.UUID;
 public record TripSummaryResponse(
         UUID publicId,
         LocalDate tripDate,
-
-        @JsonFormat(pattern = "HH:mm")
-        LocalTime startTime,
-
-        @JsonFormat(pattern = "HH:mm")
-        LocalTime endTime,
-
+        @JsonFormat(pattern = "HH:mm") LocalTime startTime,
+        @JsonFormat(pattern = "HH:mm") LocalTime endTime,
         BigDecimal budget,
         String startLocationLabel,
         TravelPace travelPace,
         EnvironmentPreference environmentPreference,
         List<CategoryResponse> categoryPreferences,
-        OffsetDateTime updatedAt
-) {
+        OffsetDateTime updatedAt) {
 
     public TripSummaryResponse {
-        categoryPreferences =
-                List.copyOf(categoryPreferences);
+        categoryPreferences = List.copyOf(categoryPreferences);
     }
 }

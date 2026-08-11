@@ -1,5 +1,16 @@
 package com.saigonplantravel.backend.place.controller;
 
+import static org.hamcrest.Matchers.aMapWithSize;
+import static org.hamcrest.Matchers.nullValue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.saigonplantravel.backend.auth.security.JwtAuthenticationService;
 import com.saigonplantravel.backend.common.exception.GlobalExceptionHandler;
 import com.saigonplantravel.backend.common.security.RestAuthenticationEntryPoint;
@@ -13,6 +24,9 @@ import com.saigonplantravel.backend.place.dto.PlaceSearchRequest;
 import com.saigonplantravel.backend.place.dto.PlaceSummaryResponse;
 import com.saigonplantravel.backend.place.exception.PlaceNotFoundException;
 import com.saigonplantravel.backend.place.service.PlaceService;
+import java.math.BigDecimal;
+import java.time.LocalTime;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,25 +36,8 @@ import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.math.BigDecimal;
-import java.time.LocalTime;
-import java.util.List;
-
-import static org.hamcrest.Matchers.aMapWithSize;
-import static org.hamcrest.Matchers.nullValue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 @WebMvcTest(PlaceController.class)
-@Import({
-        GlobalExceptionHandler.class,
-        SecurityConfig.class
-})
+@Import({GlobalExceptionHandler.class, SecurityConfig.class})
 class PlaceControllerTest {
 
     @Autowired
@@ -137,8 +134,7 @@ class PlaceControllerTest {
         when(placeService.searchPlaces(any(PlaceSearchRequest.class)))
                 .thenReturn(
                         new PlacePageResponse(List.of(), 0, 1, 0, 0, true, true),
-                        new PlacePageResponse(List.of(), 0, 100, 0, 0, true, true)
-                );
+                        new PlacePageResponse(List.of(), 0, 100, 0, 0, true, true));
 
         mockMvc.perform(get("/api/v1/places").param("size", "1"))
                 .andExpect(status().isOk())
@@ -166,9 +162,8 @@ class PlaceControllerTest {
                 .andExpect(content().contentType("application/problem+json"))
                 .andExpect(jsonPath("$.title").value("Internal server error"))
                 .andExpect(jsonPath("$.detail").value("An unexpected error occurred"))
-                .andExpect(content().string(org.hamcrest.Matchers.not(
-                        org.hamcrest.Matchers.containsString("jdbc:postgresql")
-                )));
+                .andExpect(content()
+                        .string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("jdbc:postgresql"))));
     }
 
     @Test
@@ -186,15 +181,13 @@ class PlaceControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", aMapWithSize(7)));
 
-        ArgumentCaptor<PlaceSearchRequest> requestCaptor =
-                ArgumentCaptor.forClass(PlaceSearchRequest.class);
+        ArgumentCaptor<PlaceSearchRequest> requestCaptor = ArgumentCaptor.forClass(PlaceSearchRequest.class);
         verify(placeService).searchPlaces(requestCaptor.capture());
         PlaceSearchRequest request = requestCaptor.getValue();
         org.assertj.core.api.Assertions.assertThat(request.keyword()).isEqualTo("Bảo tàng");
         org.assertj.core.api.Assertions.assertThat(request.category()).isEqualTo("van-hoa");
         org.assertj.core.api.Assertions.assertThat(request.indoor()).isFalse();
-        org.assertj.core.api.Assertions.assertThat(request.maxCost())
-                .isEqualByComparingTo("100000");
+        org.assertj.core.api.Assertions.assertThat(request.maxCost()).isEqualByComparingTo("100000");
         org.assertj.core.api.Assertions.assertThat(request.resolvedPage()).isEqualTo(2);
         org.assertj.core.api.Assertions.assertThat(request.resolvedSize()).isEqualTo(10);
     }
@@ -243,15 +236,8 @@ class PlaceControllerTest {
                 true,
                 List.of(new CategoryResponse(1L, "Nghệ thuật", "nghe-thuat")),
                 List.of(
-                        new OpeningHourResponse(
-                                (short) 1,
-                                false,
-                                LocalTime.of(9, 0),
-                                LocalTime.of(17, 0)
-                        ),
-                        new OpeningHourResponse((short) 2, true, null, null)
-                )
-        );
+                        new OpeningHourResponse((short) 1, false, LocalTime.of(9, 0), LocalTime.of(17, 0)),
+                        new OpeningHourResponse((short) 2, true, null, null)));
         when(placeService.getPlaceDetailBySlug("demo-art-space")).thenReturn(detail);
 
         mockMvc.perform(get("/api/v1/places/demo-art-space"))
@@ -284,11 +270,7 @@ class PlaceControllerTest {
         when(placeService.getPlaceDetailBySlug(org.mockito.ArgumentMatchers.anyString()))
                 .thenThrow(new PlaceNotFoundException());
 
-        for (String slug : List.of(
-                "slug-khong-ton-tai",
-                "demo-temporarily-hidden-place",
-                "INVALID_SLUG"
-        )) {
+        for (String slug : List.of("slug-khong-ton-tai", "demo-temporarily-hidden-place", "INVALID_SLUG")) {
             mockMvc.perform(get("/api/v1/places/{slug}", slug))
                     .andExpect(status().isNotFound())
                     .andExpect(content().contentType("application/problem+json"))
@@ -312,7 +294,6 @@ class PlaceControllerTest {
                 60,
                 BigDecimal.ZERO,
                 new BigDecimal("100000.00"),
-                true
-        );
+                true);
     }
 }

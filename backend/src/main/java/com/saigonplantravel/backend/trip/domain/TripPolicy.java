@@ -1,8 +1,6 @@
 package com.saigonplantravel.backend.trip.domain;
 
 import com.saigonplantravel.backend.trip.exception.InvalidTripException;
-import org.springframework.stereotype.Component;
-
 import java.time.Clock;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -10,6 +8,7 @@ import java.time.LocalTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.springframework.stereotype.Component;
 
 @Component
 public class TripPolicy {
@@ -23,63 +22,34 @@ public class TripPolicy {
         this.clock = clock;
     }
 
-    public void validate(
-            LocalDate tripDate,
-            LocalTime startTime,
-            LocalTime endTime,
-            List<String> categorySlugs
-    ) {
+    public void validate(LocalDate tripDate, LocalTime startTime, LocalTime endTime, List<String> categorySlugs) {
         validateTripDate(tripDate);
         validateTimeWindow(startTime, endTime);
         validateCategoryDuplicates(categorySlugs);
     }
 
-    private void validateTripDate(
-            LocalDate tripDate
-    ) {
+    private void validateTripDate(LocalDate tripDate) {
         LocalDate today = LocalDate.now(clock);
 
         if (tripDate.isBefore(today)) {
-            throw new InvalidTripException(
-                    "TRIP_DATE_IN_PAST",
-                    "tripDate",
-                    "trip date must be today or in the future"
-            );
+            throw new InvalidTripException("TRIP_DATE_IN_PAST", "tripDate", "trip date must be today or in the future");
         }
     }
 
-    private void validateTimeWindow(
-            LocalTime startTime,
-            LocalTime endTime
-    ) {
+    private void validateTimeWindow(LocalTime startTime, LocalTime endTime) {
         if (!startTime.isBefore(endTime)) {
-            throw new InvalidTripException(
-                    "INVALID_TRIP_TIME_ORDER",
-                    "endTime",
-                    "end time must be after start time"
-            );
+            throw new InvalidTripException("INVALID_TRIP_TIME_ORDER", "endTime", "end time must be after start time");
         }
 
-        long durationMinutes = Duration.between(
-                startTime,
-                endTime
-        ).toMinutes();
+        long durationMinutes = Duration.between(startTime, endTime).toMinutes();
 
-        if (
-                durationMinutes < MIN_DURATION_MINUTES
-                        || durationMinutes > MAX_DURATION_MINUTES
-        ) {
+        if (durationMinutes < MIN_DURATION_MINUTES || durationMinutes > MAX_DURATION_MINUTES) {
             throw new InvalidTripException(
-                    "INVALID_TRIP_DURATION",
-                    "endTime",
-                    "trip duration must be between 60 minutes and 18 hours"
-            );
+                    "INVALID_TRIP_DURATION", "endTime", "trip duration must be between 60 minutes and 18 hours");
         }
     }
 
-    private void validateCategoryDuplicates(
-            List<String> categorySlugs
-    ) {
+    private void validateCategoryDuplicates(List<String> categorySlugs) {
         Set<String> uniqueSlugs = new HashSet<>();
 
         for (String slug : categorySlugs) {
@@ -89,8 +59,7 @@ public class TripPolicy {
                 throw new InvalidTripException(
                         "DUPLICATE_CATEGORY_PREFERENCE",
                         "categorySlugs",
-                        "category preferences must not contain duplicates"
-                );
+                        "category preferences must not contain duplicates");
             }
         }
     }

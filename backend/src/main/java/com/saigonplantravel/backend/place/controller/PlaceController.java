@@ -5,6 +5,7 @@ import com.saigonplantravel.backend.place.dto.PlacePageResponse;
 import com.saigonplantravel.backend.place.dto.PlaceSearchRequest;
 import com.saigonplantravel.backend.place.service.PlaceService;
 import jakarta.validation.Valid;
+import java.beans.PropertyEditorSupport;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.InitBinder;
@@ -12,8 +13,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.beans.PropertyEditorSupport;
 
 @RestController
 @RequestMapping("/api/v1/places")
@@ -37,11 +36,7 @@ public class PlaceController {
 
     @InitBinder
     void configureStrictBooleanBinding(WebDataBinder binder) {
-        binder.registerCustomEditor(
-                Boolean.class,
-                "indoor",
-                new StrictBooleanEditor()
-        );
+        binder.registerCustomEditor(Boolean.class, "indoor", new StrictBooleanEditor());
     }
 
     private static final class StrictBooleanEditor extends PropertyEditorSupport {

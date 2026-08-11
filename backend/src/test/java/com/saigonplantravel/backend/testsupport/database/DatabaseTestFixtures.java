@@ -1,26 +1,21 @@
 package com.saigonplantravel.backend.testsupport.database;
 
-import org.springframework.jdbc.core.JdbcTemplate;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.util.UUID;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 public final class DatabaseTestFixtures {
 
     private final JdbcTemplate jdbcTemplate;
 
-    public DatabaseTestFixtures(
-            JdbcTemplate jdbcTemplate
-    ) {
+    public DatabaseTestFixtures(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public Long insertUser(
-            String emailPrefix
-    ) {
+    public Long insertUser(String emailPrefix) {
         return jdbcTemplate.queryForObject(
                 """
                 INSERT INTO users (
@@ -36,21 +31,13 @@ public final class DatabaseTestFixtures {
                 """,
                 Long.class,
                 UUID.randomUUID(),
-                emailPrefix
-                        + "-"
-                        + UUID.randomUUID()
-                        + "@example.com",
+                emailPrefix + "-" + UUID.randomUUID() + "@example.com",
                 "integration-test-password",
-                "Integration Test User"
-        );
+                "Integration Test User");
     }
 
-    public Long insertCategory(
-            String namePrefix,
-            String slugPrefix
-    ) {
-        String uniqueSuffix =
-                UUID.randomUUID().toString();
+    public Long insertCategory(String namePrefix, String slugPrefix) {
+        String uniqueSuffix = UUID.randomUUID().toString();
 
         return jdbcTemplate.queryForObject(
                 """
@@ -63,37 +50,19 @@ public final class DatabaseTestFixtures {
                 """,
                 Long.class,
                 namePrefix + " " + uniqueSuffix,
-                slugPrefix + "-" + uniqueSuffix
-        );
+                slugPrefix + "-" + uniqueSuffix);
     }
 
-    public TripFixture insertValidTrip(
-            Long userId
-    ) {
-        UUID publicId =
-                UUID.randomUUID();
+    public TripFixture insertValidTrip(Long userId) {
+        UUID publicId = UUID.randomUUID();
 
-        Long tripId =
-                insertValidTrip(
-                        publicId,
-                        userId
-                );
+        Long tripId = insertValidTrip(publicId, userId);
 
-        return new TripFixture(
-                tripId,
-                publicId,
-                userId
-        );
+        return new TripFixture(tripId, publicId, userId);
     }
 
-    public Long insertValidTrip(
-            UUID publicId,
-            Long userId
-    ) {
-        OffsetDateTime timestamp =
-                OffsetDateTime.parse(
-                        "2099-08-01T10:00:00+07:00"
-                );
+    public Long insertValidTrip(UUID publicId, Long userId) {
+        OffsetDateTime timestamp = OffsetDateTime.parse("2099-08-01T10:00:00+07:00");
 
         return jdbcTemplate.queryForObject(
                 """
@@ -131,40 +100,28 @@ public final class DatabaseTestFixtures {
                 "BALANCED",
                 "MIXED",
                 timestamp,
-                timestamp
-        );
+                timestamp);
     }
-    public PlaceFixture insertValidPlace(
-            String namePrefix,
-            String slugPrefix,
-            boolean indoor
-    ) {
-        String suffix =
-                UUID.randomUUID().toString();
 
-        String name =
-                namePrefix + " " + suffix;
+    public PlaceFixture insertValidPlace(String namePrefix, String slugPrefix, boolean indoor) {
+        String suffix = UUID.randomUUID().toString();
 
-        String slug =
-                slugPrefix + "-" + suffix;
+        String name = namePrefix + " " + suffix;
 
-        String address =
-                "Test address, TP.HCM";
+        String slug = slugPrefix + "-" + suffix;
 
-        BigDecimal latitude =
-                new BigDecimal("10.7768890");
+        String address = "Test address, TP.HCM";
 
-        BigDecimal longitude =
-                new BigDecimal("106.7008060");
+        BigDecimal latitude = new BigDecimal("10.7768890");
+
+        BigDecimal longitude = new BigDecimal("106.7008060");
 
         int estimatedVisitMinutes = 90;
 
-        BigDecimal minCost =
-                new BigDecimal("50000.00");
+        BigDecimal minCost = new BigDecimal("50000.00");
 
-        Long placeId =
-                jdbcTemplate.queryForObject(
-                        """
+        Long placeId = jdbcTemplate.queryForObject(
+                """
                         INSERT INTO places (
                             name,
                             slug,
@@ -183,20 +140,7 @@ public final class DatabaseTestFixtures {
                         )
                         RETURNING id
                         """,
-                        Long.class,
-                        name,
-                        slug,
-                        address,
-                        latitude,
-                        longitude,
-                        estimatedVisitMinutes,
-                        minCost,
-                        minCost,
-                        indoor
-                );
-
-        return new PlaceFixture(
-                placeId,
+                Long.class,
                 name,
                 slug,
                 address,
@@ -204,9 +148,13 @@ public final class DatabaseTestFixtures {
                 longitude,
                 estimatedVisitMinutes,
                 minCost,
-                indoor
-        );
+                minCost,
+                indoor);
+
+        return new PlaceFixture(
+                placeId, name, slug, address, latitude, longitude, estimatedVisitMinutes, minCost, indoor);
     }
+
     public record PlaceFixture(
             Long placeId,
             String name,
@@ -216,13 +164,7 @@ public final class DatabaseTestFixtures {
             BigDecimal longitude,
             int estimatedVisitMinutes,
             BigDecimal minCost,
-            boolean indoor
-    ) {
-    }
-    public record TripFixture(
-            Long tripId,
-            UUID tripPublicId,
-            Long userId
-    ) {
-    }
+            boolean indoor) {}
+
+    public record TripFixture(Long tripId, UUID tripPublicId, Long userId) {}
 }

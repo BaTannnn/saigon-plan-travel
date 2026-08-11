@@ -1,17 +1,18 @@
 package com.saigonplantravel.backend.common.security.jwt;
+
 import com.saigonplantravel.backend.auth.domain.UserRole;
 import com.saigonplantravel.backend.auth.service.model.AuthenticationResult;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.stereotype.Service;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
-import javax.crypto.SecretKey;
 import java.time.Instant;
 import java.util.Date;
 import java.util.UUID;
+import javax.crypto.SecretKey;
+import org.springframework.stereotype.Service;
 
 @Service
 public class JwtService {
@@ -23,9 +24,7 @@ public class JwtService {
     public JwtService(JwtProperties jwtProperties) {
         this.jwtProperties = jwtProperties;
 
-        byte[] keyBytes = Decoders.BASE64.decode(
-                jwtProperties.secret()
-        );
+        byte[] keyBytes = Decoders.BASE64.decode(jwtProperties.secret());
 
         this.signingKey = Keys.hmacShaKeyFor(keyBytes);
         this.jwtParser = Jwts.parser()
@@ -34,21 +33,14 @@ public class JwtService {
                 .build();
     }
 
-    public String generateAccessToken(
-            AuthenticationResult authenticationResult
-    ) {
+    public String generateAccessToken(AuthenticationResult authenticationResult) {
         Instant issuedAt = Instant.now();
-        Instant expiration = issuedAt.plus(
-                jwtProperties.accessTokenExpiration()
-        );
+        Instant expiration = issuedAt.plus(jwtProperties.accessTokenExpiration());
 
         return Jwts.builder()
                 .issuer(jwtProperties.issuer())
                 .subject(authenticationResult.publicId().toString())
-                .claim(
-                        "role",
-                        authenticationResult.role().name()
-                )
+                .claim("role", authenticationResult.role().name())
                 .issuedAt(Date.from(issuedAt))
                 .expiration(Date.from(expiration))
                 .signWith(signingKey)
@@ -56,19 +48,16 @@ public class JwtService {
     }
 
     public long getAccessTokenExpirationSeconds() {
-        return jwtProperties
-                .accessTokenExpiration()
-                .toSeconds();
+        return jwtProperties.accessTokenExpiration().toSeconds();
     }
+
     public AccessTokenClaims parseAccessToken(String token) {
         if (token == null || token.isBlank()) {
             throw new InvalidAccessTokenException();
         }
 
         try {
-            Claims claims = jwtParser
-                    .parseSignedClaims(token)
-                    .getPayload();
+            Claims claims = jwtParser.parseSignedClaims(token).getPayload();
 
             String subject = claims.getSubject();
             String roleClaim = claims.get("role", String.class);
@@ -84,10 +73,7 @@ public class JwtService {
             UUID userPublicId = UUID.fromString(subject);
             UserRole role = UserRole.valueOf(roleClaim);
 
-            return new AccessTokenClaims(
-                    userPublicId,
-                    role
-            );
+            return new AccessTokenClaims(userPublicId, role);
 
         } catch (JwtException | IllegalArgumentException exception) {
             throw new InvalidAccessTokenException(exception);

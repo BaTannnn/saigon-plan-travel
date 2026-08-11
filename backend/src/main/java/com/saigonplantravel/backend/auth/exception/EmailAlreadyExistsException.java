@@ -1,7 +1,7 @@
 package com.saigonplantravel.backend.auth.exception;
 
 public class EmailAlreadyExistsException extends RuntimeException {
-    public EmailAlreadyExistsException(){
+    public EmailAlreadyExistsException() {
         super("email is already registered");
     }
 }

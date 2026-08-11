@@ -1,5 +1,7 @@
 package com.saigonplantravel.backend.trip.repository;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.saigonplantravel.backend.auth.entity.UserAccount;
 import com.saigonplantravel.backend.place.entity.Category;
 import com.saigonplantravel.backend.place.repository.CategoryRepository;
@@ -7,6 +9,16 @@ import com.saigonplantravel.backend.trip.domain.EnvironmentPreference;
 import com.saigonplantravel.backend.trip.domain.TravelPace;
 import com.saigonplantravel.backend.trip.entity.Trip;
 import jakarta.persistence.EntityManager;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,67 +31,26 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 @Testcontainers
 @SpringBootTest
 @Transactional
 class TripRepositoryTest {
 
     @Container
-    static final PostgreSQLContainer postgres =
-            new PostgreSQLContainer(
-                    DockerImageName
-                            .parse("pgvector/pgvector:pg16")
-                            .asCompatibleSubstituteFor(
-                                    "postgres"
-                            )
-            );
+    static final PostgreSQLContainer postgres = new PostgreSQLContainer(
+            DockerImageName.parse("pgvector/pgvector:pg16").asCompatibleSubstituteFor("postgres"));
 
     @DynamicPropertySource
-    static void databaseProperties(
-            DynamicPropertyRegistry registry
-    ) {
-        registry.add(
-                "spring.datasource.url",
-                postgres::getJdbcUrl
-        );
-        registry.add(
-                "spring.datasource.username",
-                postgres::getUsername
-        );
-        registry.add(
-                "spring.datasource.password",
-                postgres::getPassword
-        );
+    static void databaseProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", postgres::getJdbcUrl);
+        registry.add("spring.datasource.username", postgres::getUsername);
+        registry.add("spring.datasource.password", postgres::getPassword);
 
-        registry.add(
-                "spring.jpa.hibernate.ddl-auto",
-                () -> "validate"
-        );
+        registry.add("spring.jpa.hibernate.ddl-auto", () -> "validate");
 
-        registry.add(
-                "spring.jpa.open-in-view",
-                () -> "false"
-        );
+        registry.add("spring.jpa.open-in-view", () -> "false");
 
-        registry.add(
-                "app.security.jwt.secret",
-                () ->
-                        "MDEyMzQ1Njc4OWFiY2RlZjAx"
-                                + "MjM0NTY3ODlhYmNkZWY="
-        );
+        registry.add("app.security.jwt.secret", () -> "MDEyMzQ1Njc4OWFiY2RlZjAx" + "MjM0NTY3ODlhYmNkZWY=");
     }
 
     @Autowired
@@ -96,23 +67,13 @@ class TripRepositoryTest {
 
     @Test
     void persistsAndLoadsOwnedTripWithCategoryPreferences() {
-        Long ownerUserId =
-                persistUser("owner@example.com");
+        Long ownerUserId = persistUser("owner@example.com");
 
-        Long anotherUserId =
-                persistUser("another@example.com");
+        Long anotherUserId = persistUser("another@example.com");
 
-        Set<Long> categoryIds = findCategoryIds(
-                Set.of(
-                        "van-hoa",
-                        "nghe-thuat"
-                )
-        );
+        Set<Long> categoryIds = findCategoryIds(Set.of("van-hoa", "nghe-thuat"));
 
-        OffsetDateTime timestamp =
-                OffsetDateTime.parse(
-                        "2026-08-03T10:00:00+07:00"
-                );
+        OffsetDateTime timestamp = OffsetDateTime.parse("2026-08-03T10:00:00+07:00");
 
         Trip trip = new Trip(
                 ownerUserId,
@@ -126,23 +87,17 @@ class TripRepositoryTest {
                 TravelPace.BALANCED,
                 EnvironmentPreference.MIXED,
                 categoryIds,
-                timestamp
-        );
+                timestamp);
 
-        Trip savedTrip =
-                tripRepository.saveAndFlush(trip);
+        Trip savedTrip = tripRepository.saveAndFlush(trip);
 
         Long internalTripId = savedTrip.getId();
         UUID publicId = savedTrip.getPublicId();
 
         entityManager.clear();
 
-        Trip loadedTrip = tripRepository
-                .findByPublicIdAndUserId(
-                        publicId,
-                        ownerUserId
-                )
-                .orElseThrow();
+        Trip loadedTrip =
+                tripRepository.findByPublicIdAndUserId(publicId, ownerUserId).orElseThrow();
 
         /*
          * Detach sau khi repository đã load Trip.
@@ -151,108 +106,54 @@ class TripRepositoryTest {
          */
         entityManager.clear();
 
-        assertThat(loadedTrip.getPublicId())
-                .isEqualTo(publicId);
+        assertThat(loadedTrip.getPublicId()).isEqualTo(publicId);
 
-        assertThat(loadedTrip.getUserId())
-                .isEqualTo(ownerUserId);
+        assertThat(loadedTrip.getUserId()).isEqualTo(ownerUserId);
 
-        assertThat(
-                loadedTrip.getPreferredCategoryIds()
-        ).containsExactlyInAnyOrderElementsOf(
-                categoryIds
-        );
+        assertThat(loadedTrip.getPreferredCategoryIds()).containsExactlyInAnyOrderElementsOf(categoryIds);
 
-        assertThat(
-                tripRepository.findByPublicIdAndUserId(
-                        publicId,
-                        anotherUserId
-                )
-        ).isEmpty();
+        assertThat(tripRepository.findByPublicIdAndUserId(publicId, anotherUserId))
+                .isEmpty();
 
-        Integer preferenceRowCount =
-                jdbcTemplate.queryForObject(
-                        """
+        Integer preferenceRowCount = jdbcTemplate.queryForObject(
+                """
                         SELECT count(*)
                         FROM trip_category_preferences
                         WHERE trip_id = ?
                         """,
-                        Integer.class,
-                        internalTripId
-                );
+                Integer.class,
+                internalTripId);
 
-        assertThat(preferenceRowCount)
-                .isEqualTo(2);
+        assertThat(preferenceRowCount).isEqualTo(2);
     }
 
     @Test
     void listsOnlyOwnedTripsInDeterministicOrder() {
-        Long ownerUserId =
-                persistUser("list-owner@example.com");
-        Long anotherUserId =
-                persistUser("list-another@example.com");
-        Set<Long> categoryIds = findCategoryIds(
-                Set.of("van-hoa")
-        );
+        Long ownerUserId = persistUser("list-owner@example.com");
+        Long anotherUserId = persistUser("list-another@example.com");
+        Set<Long> categoryIds = findCategoryIds(Set.of("van-hoa"));
 
-        Trip laterTrip = newTrip(
-                ownerUserId,
-                LocalDate.of(2026, 8, 21),
-                LocalTime.of(9, 0),
-                "Điểm xuất phát B",
-                categoryIds
-        );
-        Trip tiedTripOne = newTrip(
-                ownerUserId,
-                LocalDate.of(2026, 8, 20),
-                LocalTime.of(8, 0),
-                "Điểm xuất phát A1",
-                categoryIds
-        );
-        Trip tiedTripTwo = newTrip(
-                ownerUserId,
-                LocalDate.of(2026, 8, 20),
-                LocalTime.of(8, 0),
-                "Điểm xuất phát A2",
-                categoryIds
-        );
+        Trip laterTrip =
+                newTrip(ownerUserId, LocalDate.of(2026, 8, 21), LocalTime.of(9, 0), "Điểm xuất phát B", categoryIds);
+        Trip tiedTripOne =
+                newTrip(ownerUserId, LocalDate.of(2026, 8, 20), LocalTime.of(8, 0), "Điểm xuất phát A1", categoryIds);
+        Trip tiedTripTwo =
+                newTrip(ownerUserId, LocalDate.of(2026, 8, 20), LocalTime.of(8, 0), "Điểm xuất phát A2", categoryIds);
         Trip anotherUsersTrip = newTrip(
-                anotherUserId,
-                LocalDate.of(2026, 8, 19),
-                LocalTime.of(7, 0),
-                "Không thuộc chủ sở hữu",
-                categoryIds
-        );
+                anotherUserId, LocalDate.of(2026, 8, 19), LocalTime.of(7, 0), "Không thuộc chủ sở hữu", categoryIds);
 
-        tripRepository.saveAllAndFlush(
-                List.of(
-                        laterTrip,
-                        tiedTripOne,
-                        tiedTripTwo,
-                        anotherUsersTrip
-                )
-        );
+        tripRepository.saveAllAndFlush(List.of(laterTrip, tiedTripOne, tiedTripTwo, anotherUsersTrip));
 
-        List<UUID> expectedPublicIds = List.of(
-                        laterTrip,
-                        tiedTripOne,
-                        tiedTripTwo
-                ).stream()
-                .sorted(Comparator
-                        .comparing(Trip::getTripDate)
+        List<UUID> expectedPublicIds = List.of(laterTrip, tiedTripOne, tiedTripTwo).stream()
+                .sorted(Comparator.comparing(Trip::getTripDate)
                         .thenComparing(Trip::getStartTime)
-                        .thenComparing(trip -> trip
-                                .getPublicId()
-                                .toString()))
+                        .thenComparing(trip -> trip.getPublicId().toString()))
                 .map(Trip::getPublicId)
                 .toList();
 
         entityManager.clear();
 
-        List<Trip> ownedTrips = tripRepository
-                .findAllByUserIdOrderByTripDateAscStartTimeAscPublicIdAsc(
-                        ownerUserId
-                );
+        List<Trip> ownedTrips = tripRepository.findAllByUserIdOrderByTripDateAscStartTimeAscPublicIdAsc(ownerUserId);
 
         entityManager.clear();
 
@@ -260,32 +161,18 @@ class TripRepositoryTest {
                 .extracting(Trip::getPublicId)
                 .containsExactlyElementsOf(expectedPublicIds)
                 .doesNotContain(anotherUsersTrip.getPublicId());
+        assertThat(ownedTrips).allMatch(trip -> trip.getUserId().equals(ownerUserId));
         assertThat(ownedTrips)
-                .allMatch(trip -> trip.getUserId()
-                        .equals(ownerUserId));
-        assertThat(ownedTrips)
-                .allSatisfy(trip -> assertThat(
-                        trip.getPreferredCategoryIds()
-                ).containsExactlyElementsOf(categoryIds));
+                .allSatisfy(trip -> assertThat(trip.getPreferredCategoryIds()).containsExactlyElementsOf(categoryIds));
     }
 
     @Test
     void replacesTripDetailsAndCategoryPreferences() {
-        Long ownerUserId =
-                persistUser("replace-owner@example.com");
+        Long ownerUserId = persistUser("replace-owner@example.com");
 
-        Set<Long> originalCategoryIds =
-                findCategoryIds(
-                        Set.of(
-                                "van-hoa",
-                                "nghe-thuat"
-                        )
-                );
+        Set<Long> originalCategoryIds = findCategoryIds(Set.of("van-hoa", "nghe-thuat"));
 
-        OffsetDateTime createdAt =
-                OffsetDateTime.parse(
-                        "2026-08-01T09:00:00+07:00"
-                );
+        OffsetDateTime createdAt = OffsetDateTime.parse("2026-08-01T09:00:00+07:00");
 
         Trip trip = new Trip(
                 ownerUserId,
@@ -299,33 +186,21 @@ class TripRepositoryTest {
                 TravelPace.FAST,
                 EnvironmentPreference.OUTDOOR,
                 originalCategoryIds,
-                createdAt
-        );
+                createdAt);
 
-        Trip savedTrip =
-                tripRepository.saveAndFlush(trip);
+        Trip savedTrip = tripRepository.saveAndFlush(trip);
 
         UUID publicId = savedTrip.getPublicId();
         Long internalTripId = savedTrip.getId();
 
         entityManager.clear();
 
-        Trip managedTrip = tripRepository
-                .findByPublicIdAndUserId(
-                        publicId,
-                        ownerUserId
-                )
-                .orElseThrow();
+        Trip managedTrip =
+                tripRepository.findByPublicIdAndUserId(publicId, ownerUserId).orElseThrow();
 
-        Set<Long> replacementCategoryIds =
-                findCategoryIds(
-                        Set.of("ngoai-troi")
-                );
+        Set<Long> replacementCategoryIds = findCategoryIds(Set.of("ngoai-troi"));
 
-        OffsetDateTime updatedAt =
-                OffsetDateTime.parse(
-                        "2026-08-03T10:00:00+07:00"
-                );
+        OffsetDateTime updatedAt = OffsetDateTime.parse("2026-08-03T10:00:00+07:00");
 
         managedTrip.replaceDetails(
                 LocalDate.of(2026, 8, 25),
@@ -338,8 +213,7 @@ class TripRepositoryTest {
                 TravelPace.RELAXED,
                 EnvironmentPreference.INDOOR,
                 replacementCategoryIds,
-                updatedAt
-        );
+                updatedAt);
 
         /*
          * Không gọi tripRepository.save().
@@ -348,82 +222,47 @@ class TripRepositoryTest {
         entityManager.flush();
         entityManager.clear();
 
-        Trip reloadedTrip = tripRepository
-                .findByPublicIdAndUserId(
-                        publicId,
-                        ownerUserId
-                )
-                .orElseThrow();
+        Trip reloadedTrip =
+                tripRepository.findByPublicIdAndUserId(publicId, ownerUserId).orElseThrow();
 
-        assertThat(reloadedTrip.getPublicId())
-                .isEqualTo(publicId);
+        assertThat(reloadedTrip.getPublicId()).isEqualTo(publicId);
 
-        assertThat(reloadedTrip.getUserId())
-                .isEqualTo(ownerUserId);
+        assertThat(reloadedTrip.getUserId()).isEqualTo(ownerUserId);
 
-        assertThat(reloadedTrip.getCreatedAt())
-                .isEqualTo(createdAt);
+        assertThat(reloadedTrip.getCreatedAt()).isEqualTo(createdAt);
 
-        assertThat(reloadedTrip.getUpdatedAt())
-                .isEqualTo(updatedAt);
+        assertThat(reloadedTrip.getUpdatedAt()).isEqualTo(updatedAt);
 
-        assertThat(reloadedTrip.getTripDate())
-                .isEqualTo(
-                        LocalDate.of(2026, 8, 25)
-                );
+        assertThat(reloadedTrip.getTripDate()).isEqualTo(LocalDate.of(2026, 8, 25));
 
-        assertThat(reloadedTrip.getStartTime())
-                .isEqualTo(
-                        LocalTime.of(9, 0)
-                );
+        assertThat(reloadedTrip.getStartTime()).isEqualTo(LocalTime.of(9, 0));
 
-        assertThat(reloadedTrip.getEndTime())
-                .isEqualTo(
-                        LocalTime.of(17, 0)
-                );
+        assertThat(reloadedTrip.getEndTime()).isEqualTo(LocalTime.of(17, 0));
 
-        assertThat(reloadedTrip.getBudget())
-                .isEqualByComparingTo("700000.00");
+        assertThat(reloadedTrip.getBudget()).isEqualByComparingTo("700000.00");
 
-        assertThat(reloadedTrip.getStartLocationLabel())
-                .isEqualTo("Địa điểm mới");
+        assertThat(reloadedTrip.getStartLocationLabel()).isEqualTo("Địa điểm mới");
 
-        assertThat(reloadedTrip.getTravelPace())
-                .isEqualTo(TravelPace.RELAXED);
+        assertThat(reloadedTrip.getTravelPace()).isEqualTo(TravelPace.RELAXED);
 
-        assertThat(
-                reloadedTrip.getEnvironmentPreference()
-        ).isEqualTo(
-                EnvironmentPreference.INDOOR
-        );
+        assertThat(reloadedTrip.getEnvironmentPreference()).isEqualTo(EnvironmentPreference.INDOOR);
 
-        assertThat(
-                reloadedTrip.getPreferredCategoryIds()
-        ).containsExactlyInAnyOrderElementsOf(
-                replacementCategoryIds
-        );
+        assertThat(reloadedTrip.getPreferredCategoryIds()).containsExactlyInAnyOrderElementsOf(replacementCategoryIds);
 
-        Integer preferenceRowCount =
-                jdbcTemplate.queryForObject(
-                        """
+        Integer preferenceRowCount = jdbcTemplate.queryForObject(
+                """
                         SELECT count(*)
                         FROM trip_category_preferences
                         WHERE trip_id = ?
                         """,
-                        Integer.class,
-                        internalTripId
-                );
+                Integer.class,
+                internalTripId);
 
-        assertThat(preferenceRowCount)
-                .isEqualTo(1);
+        assertThat(preferenceRowCount).isEqualTo(1);
     }
 
     private Long persistUser(String email) {
-        UserAccount user = new UserAccount(
-                email,
-                "test-password-hash",
-                "Integration Test User"
-        );
+        UserAccount user = new UserAccount(email, "test-password-hash", "Integration Test User");
 
         entityManager.persist(user);
         entityManager.flush();
@@ -432,12 +271,7 @@ class TripRepositoryTest {
     }
 
     private Trip newTrip(
-            Long userId,
-            LocalDate tripDate,
-            LocalTime startTime,
-            String startLocationLabel,
-            Set<Long> categoryIds
-    ) {
+            Long userId, LocalDate tripDate, LocalTime startTime, String startLocationLabel, Set<Long> categoryIds) {
         return new Trip(
                 userId,
                 tripDate,
@@ -450,26 +284,14 @@ class TripRepositoryTest {
                 TravelPace.BALANCED,
                 EnvironmentPreference.MIXED,
                 categoryIds,
-                OffsetDateTime.parse(
-                        "2026-08-03T10:00:00+07:00"
-                )
-        );
+                OffsetDateTime.parse("2026-08-03T10:00:00+07:00"));
     }
 
-    private Set<Long> findCategoryIds(
-            Collection<String> slugs
-    ) {
-        var categories =
-                categoryRepository
-                        .findAllBySlugInOrderByNameAscIdAsc(
-                                slugs
-                        );
+    private Set<Long> findCategoryIds(Collection<String> slugs) {
+        var categories = categoryRepository.findAllBySlugInOrderByNameAscIdAsc(slugs);
 
-        assertThat(categories)
-                .hasSize(slugs.size());
+        assertThat(categories).hasSize(slugs.size());
 
-        return categories.stream()
-                .map(Category::getId)
-                .collect(Collectors.toSet());
+        return categories.stream().map(Category::getId).collect(Collectors.toSet());
     }
 }

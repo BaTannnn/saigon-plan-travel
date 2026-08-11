@@ -7,20 +7,17 @@ import com.saigonplantravel.backend.place.dto.PlaceSummaryResponse;
 import com.saigonplantravel.backend.place.entity.Category;
 import com.saigonplantravel.backend.place.entity.OpeningHour;
 import com.saigonplantravel.backend.place.entity.Place;
-import org.springframework.stereotype.Component;
-
 import java.util.Comparator;
 import java.util.List;
+import org.springframework.stereotype.Component;
 
 @Component
 public class PlaceMapper {
 
-    private static final Comparator<Category> CATEGORY_ORDER = Comparator
-            .comparing(Category::getName)
-            .thenComparing(Category::getId);
+    private static final Comparator<Category> CATEGORY_ORDER =
+            Comparator.comparing(Category::getName).thenComparing(Category::getId);
 
-    private static final Comparator<OpeningHour> OPENING_HOUR_ORDER = Comparator
-            .comparing(OpeningHour::getDayOfWeek);
+    private static final Comparator<OpeningHour> OPENING_HOUR_ORDER = Comparator.comparing(OpeningHour::getDayOfWeek);
 
     public PlaceSummaryResponse toSummaryResponse(Place place) {
         return new PlaceSummaryResponse(
@@ -33,8 +30,7 @@ public class PlaceMapper {
                 place.getEstimatedVisitMinutes(),
                 place.getMinCost(),
                 place.getMaxCost(),
-                place.getIndoor()
-        );
+                place.getIndoor());
     }
 
     public PlaceDetailResponse toDetailResponse(Place place) {
@@ -62,16 +58,11 @@ public class PlaceMapper {
                 place.getMaxCost(),
                 place.getIndoor(),
                 categories,
-                openingHours
-        );
+                openingHours);
     }
 
     public CategoryResponse toCategoryResponse(Category category) {
-        return new CategoryResponse(
-                category.getId(),
-                category.getName(),
-                category.getSlug()
-        );
+        return new CategoryResponse(category.getId(), category.getName(), category.getSlug());
     }
 
     private OpeningHourResponse toOpeningHourResponse(OpeningHour openingHour) {
@@ -79,7 +70,6 @@ public class PlaceMapper {
                 openingHour.getDayOfWeek(),
                 openingHour.getClosed(),
                 openingHour.getOpenTime(),
-                openingHour.getCloseTime()
-        );
+                openingHour.getCloseTime());
     }
 }

@@ -17,26 +17,22 @@ public class AuthController {
     public AuthController(AuthService authService) {
         this.authService = authService;
     }
+
     @PostMapping("/register")
-    public ResponseEntity<RegisterResponse> register(
-            @Valid @RequestBody RegisterRequest request
-            ){
+    public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest request) {
         RegisterResponse response = authService.register(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(
-            @Valid @RequestBody LoginRequest request
-    ){
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         LoginResponse response = authService.login(request);
         return ResponseEntity.ok(response);
     }
+
     @GetMapping("/me")
-    public ResponseEntity<CurrentUserResponse> getCurrentUser(
-            @AuthenticationPrincipal UserPrincipal principal
-    ) {
-        CurrentUserResponse response =
-                CurrentUserResponse.from(principal);
+    public ResponseEntity<CurrentUserResponse> getCurrentUser(@AuthenticationPrincipal UserPrincipal principal) {
+        CurrentUserResponse response = CurrentUserResponse.from(principal);
 
         return ResponseEntity.ok(response);
     }

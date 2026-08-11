@@ -1,5 +1,8 @@
 package com.saigonplantravel.backend.place.repository;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import com.saigonplantravel.backend.place.dto.PlaceDetailResponse;
 import com.saigonplantravel.backend.place.dto.PlacePageResponse;
 import com.saigonplantravel.backend.place.dto.PlaceSearchRequest;
@@ -7,6 +10,8 @@ import com.saigonplantravel.backend.place.entity.Category;
 import com.saigonplantravel.backend.place.entity.Place;
 import com.saigonplantravel.backend.place.service.PlaceService;
 import jakarta.persistence.EntityManagerFactory;
+import java.math.BigDecimal;
+import java.util.List;
 import org.hibernate.SessionFactory;
 import org.hibernate.stat.Statistics;
 import org.junit.jupiter.api.Test;
@@ -25,31 +30,20 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
-import java.math.BigDecimal;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 @Testcontainers
 @SpringBootTest
 class PlaceRepositoryTest {
 
     @Container
     static final PostgreSQLContainer postgres = new PostgreSQLContainer(
-            DockerImageName.parse("pgvector/pgvector:pg16")
-                    .asCompatibleSubstituteFor("postgres")
-    );
+            DockerImageName.parse("pgvector/pgvector:pg16").asCompatibleSubstituteFor("postgres"));
 
     @DynamicPropertySource
     static void databaseProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.datasource.url", postgres::getJdbcUrl);
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
-        registry.add(
-                "app.security.jwt.secret",
-                () -> "MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY="
-        );
+        registry.add("app.security.jwt.secret", () -> "MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=");
         registry.add("spring.jpa.properties.hibernate.generate_statistics", () -> "true");
     }
 
@@ -80,9 +74,7 @@ class PlaceRepositoryTest {
         assertThat(firstPage.getContent())
                 .extracting(Place::getName)
                 .containsExactly("Demo Art Space", "Demo City Garden");
-        assertThat(finalPage.getContent())
-                .extracting(Place::getName)
-                .containsExactly("Demo Science Center");
+        assertThat(finalPage.getContent()).extracting(Place::getName).containsExactly("Demo Science Center");
 
         List<String> returnedSlugs = placeRepository
                 .findAllByActiveTrue(PageRequest.of(0, 100, sort))
@@ -96,20 +88,62 @@ class PlaceRepositoryTest {
 
     @Test
     void rejectsInvalidPlaceDataWithCanonicalConstraints() {
-        assertInvalidPlace("invalid-latitude", new BigDecimal("91"), new BigDecimal("106"),
-                60, BigDecimal.ZERO, BigDecimal.ZERO, true);
-        assertInvalidPlace("invalid-longitude", new BigDecimal("10"), new BigDecimal("181"),
-                60, BigDecimal.ZERO, BigDecimal.ZERO, true);
-        assertInvalidPlace("invalid-duration", new BigDecimal("10"), new BigDecimal("106"),
-                0, BigDecimal.ZERO, BigDecimal.ZERO, true);
-        assertInvalidPlace("invalid-min-cost", new BigDecimal("10"), new BigDecimal("106"),
-                60, new BigDecimal("-1"), BigDecimal.ZERO, true);
-        assertInvalidPlace("invalid-max-cost", new BigDecimal("10"), new BigDecimal("106"),
-                60, new BigDecimal("100"), new BigDecimal("99"), true);
-        assertInvalidPlace("invalid-indoor", new BigDecimal("10"), new BigDecimal("106"),
-                60, BigDecimal.ZERO, BigDecimal.ZERO, null);
-        assertInvalidPlace("demo-art-space", new BigDecimal("10"), new BigDecimal("106"),
-                60, BigDecimal.ZERO, BigDecimal.ZERO, true);
+        assertInvalidPlace(
+                "invalid-latitude",
+                new BigDecimal("91"),
+                new BigDecimal("106"),
+                60,
+                BigDecimal.ZERO,
+                BigDecimal.ZERO,
+                true);
+        assertInvalidPlace(
+                "invalid-longitude",
+                new BigDecimal("10"),
+                new BigDecimal("181"),
+                60,
+                BigDecimal.ZERO,
+                BigDecimal.ZERO,
+                true);
+        assertInvalidPlace(
+                "invalid-duration",
+                new BigDecimal("10"),
+                new BigDecimal("106"),
+                0,
+                BigDecimal.ZERO,
+                BigDecimal.ZERO,
+                true);
+        assertInvalidPlace(
+                "invalid-min-cost",
+                new BigDecimal("10"),
+                new BigDecimal("106"),
+                60,
+                new BigDecimal("-1"),
+                BigDecimal.ZERO,
+                true);
+        assertInvalidPlace(
+                "invalid-max-cost",
+                new BigDecimal("10"),
+                new BigDecimal("106"),
+                60,
+                new BigDecimal("100"),
+                new BigDecimal("99"),
+                true);
+        assertInvalidPlace(
+                "invalid-indoor",
+                new BigDecimal("10"),
+                new BigDecimal("106"),
+                60,
+                BigDecimal.ZERO,
+                BigDecimal.ZERO,
+                null);
+        assertInvalidPlace(
+                "demo-art-space",
+                new BigDecimal("10"),
+                new BigDecimal("106"),
+                60,
+                BigDecimal.ZERO,
+                BigDecimal.ZERO,
+                true);
     }
 
     @Test
@@ -130,42 +164,50 @@ class PlaceRepositoryTest {
 
     @Test
     void rejectsInvalidCategoryAndOpeningHourStates() {
-        assertInvalidSql("""
+        assertInvalidSql(
+                """
                 INSERT INTO categories (name, slug)
                 VALUES ('Invalid uppercase', 'Invalid-Slug')
                 """);
-        assertInvalidSql("""
+        assertInvalidSql(
+                """
                 INSERT INTO categories (name, slug)
                 VALUES ('Invalid double hyphen', 'invalid--slug')
                 """);
-        assertInvalidSql("""
+        assertInvalidSql(
+                """
                 INSERT INTO opening_hours (place_id, day_of_week, open_time, close_time, closed)
                 SELECT id, 1, TIME '09:00', TIME '17:00', TRUE
                 FROM places WHERE slug = 'demo-temporarily-hidden-place'
                 """);
-        assertInvalidSql("""
+        assertInvalidSql(
+                """
                 INSERT INTO opening_hours (place_id, day_of_week, open_time, close_time, closed)
                 SELECT id, 2, TIME '09:00', NULL, FALSE
                 FROM places WHERE slug = 'demo-temporarily-hidden-place'
                 """);
-        assertInvalidSql("""
+        assertInvalidSql(
+                """
                 INSERT INTO opening_hours (place_id, day_of_week, open_time, close_time, closed)
                 SELECT id, 3, TIME '17:00', TIME '09:00', FALSE
                 FROM places WHERE slug = 'demo-temporarily-hidden-place'
                 """);
-        assertInvalidSql("""
+        assertInvalidSql(
+                """
                 INSERT INTO opening_hours (place_id, day_of_week, open_time, close_time, closed)
                 SELECT id, 8, TIME '09:00', TIME '17:00', FALSE
                 FROM places WHERE slug = 'demo-temporarily-hidden-place'
                 """);
-        assertInvalidSql("""
+        assertInvalidSql(
+                """
                 INSERT INTO place_categories (place_id, category_id)
                 SELECT place.id, category.id
                 FROM places place, categories category
                 WHERE place.slug = 'demo-art-space'
                   AND category.slug = 'nghe-thuat'
                 """);
-        assertInvalidSql("""
+        assertInvalidSql(
+                """
                 INSERT INTO opening_hours (place_id, day_of_week, open_time, close_time, closed)
                 SELECT id, 1, TIME '09:00', TIME '17:00', FALSE
                 FROM places WHERE slug = 'demo-art-space'
@@ -174,7 +216,8 @@ class PlaceRepositoryTest {
 
     @Test
     void loadsDetailInAtMostThreeQueriesWithoutInventingUnknownDays() {
-        Statistics statistics = entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
+        Statistics statistics =
+                entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
         statistics.clear();
 
         PlaceDetailResponse artSpace = placeService.getPlaceDetailBySlug("demo-art-space");
@@ -200,95 +243,36 @@ class PlaceRepositoryTest {
     @Test
     @Transactional
     void searchesKeywordAcrossSupportedTextFieldsWithoutCaseOrVietnameseDiacritics() {
+        insertSearchPlace("search-name", "Bảo tàng Name", null, null, "Địa chỉ demo", true);
         insertSearchPlace(
-                "search-name",
-                "Bảo tàng Name",
-                null,
-                null,
-                "Địa chỉ demo",
-                true
-        );
-        insertSearchPlace(
-                "search-short-description",
-                "Search Short",
-                "Không gian Bảo tàng",
-                null,
-                "Địa chỉ demo",
-                true
-        );
-        insertSearchPlace(
-                "search-full-description",
-                "Search Full",
-                null,
-                "Nội dung Bảo tàng",
-                "Địa chỉ demo",
-                true
-        );
-        insertSearchPlace(
-                "search-address",
-                "Search Address",
-                null,
-                null,
-                "Đường Bảo tàng",
-                true
-        );
+                "search-short-description", "Search Short", "Không gian Bảo tàng", null, "Địa chỉ demo", true);
+        insertSearchPlace("search-full-description", "Search Full", null, "Nội dung Bảo tàng", "Địa chỉ demo", true);
+        insertSearchPlace("search-address", "Search Address", null, null, "Đường Bảo tàng", true);
 
-        PlacePageResponse response = placeService.searchPlaces(searchRequest(
-                "BAO TANG",
-                null,
-                null,
-                null,
-                0,
-                100
-        ));
+        PlacePageResponse response = placeService.searchPlaces(searchRequest("BAO TANG", null, null, null, 0, 100));
 
         assertThat(response.content())
                 .extracting(item -> item.slug())
                 .containsExactlyInAnyOrder(
-                "search-name",
-                "search-short-description",
-                "search-full-description",
-                "search-address"
-                );
+                        "search-name", "search-short-description", "search-full-description", "search-address");
     }
 
     @Test
     @Transactional
     void treatsLikeWildcardsAsLiteralCharacters() {
-        insertSearchPlace(
-                "literal-wildcards",
-                "Demo 50%_path\\name",
-                null,
-                null,
-                "Địa chỉ demo",
-                true
-        );
+        insertSearchPlace("literal-wildcards", "Demo 50%_path\\name", null, null, "Địa chỉ demo", true);
 
-        PlacePageResponse response = placeService.searchPlaces(searchRequest(
-                "50%_path\\name",
-                null,
-                null,
-                null,
-                0,
-                100
-        ));
+        PlacePageResponse response =
+                placeService.searchPlaces(searchRequest("50%_path\\name", null, null, null, 0, 100));
 
-        assertThat(response.content())
-                .extracting(item -> item.slug())
-                .containsExactly("literal-wildcards");
+        assertThat(response.content()).extracting(item -> item.slug()).containsExactly("literal-wildcards");
     }
 
     @Test
     @Transactional
     void combinesAllFiltersAndExcludesInactivePlaces() {
-        PlacePageResponse response = placeService.searchPlaces(searchRequest(
-                "demo",
-                "van-hoa",
-                true,
-                new BigDecimal("100000"),
-                0,
-                100
-        ));
+        PlacePageResponse response =
+                placeService.searchPlaces(searchRequest("demo", "van-hoa", true, new BigDecimal("100000"), 0, 100));
 
         assertThat(response.content())
                 .extracting(item -> item.slug())
@@ -300,36 +284,31 @@ class PlaceRepositoryTest {
     @Test
     @Transactional
     void appliesCategoryIndoorAndBudgetSemanticsIndividually() {
-        assertThat(placeService.searchPlaces(searchRequest(
-                null, "khong-ton-tai", null, null, 0, 100
-        )).content()).isEmpty();
+        assertThat(placeService
+                        .searchPlaces(searchRequest(null, "khong-ton-tai", null, null, 0, 100))
+                        .content())
+                .isEmpty();
 
-        assertThat(placeService.searchPlaces(searchRequest(
-                null, null, false, null, 0, 100
-        )).content())
+        assertThat(placeService
+                        .searchPlaces(searchRequest(null, null, false, null, 0, 100))
+                        .content())
                 .extracting(item -> item.slug())
                 .containsExactly("demo-city-garden", "demo-riverside-walk");
 
-        assertThat(placeService.searchPlaces(searchRequest(
-                null, null, null, BigDecimal.ZERO, 0, 100
-        )).content())
+        assertThat(placeService
+                        .searchPlaces(searchRequest(null, null, null, BigDecimal.ZERO, 0, 100))
+                        .content())
                 .extracting(item -> item.slug())
                 .containsExactly("demo-city-garden", "demo-riverside-walk");
     }
 
     @Test
     void usesAtMostContentAndCountQueriesForCategoryPagination() {
-        Statistics statistics = entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
+        Statistics statistics =
+                entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
         statistics.clear();
 
-        PlacePageResponse response = placeService.searchPlaces(searchRequest(
-                null,
-                "van-hoa",
-                null,
-                null,
-                0,
-                1
-        ));
+        PlacePageResponse response = placeService.searchPlaces(searchRequest(null, "van-hoa", null, null, 0, 1));
 
         assertThat(response.content()).hasSize(1);
         assertThat(response.totalElements()).isEqualTo(2);
@@ -346,17 +325,13 @@ class PlaceRepositoryTest {
                     "Fixture search target",
                     null,
                     "Test address " + index,
-                    true
-            );
+                    true);
         }
 
-        PlaceSearchRequest firstPageRequest = searchRequest(
-                "fixture search target", null, null, null, 0, 10
-        );
-        PlaceSearchRequest secondPageRequest = searchRequest(
-                "fixture search target", null, null, null, 1, 10
-        );
-        Statistics statistics = entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
+        PlaceSearchRequest firstPageRequest = searchRequest("fixture search target", null, null, null, 0, 10);
+        PlaceSearchRequest secondPageRequest = searchRequest("fixture search target", null, null, null, 1, 10);
+        Statistics statistics =
+                entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
 
         statistics.clear();
         long firstPageStartedAt = System.nanoTime();
@@ -378,14 +353,12 @@ class PlaceRepositoryTest {
                 .extracting(item -> item.id())
                 .isSorted()
                 .doesNotContainAnyElementsOf(
-                        secondPage.content().stream().map(item -> item.id()).toList()
-                );
-        assertThat(secondPage.content())
-                .extracting(item -> item.id())
-                .isSorted();
+                        secondPage.content().stream().map(item -> item.id()).toList());
+        assertThat(secondPage.content()).extracting(item -> item.id()).isSorted();
         assertThat(firstPageElapsedNanos).isLessThan(500_000_000L);
         assertThat(secondPageElapsedNanos).isLessThan(500_000_000L);
     }
+
     private void assertInvalidPlace(
             String slug,
             BigDecimal latitude,
@@ -393,41 +366,33 @@ class PlaceRepositoryTest {
             int visitMinutes,
             BigDecimal minCost,
             BigDecimal maxCost,
-            Boolean indoor
-    ) {
+            Boolean indoor) {
         assertThatThrownBy(() -> jdbcTemplate.update(
-                """
+                        """
                         INSERT INTO places (
                             name, slug, address,
                             latitude, longitude,
                             estimated_visit_minutes, min_cost, max_cost, indoor, active
                         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, TRUE)
                         """,
-                "Constraint Test Place",
-                slug,
-                "Demo test address",
-                latitude,
-                longitude,
-                visitMinutes,
-                minCost,
-                maxCost,
-                indoor
-        )).isInstanceOf(DataAccessException.class);
-    }
-
-    private void assertInvalidSql(String sql) {
-        assertThatThrownBy(() -> jdbcTemplate.update(sql))
+                        "Constraint Test Place",
+                        slug,
+                        "Demo test address",
+                        latitude,
+                        longitude,
+                        visitMinutes,
+                        minCost,
+                        maxCost,
+                        indoor))
                 .isInstanceOf(DataAccessException.class);
     }
 
+    private void assertInvalidSql(String sql) {
+        assertThatThrownBy(() -> jdbcTemplate.update(sql)).isInstanceOf(DataAccessException.class);
+    }
+
     private void insertSearchPlace(
-            String slug,
-            String name,
-            String shortDescription,
-            String fullDescription,
-            String address,
-            boolean active
-    ) {
+            String slug, String name, String shortDescription, String fullDescription, String address, boolean active) {
         jdbcTemplate.update(
                 """
                         INSERT INTO places (
@@ -441,25 +406,11 @@ class PlaceRepositoryTest {
                 shortDescription,
                 fullDescription,
                 address,
-                active
-        );
+                active);
     }
 
     private PlaceSearchRequest searchRequest(
-            String keyword,
-            String category,
-            Boolean indoor,
-            BigDecimal maxCost,
-            Integer page,
-            Integer size
-    ) {
-        return new PlaceSearchRequest(
-                keyword,
-                category,
-                indoor,
-                maxCost,
-                page,
-                size
-        );
+            String keyword, String category, Boolean indoor, BigDecimal maxCost, Integer page, Integer size) {
+        return new PlaceSearchRequest(keyword, category, indoor, maxCost, page, size);
     }
 }

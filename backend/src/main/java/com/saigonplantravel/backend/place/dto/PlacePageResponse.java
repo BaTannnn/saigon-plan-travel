@@ -9,6 +9,4 @@ public record PlacePageResponse(
         long totalElements,
         int totalPages,
         boolean first,
-        boolean last
-) {
-}
+        boolean last) {}

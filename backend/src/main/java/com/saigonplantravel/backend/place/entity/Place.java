@@ -1,5 +1,7 @@
 package com.saigonplantravel.backend.place.entity;
 
+import static jakarta.persistence.FetchType.LAZY;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -10,18 +12,15 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import static jakarta.persistence.FetchType.LAZY;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "places")
@@ -79,8 +78,7 @@ public class Place {
     @JoinTable(
             name = "place_categories",
             joinColumns = @JoinColumn(name = "place_id"),
-            inverseJoinColumns = @JoinColumn(name = "category_id")
-    )
+            inverseJoinColumns = @JoinColumn(name = "category_id"))
     private Set<Category> categories = new HashSet<>();
 
     @OneToMany(mappedBy = "place", fetch = LAZY)
@@ -95,8 +93,7 @@ public class Place {
             Integer estimatedVisitMinutes,
             BigDecimal minCost,
             BigDecimal maxCost,
-            Boolean indoor
-    ) {
+            Boolean indoor) {
         this.name = name;
         this.slug = slug;
         this.address = address;
@@ -117,11 +114,7 @@ public class Place {
         this.active = true;
     }
 
-    public void updateBasicInformation(
-            String name,
-            String shortDescription,
-            String address
-    ) {
+    public void updateBasicInformation(String name, String shortDescription, String address) {
         this.name = name;
         this.shortDescription = shortDescription;
         this.address = address;

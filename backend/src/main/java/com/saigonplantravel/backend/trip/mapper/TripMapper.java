@@ -5,23 +5,15 @@ import com.saigonplantravel.backend.trip.dto.StartLocationResponse;
 import com.saigonplantravel.backend.trip.dto.TripResponse;
 import com.saigonplantravel.backend.trip.dto.TripSummaryResponse;
 import com.saigonplantravel.backend.trip.entity.Trip;
-import org.springframework.stereotype.Component;
-
 import java.util.List;
+import org.springframework.stereotype.Component;
 
 @Component
 public class TripMapper {
 
-    public TripResponse toResponse(
-            Trip trip,
-            List<CategoryResponse> categoryPreferences
-    ) {
-        StartLocationResponse startLocation =
-                new StartLocationResponse(
-                        trip.getStartLocationLabel(),
-                        trip.getStartLatitude(),
-                        trip.getStartLongitude()
-                );
+    public TripResponse toResponse(Trip trip, List<CategoryResponse> categoryPreferences) {
+        StartLocationResponse startLocation = new StartLocationResponse(
+                trip.getStartLocationLabel(), trip.getStartLatitude(), trip.getStartLongitude());
 
         return new TripResponse(
                 trip.getPublicId(),
@@ -34,14 +26,10 @@ public class TripMapper {
                 trip.getEnvironmentPreference(),
                 categoryPreferences,
                 trip.getCreatedAt(),
-                trip.getUpdatedAt()
-        );
+                trip.getUpdatedAt());
     }
 
-    public TripSummaryResponse toSummaryResponse(
-            Trip trip,
-            List<CategoryResponse> categoryPreferences
-    ) {
+    public TripSummaryResponse toSummaryResponse(Trip trip, List<CategoryResponse> categoryPreferences) {
         return new TripSummaryResponse(
                 trip.getPublicId(),
                 trip.getTripDate(),
@@ -52,7 +40,6 @@ public class TripMapper {
                 trip.getTravelPace(),
                 trip.getEnvironmentPreference(),
                 categoryPreferences,
-                trip.getUpdatedAt()
-        );
+                trip.getUpdatedAt());
     }
 }

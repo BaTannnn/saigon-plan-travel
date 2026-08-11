@@ -1,5 +1,9 @@
 package com.saigonplantravel.backend.place.mapper;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.saigonplantravel.backend.place.dto.CategoryResponse;
 import com.saigonplantravel.backend.place.dto.OpeningHourResponse;
 import com.saigonplantravel.backend.place.dto.PlaceDetailResponse;
@@ -7,16 +11,11 @@ import com.saigonplantravel.backend.place.dto.PlaceSummaryResponse;
 import com.saigonplantravel.backend.place.entity.Category;
 import com.saigonplantravel.backend.place.entity.OpeningHour;
 import com.saigonplantravel.backend.place.entity.Place;
-import org.junit.jupiter.api.Test;
-
 import java.math.BigDecimal;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Set;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import org.junit.jupiter.api.Test;
 
 class PlaceMapperTest {
 
@@ -36,18 +35,18 @@ class PlaceMapperTest {
 
         PlaceSummaryResponse response = new PlaceMapper().toSummaryResponse(place);
 
-        assertThat(response).isEqualTo(new PlaceSummaryResponse(
-                1L,
-                "Demo Place",
-                "demo-place",
-                null,
-                new BigDecimal("10.0000000"),
-                new BigDecimal("106.0000000"),
-                60,
-                BigDecimal.ZERO,
-                new BigDecimal("100000.00"),
-                true
-        ));
+        assertThat(response)
+                .isEqualTo(new PlaceSummaryResponse(
+                        1L,
+                        "Demo Place",
+                        "demo-place",
+                        null,
+                        new BigDecimal("10.0000000"),
+                        new BigDecimal("106.0000000"),
+                        60,
+                        BigDecimal.ZERO,
+                        new BigDecimal("100000.00"),
+                        true));
     }
 
     @Test
@@ -56,12 +55,7 @@ class PlaceMapperTest {
         Category culture = category(2L, "Văn hóa", "van-hoa");
         Category art = category(1L, "Nghệ thuật", "nghe-thuat");
         OpeningHour tuesdayClosed = openingHour((short) 2, true, null, null);
-        OpeningHour mondayOpen = openingHour(
-                (short) 1,
-                false,
-                LocalTime.of(9, 0),
-                LocalTime.of(17, 0)
-        );
+        OpeningHour mondayOpen = openingHour((short) 1, false, LocalTime.of(9, 0), LocalTime.of(17, 0));
 
         when(place.getId()).thenReturn(1L);
         when(place.getName()).thenReturn("Demo Art Space");
@@ -80,19 +74,14 @@ class PlaceMapperTest {
 
         PlaceDetailResponse response = new PlaceMapper().toDetailResponse(place);
 
-        assertThat(response.categories()).containsExactly(
-                new CategoryResponse(1L, "Nghệ thuật", "nghe-thuat"),
-                new CategoryResponse(2L, "Văn hóa", "van-hoa")
-        );
-        assertThat(response.openingHours()).containsExactly(
-                new OpeningHourResponse(
-                        (short) 1,
-                        false,
-                        LocalTime.of(9, 0),
-                        LocalTime.of(17, 0)
-                ),
-                new OpeningHourResponse((short) 2, true, null, null)
-        );
+        assertThat(response.categories())
+                .containsExactly(
+                        new CategoryResponse(1L, "Nghệ thuật", "nghe-thuat"),
+                        new CategoryResponse(2L, "Văn hóa", "van-hoa"));
+        assertThat(response.openingHours())
+                .containsExactly(
+                        new OpeningHourResponse((short) 1, false, LocalTime.of(9, 0), LocalTime.of(17, 0)),
+                        new OpeningHourResponse((short) 2, true, null, null));
         assertThat(response.shortDescription()).isNull();
         assertThat(response.fullDescription()).isNull();
         assertThat(response.address()).isEqualTo("Địa chỉ demo 1");
@@ -106,12 +95,7 @@ class PlaceMapperTest {
         return category;
     }
 
-    private OpeningHour openingHour(
-            short dayOfWeek,
-            boolean closed,
-            LocalTime openTime,
-            LocalTime closeTime
-    ) {
+    private OpeningHour openingHour(short dayOfWeek, boolean closed, LocalTime openTime, LocalTime closeTime) {
         OpeningHour openingHour = mock(OpeningHour.class);
         when(openingHour.getDayOfWeek()).thenReturn(dayOfWeek);
         when(openingHour.getClosed()).thenReturn(closed);

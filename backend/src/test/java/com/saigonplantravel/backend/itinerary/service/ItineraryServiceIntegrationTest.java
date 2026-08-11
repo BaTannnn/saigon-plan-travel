@@ -1,5 +1,8 @@
 package com.saigonplantravel.backend.itinerary.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import com.saigonplantravel.backend.itinerary.dto.ItineraryResponse;
 import com.saigonplantravel.backend.itinerary.exception.DuplicateItineraryPlaceException;
 import com.saigonplantravel.backend.itinerary.exception.InactiveItineraryPlaceException;
@@ -10,6 +13,7 @@ import com.saigonplantravel.backend.testsupport.database.DatabaseTestFixtures.Pl
 import com.saigonplantravel.backend.testsupport.database.DatabaseTestFixtures.TripFixture;
 import com.saigonplantravel.backend.trip.exception.TripNotFoundException;
 import jakarta.persistence.EntityManager;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,49 +27,23 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 @Testcontainers
 @SpringBootTest
 @Transactional
 class ItineraryServiceIntegrationTest {
 
     @Container
-    static final PostgreSQLContainer postgres =
-            new PostgreSQLContainer(
-                    DockerImageName
-                            .parse("pgvector/pgvector:pg16")
-                            .asCompatibleSubstituteFor("postgres")
-            );
+    static final PostgreSQLContainer postgres = new PostgreSQLContainer(
+            DockerImageName.parse("pgvector/pgvector:pg16").asCompatibleSubstituteFor("postgres"));
 
     @DynamicPropertySource
-    static void databaseProperties(
-            DynamicPropertyRegistry registry
-    ) {
+    static void databaseProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.datasource.url", postgres::getJdbcUrl);
-        registry.add(
-                "spring.datasource.username",
-                postgres::getUsername
-        );
-        registry.add(
-                "spring.datasource.password",
-                postgres::getPassword
-        );
-        registry.add(
-                "spring.jpa.hibernate.ddl-auto",
-                () -> "validate"
-        );
-        registry.add(
-                "spring.jpa.open-in-view",
-                () -> "false"
-        );
-        registry.add(
-                "app.security.jwt.secret",
-                () -> "MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY="
-        );
+        registry.add("spring.datasource.username", postgres::getUsername);
+        registry.add("spring.datasource.password", postgres::getPassword);
+        registry.add("spring.jpa.hibernate.ddl-auto", () -> "validate");
+        registry.add("spring.jpa.open-in-view", () -> "false");
+        registry.add("app.security.jwt.secret", () -> "MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=");
     }
 
     @Autowired
@@ -89,17 +67,12 @@ class ItineraryServiceIntegrationTest {
         Long userId = fixtures.insertUser("empty-itinerary-owner");
         TripFixture trip = fixtures.insertValidTrip(userId);
 
-        ItineraryResponse response = itineraryService.getItinerary(
-                userId,
-                trip.tripPublicId()
-        );
+        ItineraryResponse response = itineraryService.getItinerary(userId, trip.tripPublicId());
 
         assertThat(response.publicId()).isNull();
-        assertThat(response.tripPublicId())
-                .isEqualTo(trip.tripPublicId());
+        assertThat(response.tripPublicId()).isEqualTo(trip.tripPublicId());
         assertThat(response.items()).isEmpty();
-        assertThat(countRows("itineraries", "trip_id", trip.tripId()))
-                .isZero();
+        assertThat(countRows("itineraries", "trip_id", trip.tripId())).isZero();
     }
 
     @Test
@@ -108,106 +81,53 @@ class ItineraryServiceIntegrationTest {
         Long anotherUserId = fixtures.insertUser("itinerary-stranger");
         TripFixture trip = fixtures.insertValidTrip(ownerId);
 
-        assertThatThrownBy(() -> itineraryService.getItinerary(
-                anotherUserId,
-                trip.tripPublicId()
-        )).isInstanceOf(TripNotFoundException.class);
+        assertThatThrownBy(() -> itineraryService.getItinerary(anotherUserId, trip.tripPublicId()))
+                .isInstanceOf(TripNotFoundException.class);
     }
 
     @Test
     void firstAddCreatesItineraryAndLaterAddsAppendInOrder() {
         Long userId = fixtures.insertUser("append-owner");
         TripFixture trip = fixtures.insertValidTrip(userId);
-        PlaceFixture first = fixtures.insertValidPlace(
-                "First place",
-                "first-place",
-                false
-        );
-        PlaceFixture second = fixtures.insertValidPlace(
-                "Second place",
-                "second-place",
-                true
-        );
+        PlaceFixture first = fixtures.insertValidPlace("First place", "first-place", false);
+        PlaceFixture second = fixtures.insertValidPlace("Second place", "second-place", true);
 
-        ItineraryResponse firstResponse = itineraryService.addItem(
-                userId,
-                trip.tripPublicId(),
-                first.placeId()
-        );
+        ItineraryResponse firstResponse = itineraryService.addItem(userId, trip.tripPublicId(), first.placeId());
         UUID itineraryPublicId = firstResponse.publicId();
-        ItineraryResponse secondResponse = itineraryService.addItem(
-                userId,
-                trip.tripPublicId(),
-                second.placeId()
-        );
-        ItineraryResponse loadedResponse = itineraryService.getItinerary(
-                userId,
-                trip.tripPublicId()
-        );
+        ItineraryResponse secondResponse = itineraryService.addItem(userId, trip.tripPublicId(), second.placeId());
+        ItineraryResponse loadedResponse = itineraryService.getItinerary(userId, trip.tripPublicId());
 
-        assertThat(secondResponse.publicId())
-                .isEqualTo(itineraryPublicId);
-        assertThat(secondResponse.items())
-                .extracting(item -> item.sequenceNo())
-                .containsExactly(1, 2);
+        assertThat(secondResponse.publicId()).isEqualTo(itineraryPublicId);
+        assertThat(secondResponse.items()).extracting(item -> item.sequenceNo()).containsExactly(1, 2);
         assertThat(secondResponse.items())
                 .extracting(item -> item.place().id())
                 .containsExactly(first.placeId(), second.placeId());
-        assertThat(loadedResponse.publicId())
-                .isEqualTo(itineraryPublicId);
+        assertThat(loadedResponse.publicId()).isEqualTo(itineraryPublicId);
         assertThat(loadedResponse.items())
                 .extracting(item -> item.place().id())
                 .containsExactly(first.placeId(), second.placeId());
-        assertThat(countRows("itineraries", "trip_id", trip.tripId()))
-                .isEqualTo(1);
-        assertThat(countRows(
-                "itinerary_items",
-                "itinerary_id",
-                itineraryId(trip.tripId())
-        )).isEqualTo(2);
+        assertThat(countRows("itineraries", "trip_id", trip.tripId())).isEqualTo(1);
+        assertThat(countRows("itinerary_items", "itinerary_id", itineraryId(trip.tripId())))
+                .isEqualTo(2);
     }
 
     @Test
     void rejectsMissingInactiveAndDuplicatePlaces() {
         Long userId = fixtures.insertUser("validation-owner");
         TripFixture trip = fixtures.insertValidTrip(userId);
-        PlaceFixture active = fixtures.insertValidPlace(
-                "Active place",
-                "active-place",
-                false
-        );
-        PlaceFixture inactive = fixtures.insertValidPlace(
-                "Inactive place",
-                "inactive-place",
-                true
-        );
-        jdbcTemplate.update(
-                "UPDATE places SET active = FALSE WHERE id = ?",
-                inactive.placeId()
-        );
+        PlaceFixture active = fixtures.insertValidPlace("Active place", "active-place", false);
+        PlaceFixture inactive = fixtures.insertValidPlace("Inactive place", "inactive-place", true);
+        jdbcTemplate.update("UPDATE places SET active = FALSE WHERE id = ?", inactive.placeId());
 
-        assertThatThrownBy(() -> itineraryService.addItem(
-                userId,
-                trip.tripPublicId(),
-                Long.MAX_VALUE
-        )).isInstanceOf(PlaceNotFoundException.class);
-        assertThatThrownBy(() -> itineraryService.addItem(
-                userId,
-                trip.tripPublicId(),
-                inactive.placeId()
-        )).isInstanceOf(InactiveItineraryPlaceException.class);
+        assertThatThrownBy(() -> itineraryService.addItem(userId, trip.tripPublicId(), Long.MAX_VALUE))
+                .isInstanceOf(PlaceNotFoundException.class);
+        assertThatThrownBy(() -> itineraryService.addItem(userId, trip.tripPublicId(), inactive.placeId()))
+                .isInstanceOf(InactiveItineraryPlaceException.class);
 
-        itineraryService.addItem(
-                userId,
-                trip.tripPublicId(),
-                active.placeId()
-        );
+        itineraryService.addItem(userId, trip.tripPublicId(), active.placeId());
 
-        assertThatThrownBy(() -> itineraryService.addItem(
-                userId,
-                trip.tripPublicId(),
-                active.placeId()
-        )).isInstanceOf(DuplicateItineraryPlaceException.class);
+        assertThatThrownBy(() -> itineraryService.addItem(userId, trip.tripPublicId(), active.placeId()))
+                .isInstanceOf(DuplicateItineraryPlaceException.class);
     }
 
     @Test
@@ -219,29 +139,18 @@ class ItineraryServiceIntegrationTest {
         PlaceFixture third = place("Delete third", "delete-third");
 
         itineraryService.addItem(userId, trip.tripPublicId(), first.placeId());
-        ItineraryResponse beforeDelete = itineraryService.addItem(
-                userId,
-                trip.tripPublicId(),
-                second.placeId()
-        );
+        ItineraryResponse beforeDelete = itineraryService.addItem(userId, trip.tripPublicId(), second.placeId());
         UUID removedItemPublicId = beforeDelete.items().get(1).publicId();
         itineraryService.addItem(userId, trip.tripPublicId(), third.placeId());
 
-        ItineraryResponse response = itineraryService.deleteItem(
-                userId,
-                trip.tripPublicId(),
-                removedItemPublicId
-        );
+        ItineraryResponse response = itineraryService.deleteItem(userId, trip.tripPublicId(), removedItemPublicId);
 
-        assertThat(response.items())
-                .extracting(item -> item.sequenceNo())
-                .containsExactly(1, 2);
+        assertThat(response.items()).extracting(item -> item.sequenceNo()).containsExactly(1, 2);
         assertThat(response.items())
                 .extracting(item -> item.place().id())
                 .containsExactly(first.placeId(), third.placeId());
         entityManager.flush();
-        assertThat(databaseSequences(trip.tripId()))
-                .containsExactly(1, 2);
+        assertThat(databaseSequences(trip.tripId())).containsExactly(1, 2);
     }
 
     @Test
@@ -249,27 +158,16 @@ class ItineraryServiceIntegrationTest {
         Long userId = fixtures.insertUser("final-delete-owner");
         TripFixture trip = fixtures.insertValidTrip(userId);
         PlaceFixture place = place("Only place", "only-place");
-        ItineraryResponse created = itineraryService.addItem(
-                userId,
-                trip.tripPublicId(),
-                place.placeId()
-        );
+        ItineraryResponse created = itineraryService.addItem(userId, trip.tripPublicId(), place.placeId());
 
         ItineraryResponse emptied = itineraryService.deleteItem(
-                userId,
-                trip.tripPublicId(),
-                created.items().getFirst().publicId()
-        );
+                userId, trip.tripPublicId(), created.items().getFirst().publicId());
 
         assertThat(emptied.publicId()).isEqualTo(created.publicId());
         assertThat(emptied.items()).isEmpty();
-        assertThat(countRows("itineraries", "trip_id", trip.tripId()))
-                .isEqualTo(1);
-        assertThat(countRows(
-                "itinerary_items",
-                "itinerary_id",
-                itineraryId(trip.tripId())
-        )).isZero();
+        assertThat(countRows("itineraries", "trip_id", trip.tripId())).isEqualTo(1);
+        assertThat(countRows("itinerary_items", "itinerary_id", itineraryId(trip.tripId())))
+                .isZero();
     }
 
     @Test
@@ -278,31 +176,18 @@ class ItineraryServiceIntegrationTest {
         TripFixture trip = fixtures.insertValidTrip(userId);
         PlaceFixture first = place("Replace first", "replace-first");
         PlaceFixture oldPlace = place("Replace old", "replace-old");
-        PlaceFixture replacement = place(
-                "Replace new",
-                "replace-new"
-        );
+        PlaceFixture replacement = place("Replace new", "replace-new");
 
         itineraryService.addItem(userId, trip.tripPublicId(), first.placeId());
-        ItineraryResponse before = itineraryService.addItem(
-                userId,
-                trip.tripPublicId(),
-                oldPlace.placeId()
-        );
+        ItineraryResponse before = itineraryService.addItem(userId, trip.tripPublicId(), oldPlace.placeId());
         UUID itemPublicId = before.items().get(1).publicId();
 
-        ItineraryResponse after = itineraryService.replaceItemPlace(
-                userId,
-                trip.tripPublicId(),
-                itemPublicId,
-                replacement.placeId()
-        );
+        ItineraryResponse after =
+                itineraryService.replaceItemPlace(userId, trip.tripPublicId(), itemPublicId, replacement.placeId());
 
-        assertThat(after.items().get(1).publicId())
-                .isEqualTo(itemPublicId);
+        assertThat(after.items().get(1).publicId()).isEqualTo(itemPublicId);
         assertThat(after.items().get(1).sequenceNo()).isEqualTo(2);
-        assertThat(after.items().get(1).place().id())
-                .isEqualTo(replacement.placeId());
+        assertThat(after.items().get(1).place().id()).isEqualTo(replacement.placeId());
     }
 
     @Test
@@ -312,41 +197,28 @@ class ItineraryServiceIntegrationTest {
         TripFixture firstTrip = fixtures.insertValidTrip(firstUserId);
         TripFixture secondTrip = fixtures.insertValidTrip(secondUserId);
         PlaceFixture firstPlace = place("Scope first", "scope-first");
-        PlaceFixture duplicatePlace = place(
-                "Scope duplicate",
-                "scope-duplicate"
-        );
+        PlaceFixture duplicatePlace = place("Scope duplicate", "scope-duplicate");
         PlaceFixture foreignPlace = place("Scope foreign", "scope-foreign");
 
-        ItineraryResponse firstResponse = itineraryService.addItem(
-                firstUserId,
-                firstTrip.tripPublicId(),
-                firstPlace.placeId()
-        );
-        itineraryService.addItem(
-                firstUserId,
-                firstTrip.tripPublicId(),
-                duplicatePlace.placeId()
-        );
-        ItineraryResponse foreignResponse = itineraryService.addItem(
-                secondUserId,
-                secondTrip.tripPublicId(),
-                foreignPlace.placeId()
-        );
+        ItineraryResponse firstResponse =
+                itineraryService.addItem(firstUserId, firstTrip.tripPublicId(), firstPlace.placeId());
+        itineraryService.addItem(firstUserId, firstTrip.tripPublicId(), duplicatePlace.placeId());
+        ItineraryResponse foreignResponse =
+                itineraryService.addItem(secondUserId, secondTrip.tripPublicId(), foreignPlace.placeId());
 
         assertThatThrownBy(() -> itineraryService.replaceItemPlace(
-                firstUserId,
-                firstTrip.tripPublicId(),
-                firstResponse.items().getFirst().publicId(),
-                duplicatePlace.placeId()
-        )).isInstanceOf(DuplicateItineraryPlaceException.class);
+                        firstUserId,
+                        firstTrip.tripPublicId(),
+                        firstResponse.items().getFirst().publicId(),
+                        duplicatePlace.placeId()))
+                .isInstanceOf(DuplicateItineraryPlaceException.class);
 
         assertThatThrownBy(() -> itineraryService.replaceItemPlace(
-                firstUserId,
-                firstTrip.tripPublicId(),
-                foreignResponse.items().getFirst().publicId(),
-                firstPlace.placeId()
-        )).isInstanceOf(ItineraryItemNotFoundException.class);
+                        firstUserId,
+                        firstTrip.tripPublicId(),
+                        foreignResponse.items().getFirst().publicId(),
+                        firstPlace.placeId()))
+                .isInstanceOf(ItineraryItemNotFoundException.class);
     }
 
     private PlaceFixture place(String name, String slug) {
@@ -354,24 +226,12 @@ class ItineraryServiceIntegrationTest {
     }
 
     private Long itineraryId(Long tripId) {
-        return jdbcTemplate.queryForObject(
-                "SELECT id FROM itineraries WHERE trip_id = ?",
-                Long.class,
-                tripId
-        );
+        return jdbcTemplate.queryForObject("SELECT id FROM itineraries WHERE trip_id = ?", Long.class, tripId);
     }
 
-    private Integer countRows(
-            String table,
-            String foreignKey,
-            Long foreignKeyValue
-    ) {
+    private Integer countRows(String table, String foreignKey, Long foreignKeyValue) {
         return jdbcTemplate.queryForObject(
-                "SELECT count(*) FROM " + table + " WHERE "
-                        + foreignKey + " = ?",
-                Integer.class,
-                foreignKeyValue
-        );
+                "SELECT count(*) FROM " + table + " WHERE " + foreignKey + " = ?", Integer.class, foreignKeyValue);
     }
 
     private java.util.List<Integer> databaseSequences(Long tripId) {
@@ -384,7 +244,6 @@ class ItineraryServiceIntegrationTest {
                 ORDER BY ii.sequence_no
                 """,
                 Integer.class,
-                tripId
-        );
+                tripId);
     }
 }

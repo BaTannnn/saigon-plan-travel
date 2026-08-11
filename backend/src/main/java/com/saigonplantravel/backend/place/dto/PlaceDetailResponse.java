@@ -17,6 +17,4 @@ public record PlaceDetailResponse(
         BigDecimal maxCost,
         boolean indoor,
         List<CategoryResponse> categories,
-        List<OpeningHourResponse> openingHours
-) {
-}
+        List<OpeningHourResponse> openingHours) {}

@@ -12,6 +12,4 @@ public record PlaceSummaryResponse(
         Integer estimatedVisitMinutes,
         BigDecimal minCost,
         BigDecimal maxCost,
-        Boolean indoor
-) {
-}
+        Boolean indoor) {}

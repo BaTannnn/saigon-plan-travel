@@ -8,17 +8,17 @@ import com.saigonplantravel.backend.trip.dto.TripResponse;
 import com.saigonplantravel.backend.trip.dto.TripSummaryResponse;
 import com.saigonplantravel.backend.trip.entity.Trip;
 import com.saigonplantravel.backend.trip.exception.InvalidCategoryPreferenceException;
+import com.saigonplantravel.backend.trip.exception.TripNotFoundException;
 import com.saigonplantravel.backend.trip.mapper.TripMapper;
 import com.saigonplantravel.backend.trip.repository.TripRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import com.saigonplantravel.backend.trip.exception.TripNotFoundException;
-import java.util.UUID;
 import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class TripService {
@@ -34,8 +34,7 @@ public class TripService {
             CategoryService categoryService,
             TripPolicy tripPolicy,
             TripMapper tripMapper,
-            Clock clock
-    ) {
+            Clock clock) {
         this.tripRepository = tripRepository;
         this.categoryService = categoryService;
         this.tripPolicy = tripPolicy;
@@ -44,23 +43,12 @@ public class TripService {
     }
 
     @Transactional
-    public TripResponse createTrip(
-            Long userId,
-            SaveTripRequest request
-    ) {
-        tripPolicy.validate(
-                request.tripDate(),
-                request.startTime(),
-                request.endTime(),
-                request.categorySlugs()
-        );
+    public TripResponse createTrip(Long userId, SaveTripRequest request) {
+        tripPolicy.validate(request.tripDate(), request.startTime(), request.endTime(), request.categorySlugs());
 
-        List<CategoryResponse> categories =
-                resolveCategories(request.categorySlugs());
+        List<CategoryResponse> categories = resolveCategories(request.categorySlugs());
 
-        Set<Long> categoryIds = categories.stream()
-                .map(CategoryResponse::id)
-                .collect(Collectors.toUnmodifiableSet());
+        Set<Long> categoryIds = categories.stream().map(CategoryResponse::id).collect(Collectors.toUnmodifiableSet());
 
         OffsetDateTime now = OffsetDateTime.now(clock);
 
@@ -76,110 +64,57 @@ public class TripService {
                 request.travelPace(),
                 request.environmentPreference(),
                 categoryIds,
-                now
-        );
+                now);
 
         Trip savedTrip = tripRepository.save(trip);
 
-        return tripMapper.toResponse(
-                savedTrip,
-                categories
-        );
+        return tripMapper.toResponse(savedTrip, categories);
     }
+
     @Transactional(readOnly = true)
-    public TripResponse getTrip(
-            Long userId,
-            UUID publicId
-    ) {
-        Trip trip = tripRepository
-                .findByPublicIdAndUserId(
-                        publicId,
-                        userId
-                )
-                .orElseThrow(
-                        TripNotFoundException::new
-                );
+    public TripResponse getTrip(Long userId, UUID publicId) {
+        Trip trip = tripRepository.findByPublicIdAndUserId(publicId, userId).orElseThrow(TripNotFoundException::new);
 
-        List<CategoryResponse> categories =
-                categoryService.findCategoriesByIds(
-                        trip.getPreferredCategoryIds()
-                );
+        List<CategoryResponse> categories = categoryService.findCategoriesByIds(trip.getPreferredCategoryIds());
 
-        return tripMapper.toResponse(
-                trip,
-                categories
-        );
+        return tripMapper.toResponse(trip, categories);
     }
 
     @Transactional(readOnly = true)
     public List<TripSummaryResponse> listTrips(Long userId) {
-        List<Trip> trips = tripRepository
-                .findAllByUserIdOrderByTripDateAscStartTimeAscPublicIdAsc(
-                        userId
-                );
+        List<Trip> trips = tripRepository.findAllByUserIdOrderByTripDateAscStartTimeAscPublicIdAsc(userId);
 
         if (trips.isEmpty()) {
             return List.of();
         }
 
         Set<Long> categoryIds = trips.stream()
-                .flatMap(trip -> trip
-                        .getPreferredCategoryIds()
-                        .stream())
+                .flatMap(trip -> trip.getPreferredCategoryIds().stream())
                 .collect(Collectors.toSet());
 
-        List<CategoryResponse> categories =
-                categoryService.findCategoriesByIds(
-                        categoryIds
-                );
+        List<CategoryResponse> categories = categoryService.findCategoriesByIds(categoryIds);
 
         return trips.stream()
                 .map(trip -> tripMapper.toSummaryResponse(
                         trip,
                         categories.stream()
-                                .filter(category -> trip
-                                        .getPreferredCategoryIds()
-                                        .contains(category.id()))
-                                .toList()
-                ))
+                                .filter(category ->
+                                        trip.getPreferredCategoryIds().contains(category.id()))
+                                .toList()))
                 .toList();
     }
 
     @Transactional
-    public TripResponse replaceTrip(
-            Long userId,
-            UUID publicId,
-            SaveTripRequest request
-    ) {
-        Trip trip = tripRepository
-                .findByPublicIdAndUserId(
-                        publicId,
-                        userId
-                )
-                .orElseThrow(
-                        TripNotFoundException::new
-                );
+    public TripResponse replaceTrip(Long userId, UUID publicId, SaveTripRequest request) {
+        Trip trip = tripRepository.findByPublicIdAndUserId(publicId, userId).orElseThrow(TripNotFoundException::new);
 
-        tripPolicy.validate(
-                request.tripDate(),
-                request.startTime(),
-                request.endTime(),
-                request.categorySlugs()
-        );
+        tripPolicy.validate(request.tripDate(), request.startTime(), request.endTime(), request.categorySlugs());
 
-        List<CategoryResponse> categories =
-                resolveCategories(
-                        request.categorySlugs()
-                );
+        List<CategoryResponse> categories = resolveCategories(request.categorySlugs());
 
-        Set<Long> categoryIds = categories.stream()
-                .map(CategoryResponse::id)
-                .collect(
-                        Collectors.toUnmodifiableSet()
-                );
+        Set<Long> categoryIds = categories.stream().map(CategoryResponse::id).collect(Collectors.toUnmodifiableSet());
 
-        OffsetDateTime now =
-                OffsetDateTime.now(clock);
+        OffsetDateTime now = OffsetDateTime.now(clock);
 
         trip.replaceDetails(
                 request.tripDate(),
@@ -192,25 +127,16 @@ public class TripService {
                 request.travelPace(),
                 request.environmentPreference(),
                 categoryIds,
-                now
-        );
+                now);
 
-        return tripMapper.toResponse(
-                trip,
-                categories
-        );
+        return tripMapper.toResponse(trip, categories);
     }
-    private List<CategoryResponse> resolveCategories(
-            List<String> requestedSlugs
-    ) {
-        List<CategoryResponse> categories =
-                categoryService.findCategoriesBySlugs(
-                        requestedSlugs
-                );
 
-        Set<String> resolvedSlugs = categories.stream()
-                .map(CategoryResponse::slug)
-                .collect(Collectors.toSet());
+    private List<CategoryResponse> resolveCategories(List<String> requestedSlugs) {
+        List<CategoryResponse> categories = categoryService.findCategoriesBySlugs(requestedSlugs);
+
+        Set<String> resolvedSlugs =
+                categories.stream().map(CategoryResponse::slug).collect(Collectors.toSet());
 
         List<String> unknownSlugs = requestedSlugs.stream()
                 .filter(slug -> !resolvedSlugs.contains(slug))
@@ -219,12 +145,9 @@ public class TripService {
                 .toList();
 
         if (!unknownSlugs.isEmpty()) {
-            throw new InvalidCategoryPreferenceException(
-                    unknownSlugs
-            );
+            throw new InvalidCategoryPreferenceException(unknownSlugs);
         }
 
         return categories;
     }
-
 }

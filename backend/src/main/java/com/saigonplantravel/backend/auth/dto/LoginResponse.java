@@ -1,7 +1,6 @@
 package com.saigonplantravel.backend.auth.dto;
 
 import com.saigonplantravel.backend.auth.domain.UserRole;
-
 import java.util.UUID;
 
 public record LoginResponse(
@@ -11,6 +10,4 @@ public record LoginResponse(
         UUID publicId,
         String email,
         String displayName,
-        UserRole role
-) {
-}
+        UserRole role) {}

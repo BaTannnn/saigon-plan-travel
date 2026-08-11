@@ -1,14 +1,12 @@
 package com.saigonplantravel.backend.auth.entity;
 
-
 import com.saigonplantravel.backend.auth.domain.UserRole;
 import jakarta.persistence.*;
+import java.time.OffsetDateTime;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.time.OffsetDateTime;
-import java.util.UUID;
 
 @Entity
 @Table(name = "users")
@@ -19,67 +17,32 @@ public class UserAccount {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(
-            name = "public_id",
-            nullable = false,
-            unique = true,
-            updatable = false
-    )
+    @Column(name = "public_id", nullable = false, unique = true, updatable = false)
     private UUID publicId;
 
-    @Column(
-            name = "email",
-            unique = true,
-            length = 255,
-            updatable = false
-    )
+    @Column(name = "email", unique = true, length = 255, updatable = false)
     private String email;
 
-    @Column(
-            name = "password_hash",
-            nullable = false,
-            length = 100
-    )
+    @Column(name = "password_hash", nullable = false, length = 100)
     private String passwordHash;
 
-    @Column(
-            name = "display_name",
-            nullable = false,
-            length = 100
-    )
+    @Column(name = "display_name", nullable = false, length = 100)
     private String displayName;
 
     @Enumerated(EnumType.STRING)
-    @Column(
-            nullable = false,
-            length = 20
-    )
+    @Column(nullable = false, length = 20)
     private UserRole role;
 
     @Column(nullable = false)
     private Boolean active;
 
-    @Column(
-            name = "created_at",
-            nullable = false,
-            insertable = false,
-            updatable = false
-    )
+    @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
     private OffsetDateTime createdAt;
 
-    @Column(
-            name = "updated_at",
-            nullable = false,
-            insertable = false,
-            updatable = false
-    )
+    @Column(name = "updated_at", nullable = false, insertable = false, updatable = false)
     private OffsetDateTime updatedAt;
 
-    public UserAccount(
-            String email,
-            String passwordHash,
-            String displayName
-    ) {
+    public UserAccount(String email, String passwordHash, String displayName) {
         this.publicId = UUID.randomUUID();
         this.email = email;
         this.passwordHash = passwordHash;

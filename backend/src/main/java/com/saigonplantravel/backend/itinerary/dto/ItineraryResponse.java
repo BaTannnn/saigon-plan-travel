@@ -9,6 +9,4 @@ public record ItineraryResponse(
         UUID tripPublicId,
         List<ItineraryItemResponse> items,
         OffsetDateTime createdAt,
-        OffsetDateTime updatedAt
-) {
-}
+        OffsetDateTime updatedAt) {}

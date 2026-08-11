@@ -14,12 +14,11 @@ import com.saigonplantravel.backend.place.repository.PlaceRepository;
 import com.saigonplantravel.backend.trip.entity.Trip;
 import com.saigonplantravel.backend.trip.exception.TripNotFoundException;
 import com.saigonplantravel.backend.trip.repository.TripRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.util.UUID;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ItineraryService {
@@ -35,8 +34,7 @@ public class ItineraryService {
             ItineraryRepository itineraryRepository,
             PlaceRepository placeRepository,
             ItineraryMapper itineraryMapper,
-            Clock clock
-    ) {
+            Clock clock) {
         this.tripRepository = tripRepository;
         this.itineraryRepository = itineraryRepository;
         this.placeRepository = placeRepository;
@@ -45,34 +43,22 @@ public class ItineraryService {
     }
 
     @Transactional(readOnly = true)
-    public ItineraryResponse getItinerary(
-            Long userId,
-            UUID tripPublicId
-    ) {
+    public ItineraryResponse getItinerary(Long userId, UUID tripPublicId) {
         Trip trip = findOwnedTrip(userId, tripPublicId);
 
-        return itineraryRepository.findByTripId(trip.getId())
-                .map(itinerary -> itineraryMapper.toResponse(
-                        tripPublicId,
-                        itinerary
-                ))
-                .orElseGet(() -> itineraryMapper
-                        .toEmptyResponse(tripPublicId));
+        return itineraryRepository
+                .findByTripId(trip.getId())
+                .map(itinerary -> itineraryMapper.toResponse(tripPublicId, itinerary))
+                .orElseGet(() -> itineraryMapper.toEmptyResponse(tripPublicId));
     }
 
     @Transactional
-    public ItineraryResponse addItem(
-            Long userId,
-            UUID tripPublicId,
-            Long placeId
-    ) {
+    public ItineraryResponse addItem(Long userId, UUID tripPublicId, Long placeId) {
         Trip trip = findOwnedTrip(userId, tripPublicId);
         Place place = findActivePlace(placeId);
         OffsetDateTime now = OffsetDateTime.now(clock);
 
-        Itinerary itinerary = itineraryRepository
-                .findByTripId(trip.getId())
-                .orElseGet(() -> new Itinerary(trip, now));
+        Itinerary itinerary = itineraryRepository.findByTripId(trip.getId()).orElseGet(() -> new Itinerary(trip, now));
 
         if (itinerary.containsPlace(placeId)) {
             throw new DuplicateItineraryPlaceException();
@@ -81,27 +67,14 @@ public class ItineraryService {
         itinerary.appendItem(place, now);
         Itinerary saved = itineraryRepository.save(itinerary);
 
-        return itineraryMapper.toResponse(
-                tripPublicId,
-                saved
-        );
+        return itineraryMapper.toResponse(tripPublicId, saved);
     }
 
     @Transactional
-    public ItineraryResponse deleteItem(
-            Long userId,
-            UUID tripPublicId,
-            UUID itemPublicId
-    ) {
+    public ItineraryResponse deleteItem(Long userId, UUID tripPublicId, UUID itemPublicId) {
         Trip trip = findOwnedTrip(userId, tripPublicId);
-        Itinerary itinerary = findItineraryWithItem(
-                trip.getId(),
-                itemPublicId
-        );
-        ItineraryItem item = itinerary.findItem(itemPublicId)
-                .orElseThrow(
-                        ItineraryItemNotFoundException::new
-                );
+        Itinerary itinerary = findItineraryWithItem(trip.getId(), itemPublicId);
+        ItineraryItem item = itinerary.findItem(itemPublicId).orElseThrow(ItineraryItemNotFoundException::new);
         OffsetDateTime now = OffsetDateTime.now(clock);
 
         itinerary.removeItem(item, now);
@@ -112,71 +85,32 @@ public class ItineraryService {
 
         itinerary.resequenceItems(now);
 
-        return itineraryMapper.toResponse(
-                tripPublicId,
-                itinerary
-        );
+        return itineraryMapper.toResponse(tripPublicId, itinerary);
     }
 
     @Transactional
     public ItineraryResponse replaceItemPlace(
-            Long userId,
-            UUID tripPublicId,
-            UUID itemPublicId,
-            Long replacementPlaceId
-    ) {
+            Long userId, UUID tripPublicId, UUID itemPublicId, Long replacementPlaceId) {
         Trip trip = findOwnedTrip(userId, tripPublicId);
-        Itinerary itinerary = findItineraryWithItem(
-                trip.getId(),
-                itemPublicId
-        );
-        ItineraryItem item = itinerary.findItem(itemPublicId)
-                .orElseThrow(
-                        ItineraryItemNotFoundException::new
-                );
-        Place replacementPlace = findActivePlace(
-                replacementPlaceId
-        );
+        Itinerary itinerary = findItineraryWithItem(trip.getId(), itemPublicId);
+        ItineraryItem item = itinerary.findItem(itemPublicId).orElseThrow(ItineraryItemNotFoundException::new);
+        Place replacementPlace = findActivePlace(replacementPlaceId);
 
-        if (itinerary.containsOtherPlace(
-                replacementPlaceId,
-                itemPublicId
-        )) {
+        if (itinerary.containsOtherPlace(replacementPlaceId, itemPublicId)) {
             throw new DuplicateItineraryPlaceException();
         }
 
-        itinerary.replaceItemPlace(
-                item,
-                replacementPlace,
-                OffsetDateTime.now(clock)
-        );
+        itinerary.replaceItemPlace(item, replacementPlace, OffsetDateTime.now(clock));
 
-        return itineraryMapper.toResponse(
-                tripPublicId,
-                itinerary
-        );
+        return itineraryMapper.toResponse(tripPublicId, itinerary);
     }
 
-    private Trip findOwnedTrip(
-            Long userId,
-            UUID tripPublicId
-    ) {
-        return tripRepository.findByPublicIdAndUserId(
-                        tripPublicId,
-                        userId
-                )
-                .orElseThrow(TripNotFoundException::new);
+    private Trip findOwnedTrip(Long userId, UUID tripPublicId) {
+        return tripRepository.findByPublicIdAndUserId(tripPublicId, userId).orElseThrow(TripNotFoundException::new);
     }
 
-    private Itinerary findItineraryWithItem(
-            Long tripId,
-            UUID itemPublicId
-    ) {
-        Itinerary itinerary = itineraryRepository
-                .findByTripId(tripId)
-                .orElseThrow(
-                        ItineraryItemNotFoundException::new
-                );
+    private Itinerary findItineraryWithItem(Long tripId, UUID itemPublicId) {
+        Itinerary itinerary = itineraryRepository.findByTripId(tripId).orElseThrow(ItineraryItemNotFoundException::new);
 
         if (itinerary.findItem(itemPublicId).isEmpty()) {
             throw new ItineraryItemNotFoundException();
@@ -186,8 +120,7 @@ public class ItineraryService {
     }
 
     private Place findActivePlace(Long placeId) {
-        Place place = placeRepository.findById(placeId)
-                .orElseThrow(PlaceNotFoundException::new);
+        Place place = placeRepository.findById(placeId).orElseThrow(PlaceNotFoundException::new);
 
         if (!Boolean.TRUE.equals(place.getActive())) {
             throw new InactiveItineraryPlaceException();

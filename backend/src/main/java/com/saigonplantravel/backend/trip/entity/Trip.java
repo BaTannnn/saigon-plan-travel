@@ -14,10 +14,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -25,6 +21,9 @@ import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "trips")
@@ -36,107 +35,50 @@ public class Trip {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(
-            name = "public_id",
-            nullable = false,
-            unique = true,
-            updatable = false
-    )
+    @Column(name = "public_id", nullable = false, unique = true, updatable = false)
     private UUID publicId;
 
-    @Column(
-            name = "user_id",
-            nullable = false,
-            updatable = false
-    )
+    @Column(name = "user_id", nullable = false, updatable = false)
     private Long userId;
 
-    @Column(
-            name = "trip_date",
-            nullable = false
-    )
+    @Column(name = "trip_date", nullable = false)
     private LocalDate tripDate;
 
-    @Column(
-            name = "start_time",
-            nullable = false
-    )
+    @Column(name = "start_time", nullable = false)
     private LocalTime startTime;
 
-    @Column(
-            name = "end_time",
-            nullable = false
-    )
+    @Column(name = "end_time", nullable = false)
     private LocalTime endTime;
 
-    @Column(
-            nullable = false,
-            precision = 12,
-            scale = 2
-    )
+    @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal budget;
 
-    @Column(
-            name = "start_location_label",
-            nullable = false,
-            length = 255
-    )
+    @Column(name = "start_location_label", nullable = false, length = 255)
     private String startLocationLabel;
 
-    @Column(
-            name = "start_latitude",
-            nullable = false,
-            precision = 10,
-            scale = 7
-    )
+    @Column(name = "start_latitude", nullable = false, precision = 10, scale = 7)
     private BigDecimal startLatitude;
 
-    @Column(
-            name = "start_longitude",
-            nullable = false,
-            precision = 10,
-            scale = 7
-    )
+    @Column(name = "start_longitude", nullable = false, precision = 10, scale = 7)
     private BigDecimal startLongitude;
 
     @Enumerated(EnumType.STRING)
-    @Column(
-            name = "travel_pace",
-            nullable = false,
-            length = 20
-    )
+    @Column(name = "travel_pace", nullable = false, length = 20)
     private TravelPace travelPace;
 
     @Enumerated(EnumType.STRING)
-    @Column(
-            name = "environment_preference",
-            nullable = false,
-            length = 20
-    )
+    @Column(name = "environment_preference", nullable = false, length = 20)
     private EnvironmentPreference environmentPreference;
 
     @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(
-            name = "trip_category_preferences",
-            joinColumns = @JoinColumn(name = "trip_id")
-    )
-    @Column(
-            name = "category_id",
-            nullable = false
-    )
+    @CollectionTable(name = "trip_category_preferences", joinColumns = @JoinColumn(name = "trip_id"))
+    @Column(name = "category_id", nullable = false)
     private Set<Long> preferredCategoryIds = new HashSet<>();
 
-    @Column(
-            name = "created_at",
-            nullable = false,
-            updatable = false
-    )
+    @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
-    @Column(
-            name = "updated_at",
-            nullable = false
-    )
+    @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
 
     public Trip(
@@ -151,8 +93,7 @@ public class Trip {
             TravelPace travelPace,
             EnvironmentPreference environmentPreference,
             Set<Long> preferredCategoryIds,
-            OffsetDateTime createdAt
-    ) {
+            OffsetDateTime createdAt) {
         this.publicId = UUID.randomUUID();
         this.userId = userId;
         this.tripDate = tripDate;
@@ -164,8 +105,7 @@ public class Trip {
         this.startLongitude = startLongitude;
         this.travelPace = travelPace;
         this.environmentPreference = environmentPreference;
-        this.preferredCategoryIds =
-                new HashSet<>(preferredCategoryIds);
+        this.preferredCategoryIds = new HashSet<>(preferredCategoryIds);
         this.createdAt = createdAt;
         this.updatedAt = createdAt;
     }
@@ -181,8 +121,7 @@ public class Trip {
             TravelPace travelPace,
             EnvironmentPreference environmentPreference,
             Set<Long> preferredCategoryIds,
-            OffsetDateTime updatedAt
-    ) {
+            OffsetDateTime updatedAt) {
         this.tripDate = tripDate;
         this.startTime = startTime;
         this.endTime = endTime;
@@ -194,9 +133,7 @@ public class Trip {
         this.environmentPreference = environmentPreference;
 
         this.preferredCategoryIds.clear();
-        this.preferredCategoryIds.addAll(
-                preferredCategoryIds
-        );
+        this.preferredCategoryIds.addAll(preferredCategoryIds);
 
         this.updatedAt = updatedAt;
     }

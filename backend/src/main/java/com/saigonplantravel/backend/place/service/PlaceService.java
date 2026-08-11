@@ -18,10 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class PlaceService {
 
-    private static final Sort PLACE_SORT = Sort.by(
-            Sort.Order.asc("name"),
-            Sort.Order.asc("id")
-    );
+    private static final Sort PLACE_SORT = Sort.by(Sort.Order.asc("name"), Sort.Order.asc("id"));
 
     private final PlaceRepository placeRepository;
     private final PlaceMapper placeMapper;
@@ -40,10 +37,10 @@ public class PlaceService {
     }
 
     public PlacePageResponse searchPlaces(PlaceSearchRequest request) {
-        Page<PlaceSummaryResponse> result = placeRepository.findAll(
+        Page<PlaceSummaryResponse> result = placeRepository
+                .findAll(
                         PlaceSpecifications.matching(request),
-                        PageRequest.of(request.resolvedPage(), request.resolvedSize(), PLACE_SORT)
-                )
+                        PageRequest.of(request.resolvedPage(), request.resolvedSize(), PLACE_SORT))
                 .map(placeMapper::toSummaryResponse);
 
         return toPageResponse(result);
@@ -57,12 +54,12 @@ public class PlaceService {
                 result.getTotalElements(),
                 result.getTotalPages(),
                 result.isFirst(),
-                result.isLast()
-        );
+                result.isLast());
     }
 
     public PlaceDetailResponse getPlaceDetailBySlug(String slug) {
-        return placeRepository.findBySlugAndActiveTrue(slug)
+        return placeRepository
+                .findBySlugAndActiveTrue(slug)
                 .map(placeMapper::toDetailResponse)
                 .orElseThrow(PlaceNotFoundException::new);
     }
