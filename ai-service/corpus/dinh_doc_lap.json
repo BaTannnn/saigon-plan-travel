@@ -1,0 +1,46 @@
+{
+  "placeSlug": "dinh-doc-lap",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Dinh Độc Lập là một di tích lịch sử và công trình kiến trúc tiêu biểu tại Thành phố Hồ Chí Minh. Di tích từng được biết đến qua nhiều tên gọi trong các giai đoạn lịch sử khác nhau và hiện là một địa điểm phục vụ hoạt động tham quan, tìm hiểu lịch sử và kiến trúc.",
+      "source": {
+        "label": "Di tích lịch sử Dinh Độc Lập - Giới thiệu di tích",
+        "uri": "https://dinhdoclap.gov.vn/di-tich-lich-su-dinh-doc-lap/",
+        "retrievedAt": "2026-08-11"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Lịch sử khu vực Dinh Độc Lập bắt đầu từ Dinh Norodom được xây dựng trong thời kỳ Pháp thuộc. Sau nhiều biến động lịch sử và chính trị, công trình cũ được thay thế bằng Dinh Độc Lập mới trong thập niên 1960. Di tích gắn với nhiều sự kiện quan trọng của lịch sử Việt Nam trong thế kỷ XX.",
+      "source": {
+        "label": "Di tích lịch sử Dinh Độc Lập - Lịch sử Dinh Độc Lập",
+        "uri": "https://dinhdoclap.gov.vn/lich-su-dinh-doc-lap/",
+        "retrievedAt": "2026-08-11"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Công trình Dinh Độc Lập hiện nay do kiến trúc sư Ngô Viết Thụ thiết kế. Kiến trúc của Dinh kết hợp ngôn ngữ hiện đại với những yếu tố và biểu tượng mang tinh thần kiến trúc truyền thống Á Đông. Không gian, đường nét và cách tổ chức mặt bằng tạo nên đặc điểm kiến trúc riêng của công trình.",
+      "source": {
+        "label": "Di tích lịch sử Dinh Độc Lập - Kiến trúc Dinh Độc Lập",
+        "uri": "https://dinhdoclap.gov.vn/kien-truc-dinh-doc-lap/",
+        "retrievedAt": "2026-08-11"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Khách tham quan có thể tự khám phá Dinh Độc Lập thông qua hệ thống bảng thông tin, bảng chỉ dẫn và tên phòng tại di tích. Hình thức tham quan này cho phép du khách chủ động tìm hiểu các không gian của công trình và nội dung lịch sử được giới thiệu trong quá trình tham quan.",
+      "source": {
+        "label": "Di tích lịch sử Dinh Độc Lập - Hình thức tham quan",
+        "uri": "https://dinhdoclap.gov.vn/tour-guide/",
+        "retrievedAt": "2026-08-11"
+      }
+    }
+  ]
+}
