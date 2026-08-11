@@ -1,0 +1,33 @@
+[
+  {
+    "query": "Tôi muốn tìm hiểu lịch sử Việt Nam",
+    "expectedPlaceSlugs": [
+      "dinh-doc-lap"
+    ]
+  },
+  {
+    "query": "Tôi yêu thích hội họa và nghệ thuật",
+    "expectedPlaceSlugs": [
+      "bao-tang-my-thuat-tphcm"
+    ]
+  },
+  {
+    "query": "Tôi muốn xem động vật và không gian thiên nhiên",
+    "expectedPlaceSlugs": [
+      "thao-cam-vien-sai-gon"
+    ]
+  },
+  {
+    "query": "Tôi muốn trải nghiệm khu chợ và văn hóa địa phương",
+    "expectedPlaceSlugs": [
+      "cho-ben-thanh"
+    ]
+  },
+  {
+    "query": "Tôi thích công trình kiến trúc nổi bật",
+    "expectedPlaceSlugs": [
+      "buu-dien-trung-tam-sai-gon",
+      "dinh-doc-lap"
+    ]
+  }
+]

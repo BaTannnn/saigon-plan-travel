@@ -22,6 +22,17 @@
 # Backend
 backend/target/
 
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+
+# Virtual environment
+.venv/
+venv/
+
+
 # BlueJ files
 *.ctxt
 

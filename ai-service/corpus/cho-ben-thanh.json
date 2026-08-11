@@ -1,0 +1,46 @@
+{
+  "placeSlug": "cho-ben-thanh",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Chợ Bến Thành là một chợ truyền thống nằm ở khu vực trung tâm Thành phố Hồ Chí Minh và là một địa điểm quen thuộc trong hoạt động tham quan, mua sắm của du khách. Công trình chợ hiện nay có lịch sử hơn một thế kỷ và vẫn duy trì vai trò thương mại. Không gian chợ gắn với hình ảnh đô thị trung tâm, hoạt động buôn bán đa dạng và trải nghiệm văn hóa đời sống địa phương.",
+      "source": {
+        "label": "Cổng thông tin TP.HCM - Tham quan & Du ngoạn",
+        "uri": "https://hochiminhcity.gov.vn/vi/web/hcm/-/tham-quan-du-ngo%E1%BA%A1n-2-1",
+        "retrievedAt": "2026-08-11"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Khu chợ hiện nay được hình thành từ chủ trương xây dựng một chợ trung tâm vào đầu thế kỷ XX. Công trình nhà lồng được khởi công trong giai đoạn 1913-1914 và lễ khai thị được tổ chức năm 1914. Trong quá trình tồn tại, chợ từng bị hư hại trong chiến tranh và trải qua nhiều đợt trùng tu, sửa chữa. Sau năm 1975, Chợ Bến Thành tiếp tục giữ vai trò là một trung tâm thương nghiệp quan trọng của thành phố.",
+      "source": {
+        "label": "Sở Văn hóa và Thể thao TP.HCM - Danh mục kiểm kê di tích lịch sử văn hóa",
+        "uri": "https://svhtt.hochiminhcity.gov.vn/documents/10184/256372/Danh%2Bmuc%2Bkiem%2Bke%2Bdi%2Btich%2Blich%2Bsu%2Bvan%2Bhoa%2Btren%2Bdia%2Bban%2BTPHCM%2Bgiai%2Bdoan%2B2016-2020-ph.pdf/539ee8c6-974e-4c90-a41f-bd2a18682eef",
+        "retrievedAt": "2026-08-11"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Kiến trúc Chợ Bến Thành nổi bật với tháp đồng hồ ở mặt tiền Cửa Nam. Tòa tháp nhô cao khỏi mái và có đồng hồ tròn ở các mặt, tạo nên dấu hiệu nhận diện quen thuộc của công trình. Bốn khối cổng chính còn có các phù điêu gốm mô tả nhiều loại sản vật, phản ánh những nhóm hàng từng được bày bán theo từng khu vực. Kết cấu nhà chợ sử dụng gạch chịu lực, khung sắt, cột kèo bê tông và mái ngói.",
+      "source": {
+        "label": "Sở Văn hóa và Thể thao TP.HCM - Danh mục kiểm kê di tích lịch sử văn hóa",
+        "uri": "https://svhtt.hochiminhcity.gov.vn/documents/10184/256372/Danh%2Bmuc%2Bkiem%2Bke%2Bdi%2Btich%2Blich%2Bsu%2Bvan%2Bhoa%2Btren%2Bdia%2Bban%2BTPHCM%2Bgiai%2Bdoan%2B2016-2020-ph.pdf/539ee8c6-974e-4c90-a41f-bd2a18682eef",
+        "retrievedAt": "2026-08-11"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Trải nghiệm tại Chợ Bến Thành gắn với việc đi qua các khu bán hàng, quan sát nhịp sống chợ truyền thống và mua sắm nhiều nhóm sản phẩm. Các nguồn du lịch của thành phố giới thiệu chợ với các mặt hàng như quần áo, giày dép, vải sợi, hàng truyền thống, đồ gốm, quà lưu niệm và món ăn. Vì vậy, đây là nơi phù hợp để tìm hiểu không khí thương mại địa phương thông qua hoạt động tham quan và mua sắm trực tiếp.",
+      "source": {
+        "label": "Sở Du lịch TP.HCM - Chợ Bến Thành",
+        "uri": "https://sodulich.hochiminhcity.gov.vn/Home/moduleId/564/id/5905/ma/HCCDL/controller/HanhChinhDuKhach/action/Detail",
+        "retrievedAt": "2026-08-11"
+      }
+    }
+  ]
+}

@@ -1,8 +1,7 @@
 from datetime import date
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, HttpUrl
-
+from pydantic import BaseModel, ConfigDict, Field, HttpUrl, model_validator
 
 KnowledgeSection = Literal[
     "OVERVIEW",
@@ -44,3 +43,16 @@ class PlaceCorpus(BaseModel):
         min_length=1,
         max_length=20,
     )
+
+@model_validator(mode="after")
+def validate_chunk_indexes(self):
+    indexes = [chunk.chunkIndex for chunk in self.sections]
+
+    expected = list(range(1, len(indexes) + 1))
+
+    if indexes != expected:
+        raise ValueError(
+            "chunkIndex must be unique and continuous starting from 1"
+        )
+
+    return self

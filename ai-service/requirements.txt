@@ -1,1 +1,8 @@
 pydantic>=2,<3
+psycopg[binary]>=3,<4
+python-dotenv
+google-genai
+pgvector
+langchain-google-genai
+fastapi
+uvicorn[standard]
