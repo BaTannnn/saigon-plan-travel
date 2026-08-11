@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${title}">Saigon Plan Travel Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+          crossorigin="anonymous">
+    <style>
+        body { min-height: 100vh; background: #f4f6f9; }
+        .admin-navbar { background: linear-gradient(135deg, #0d6efd, #084298); }
+        .page-card { border: 0; box-shadow: 0 0.25rem 1rem rgba(33, 37, 41, 0.08); }
+        .form-label { font-weight: 600; }
+        .table > :not(caption) > * > * { vertical-align: middle; }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-dark admin-navbar shadow-sm" th:fragment="navbar">
+    <div class="container">
+        <a class="navbar-brand fw-semibold" th:href="@{/admin/places}">Saigon Plan Travel Admin</a>
+        <div class="d-flex align-items-center gap-2">
+            <a class="btn btn-sm btn-outline-light" th:href="@{/admin/places}">Places</a>
+            <a class="btn btn-sm btn-outline-light" th:href="@{/admin/categories}">Categories</a>
+            <form class="m-0" method="post" th:action="@{/admin/logout}">
+                <button class="btn btn-sm btn-light" type="submit">Sign out</button>
+            </form>
+        </div>
+    </div>
+</nav>
+</body>
+</html>
