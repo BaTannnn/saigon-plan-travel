@@ -1,6 +1,0 @@
-interface:
-  display_name: "Implement Approved Slice"
-  short_description: "Code one bounded project slice, verify it, teach it back, then stop"
-  default_prompt: "Use $implement-approved-slice for this already-defined SaigonPlanTravel task. Preserve my dirty work, keep scope narrow, verify the change, explain the flow, and stop after one slice."
-policy:
-  allow_implicit_invocation: true
