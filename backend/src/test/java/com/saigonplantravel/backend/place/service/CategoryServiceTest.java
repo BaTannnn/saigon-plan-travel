@@ -8,10 +8,10 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.saigonplantravel.backend.place.dto.AdminCategoryResponse;
-import com.saigonplantravel.backend.place.dto.CategoryCreateRequest;
+import com.saigonplantravel.backend.place.dto.admin.AdminCategoryResponse;
+import com.saigonplantravel.backend.place.dto.admin.CategoryCreateRequest;
 import com.saigonplantravel.backend.place.dto.CategoryResponse;
-import com.saigonplantravel.backend.place.dto.CategoryUpdateRequest;
+import com.saigonplantravel.backend.place.dto.admin.CategoryUpdateRequest;
 import com.saigonplantravel.backend.place.entity.Category;
 import com.saigonplantravel.backend.place.exception.CategoryAlreadyExistsException;
 import com.saigonplantravel.backend.place.exception.CategoryNotFoundException;

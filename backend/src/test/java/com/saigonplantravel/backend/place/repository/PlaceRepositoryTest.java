@@ -3,14 +3,14 @@ package com.saigonplantravel.backend.place.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.saigonplantravel.backend.place.dto.AdminPlaceDetailResponse;
-import com.saigonplantravel.backend.place.dto.AdminPlaceSummaryResponse;
-import com.saigonplantravel.backend.place.dto.CategoryCreateRequest;
+import com.saigonplantravel.backend.place.dto.admin.AdminPlaceDetailResponse;
+import com.saigonplantravel.backend.place.dto.admin.AdminPlaceSummaryResponse;
+import com.saigonplantravel.backend.place.dto.admin.CategoryCreateRequest;
 import com.saigonplantravel.backend.place.dto.OpeningHourResponse;
 import com.saigonplantravel.backend.place.dto.OpeningHourState;
 import com.saigonplantravel.backend.place.dto.PageResponse;
 import com.saigonplantravel.backend.place.dto.PlaceDetailResponse;
-import com.saigonplantravel.backend.place.dto.PlaceOpeningHoursRequest;
+import com.saigonplantravel.backend.place.dto.admin.PlaceOpeningHoursRequest;
 import com.saigonplantravel.backend.place.dto.PlaceSearchRequest;
 import com.saigonplantravel.backend.place.dto.PlaceSummaryResponse;
 import com.saigonplantravel.backend.place.entity.Category;

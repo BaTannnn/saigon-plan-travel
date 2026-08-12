@@ -12,12 +12,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
-import com.saigonplantravel.backend.place.dto.AdminPlaceDetailResponse;
-import com.saigonplantravel.backend.place.dto.AdminPlaceSummaryResponse;
+import com.saigonplantravel.backend.place.dto.admin.AdminPlaceDetailResponse;
+import com.saigonplantravel.backend.place.dto.admin.AdminPlaceSummaryResponse;
 import com.saigonplantravel.backend.place.dto.PageResponse;
-import com.saigonplantravel.backend.place.dto.PlaceCreateRequest;
+import com.saigonplantravel.backend.place.dto.admin.PlaceCreateRequest;
 import com.saigonplantravel.backend.place.dto.PlaceDetailResponse;
-import com.saigonplantravel.backend.place.dto.PlaceUpdateRequest;
+import com.saigonplantravel.backend.place.dto.admin.PlaceUpdateRequest;
 import com.saigonplantravel.backend.place.exception.PlaceSlugAlreadyExistsException;
 import com.saigonplantravel.backend.place.service.PlaceService;
 import java.math.BigDecimal;

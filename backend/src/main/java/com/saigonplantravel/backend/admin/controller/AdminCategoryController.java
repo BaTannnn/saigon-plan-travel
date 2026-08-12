@@ -1,8 +1,8 @@
 package com.saigonplantravel.backend.admin.controller;
 
-import com.saigonplantravel.backend.place.dto.AdminCategoryResponse;
-import com.saigonplantravel.backend.place.dto.CategoryCreateRequest;
-import com.saigonplantravel.backend.place.dto.CategoryUpdateRequest;
+import com.saigonplantravel.backend.place.dto.admin.AdminCategoryResponse;
+import com.saigonplantravel.backend.place.dto.admin.CategoryCreateRequest;
+import com.saigonplantravel.backend.place.dto.admin.CategoryUpdateRequest;
 import com.saigonplantravel.backend.place.exception.CategoryAlreadyExistsException;
 import com.saigonplantravel.backend.place.service.CategoryService;
 import jakarta.validation.Valid;

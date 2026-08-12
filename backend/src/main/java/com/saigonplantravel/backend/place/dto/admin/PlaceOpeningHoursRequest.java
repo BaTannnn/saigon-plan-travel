@@ -1,5 +1,6 @@
-package com.saigonplantravel.backend.place.dto;
+package com.saigonplantravel.backend.place.dto.admin;
 
+import com.saigonplantravel.backend.place.dto.OpeningHourState;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Max;

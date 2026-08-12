@@ -1,9 +1,9 @@
 package com.saigonplantravel.backend.admin.controller;
 
-import com.saigonplantravel.backend.place.dto.AdminPlaceDetailResponse;
+import com.saigonplantravel.backend.place.dto.admin.AdminPlaceDetailResponse;
 import com.saigonplantravel.backend.place.dto.OpeningHourResponse;
 import com.saigonplantravel.backend.place.dto.OpeningHourState;
-import com.saigonplantravel.backend.place.dto.PlaceOpeningHoursRequest;
+import com.saigonplantravel.backend.place.dto.admin.PlaceOpeningHoursRequest;
 import com.saigonplantravel.backend.place.service.PlaceService;
 import jakarta.validation.Valid;
 import java.util.ArrayList;

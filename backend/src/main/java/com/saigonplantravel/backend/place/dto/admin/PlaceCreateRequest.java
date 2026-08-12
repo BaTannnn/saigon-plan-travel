@@ -1,4 +1,4 @@
-package com.saigonplantravel.backend.place.dto;
+package com.saigonplantravel.backend.place.dto.admin;
 
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;

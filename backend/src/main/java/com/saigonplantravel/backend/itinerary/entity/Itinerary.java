@@ -40,7 +40,7 @@ public class Itinerary {
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "trip_id", nullable = false, unique = true, updatable = false)
     private Trip trip;
-
+    
     @OneToMany(mappedBy = "itinerary", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @OrderBy("sequenceNo ASC")
     private List<ItineraryItem> items = new ArrayList<>();

@@ -1,15 +1,15 @@
 package com.saigonplantravel.backend.place.service;
 
-import com.saigonplantravel.backend.place.dto.AdminPlaceDetailResponse;
-import com.saigonplantravel.backend.place.dto.AdminPlaceSummaryResponse;
+import com.saigonplantravel.backend.place.dto.admin.AdminPlaceDetailResponse;
+import com.saigonplantravel.backend.place.dto.admin.AdminPlaceSummaryResponse;
 import com.saigonplantravel.backend.place.dto.OpeningHourState;
 import com.saigonplantravel.backend.place.dto.PageResponse;
-import com.saigonplantravel.backend.place.dto.PlaceCreateRequest;
+import com.saigonplantravel.backend.place.dto.admin.PlaceCreateRequest;
 import com.saigonplantravel.backend.place.dto.PlaceDetailResponse;
-import com.saigonplantravel.backend.place.dto.PlaceOpeningHoursRequest;
+import com.saigonplantravel.backend.place.dto.admin.PlaceOpeningHoursRequest;
 import com.saigonplantravel.backend.place.dto.PlaceSearchRequest;
 import com.saigonplantravel.backend.place.dto.PlaceSummaryResponse;
-import com.saigonplantravel.backend.place.dto.PlaceUpdateRequest;
+import com.saigonplantravel.backend.place.dto.admin.PlaceUpdateRequest;
 import com.saigonplantravel.backend.place.entity.Category;
 import com.saigonplantravel.backend.place.entity.Place;
 import com.saigonplantravel.backend.place.exception.InvalidPlaceCategoryAssignmentException;

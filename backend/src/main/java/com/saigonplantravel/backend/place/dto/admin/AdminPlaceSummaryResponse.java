@@ -1,4 +1,4 @@
-package com.saigonplantravel.backend.place.dto;
+package com.saigonplantravel.backend.place.dto.admin;
 
 import java.math.BigDecimal;
 
