@@ -52,49 +52,52 @@ export function PlacePickerSheet({
   const [category, setCategory] = useState(ALL_VALUE);
   const [indoor, setIndoor] = useState(ALL_VALUE);
   const [maxCost, setMaxCost] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [catalogLoading, setCatalogLoading] = useState(true);
+  const [filterLoading, setFilterLoading] = useState(false);
+  const loading = catalogLoading || filterLoading;
   const [error, setError] = useState<string | null>(null);
   const [selectedPlaceId, setSelectedPlaceId] = useState<number | null>(null);
 
   useEffect(() => {
-    if (!open || catalog.length > 0) return;
+  let cancelled = false;
 
-    let cancelled = false;
-    setLoading(true);
+  Promise.all([getPlaceCatalog(), getCategories()])
+    .then(([placeCatalog, categoryList]) => {
+      if (cancelled) return;
+
+      setCatalog(placeCatalog.content);
+      setPlaces(placeCatalog.content);
+      setCategories(categoryList);
+    })
+    .catch(() => {
+      if (cancelled) return;
+
+      setError("Không thể tải dữ liệu địa điểm. Vui lòng thử lại.");
+    })
+    .finally(() => {
+      if (!cancelled) {
+        setCatalogLoading(false);
+      }
+    });
+
+  return () => {
+    cancelled = true;
+  };
+}, []);
+
+  function handleOpenChange(nextOpen: boolean) {
+  if (!nextOpen) {
+    setQuery("");
+    setCategory(ALL_VALUE);
+    setIndoor(ALL_VALUE);
+    setMaxCost("");
+    setPlaces(catalog);
+    setSelectedPlaceId(null);
     setError(null);
+  }
 
-    Promise.all([getPlaceCatalog(), getCategories()])
-      .then(([placeCatalog, categoryList]) => {
-        if (cancelled) return;
-        setCatalog(placeCatalog.content);
-        setPlaces(placeCatalog.content);
-        setCategories(categoryList);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setError("Không thể tải dữ liệu địa điểm. Vui lòng thử lại.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [catalog.length, open]);
-
-  useEffect(() => {
-    if (!open) {
-      setQuery("");
-      setCategory(ALL_VALUE);
-      setIndoor(ALL_VALUE);
-      setMaxCost("");
-      setPlaces(catalog);
-      setSelectedPlaceId(null);
-      setError(null);
-    }
-  }, [catalog, open]);
-
+  onOpenChange(nextOpen);
+  }
   const visiblePlaces = useMemo(() => {
     const excluded = new Set(excludedPlaceIds);
     return places.filter((place) => !excluded.has(place.id));
@@ -102,7 +105,7 @@ export function PlacePickerSheet({
 
   async function applyFilters(event?: FormEvent<HTMLFormElement>) {
     event?.preventDefault();
-    setLoading(true);
+    setFilterLoading(true);
     setError(null);
 
     const filters: PlacesSearchFilters = {
@@ -121,7 +124,7 @@ export function PlacePickerSheet({
     } catch {
       setError("Không thể áp dụng bộ lọc. Vui lòng thử lại.");
     } finally {
-      setLoading(false);
+      setFilterLoading(false);
     }
   }
 
@@ -140,7 +143,7 @@ export function PlacePickerSheet({
 
     try {
       await onSelect(place);
-      onOpenChange(false);
+      handleOpenChange(false);
     } catch {
       setError(
         mode === "add"
@@ -153,7 +156,7 @@ export function PlacePickerSheet({
   }
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetContent className="w-[min(94vw,520px)] sm:max-w-[520px]">
         <SheetHeader className="border-b border-border px-5 py-5 pr-14">
           <SheetTitle className="text-lg font-bold">

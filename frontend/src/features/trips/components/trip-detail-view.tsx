@@ -119,10 +119,6 @@ export function TripDetailView({ publicId, categories }: TripDetailViewProps) {
     }
   }, [publicId, runAuthenticated, status]);
 
-  useEffect(() => {
-    if (section !== "itinerary" || itineraryLoaded) return;
-    void loadItinerary();
-  }, [itineraryLoaded, loadItinerary, section]);
 
   async function handleReplace(request: SaveTripRequest) {
     const updated = await runAuthenticated((token) =>
@@ -198,13 +194,18 @@ export function TripDetailView({ publicId, categories }: TripDetailViewProps) {
   }
 
   function handleSectionChange(nextSection: TripWorkspaceSection) {
-    setEditing(false);
-    setSection(nextSection);
-    if (nextSection === "overview") {
-      setSelectedItemPublicId(null);
-    }
+  setEditing(false);
+  setSection(nextSection);
+
+  if (nextSection === "overview") {
+    setSelectedItemPublicId(null);
+    return;
   }
 
+  if (!itineraryLoaded) {
+    void loadItinerary();
+  }
+}
   if (status === "loading" || loading) {
     return (
       <main
