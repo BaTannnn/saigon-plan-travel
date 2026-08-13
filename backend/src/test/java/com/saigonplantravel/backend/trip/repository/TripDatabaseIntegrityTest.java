@@ -219,73 +219,12 @@ class TripDatabaseIntegrityTest {
     }
 
     @Test
-    void rejectsDuplicateCategoryPreference() {
-        Long userId = fixtures.insertUser("duplicate-preference");
-        Long categoryId = fixtures.insertCategory("Duplicate Preference Category", "duplicate-preference-category");
-
-        Long tripId = fixtures.insertValidTrip(UUID.randomUUID(), userId);
-
-        jdbcTemplate.update(
-                """
-                INSERT INTO trip_category_preferences (
-                    trip_id,
-                    category_id
-                )
-                VALUES (?, ?)
-                """,
-                tripId,
-                categoryId);
-
-        assertThatThrownBy(() -> jdbcTemplate.update(
-                        """
-                INSERT INTO trip_category_preferences (
-                    trip_id,
-                    category_id
-                )
-                VALUES (?, ?)
-                """,
-                        tripId,
-                        categoryId))
-                .isInstanceOf(DataIntegrityViolationException.class);
-    }
-
-    @Test
-    void enforcesTripForeignKeyDeleteBehavior() {
+    void preventsDeletingUserReferencedByTrip() {
         Long userId = fixtures.insertUser("foreign-key-user");
-
-        Long categoryId = fixtures.insertCategory("Trip FK Category", "trip-fk-category");
-
-        Long tripId = fixtures.insertValidTrip(UUID.randomUUID(), userId);
-
-        jdbcTemplate.update(
-                """
-                INSERT INTO trip_category_preferences (
-                    trip_id,
-                    category_id
-                )
-                VALUES (?, ?)
-                """,
-                tripId,
-                categoryId);
-
-        assertThatThrownBy(() -> jdbcTemplate.update("DELETE FROM categories WHERE id = ?", categoryId))
-                .isInstanceOf(DataIntegrityViolationException.class);
+        fixtures.insertValidTrip(UUID.randomUUID(), userId);
 
         assertThatThrownBy(() -> jdbcTemplate.update("DELETE FROM users WHERE id = ?", userId))
                 .isInstanceOf(DataIntegrityViolationException.class);
-
-        jdbcTemplate.update("DELETE FROM trips WHERE id = ?", tripId);
-
-        Integer preferenceCount = jdbcTemplate.queryForObject(
-                """
-                        SELECT count(*)
-                        FROM trip_category_preferences
-                        WHERE trip_id = ?
-                        """,
-                Integer.class,
-                tripId);
-
-        assertThat(preferenceCount).isZero();
     }
 
     // Helper

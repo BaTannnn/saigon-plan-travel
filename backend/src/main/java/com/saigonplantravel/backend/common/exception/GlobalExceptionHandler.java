@@ -7,7 +7,6 @@ import com.saigonplantravel.backend.itinerary.exception.InactiveItineraryPlaceEx
 import com.saigonplantravel.backend.itinerary.exception.ItineraryItemNotFoundException;
 import com.saigonplantravel.backend.place.exception.CategoryNotFoundException;
 import com.saigonplantravel.backend.place.exception.PlaceNotFoundException;
-import com.saigonplantravel.backend.trip.exception.InvalidCategoryPreferenceException;
 import com.saigonplantravel.backend.trip.exception.InvalidTripException;
 import com.saigonplantravel.backend.trip.exception.TripNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -148,20 +147,6 @@ public class GlobalExceptionHandler {
         problem.setProperty("code", "INVALID_REQUEST");
         problem.setProperty(
                 "fieldErrors", List.of(new FieldValidationError(exception.getField(), exception.getMessage())));
-
-        return problem;
-    }
-
-    @ExceptionHandler(InvalidCategoryPreferenceException.class)
-    public ProblemDetail handleInvalidCategoryPreference(
-            InvalidCategoryPreferenceException exception, HttpServletRequest request) {
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, exception.getMessage());
-
-        problem.setType(ABOUT_BLANK);
-        problem.setTitle("Invalid category preference");
-        problem.setInstance(URI.create(request.getRequestURI()));
-        problem.setProperty("code", "INVALID_CATEGORY_PREFERENCE");
-        problem.setProperty("unknownCategorySlugs", exception.getUnknownCategorySlugs());
 
         return problem;
     }

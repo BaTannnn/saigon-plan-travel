@@ -25,14 +25,12 @@ import {
   replaceItineraryItem,
 } from "@/lib/api/itinerary-api";
 import { getTrip, replaceTrip } from "@/lib/api/trip-api";
-import type { Category } from "@/types/category";
 import type { ItineraryResponse } from "@/types/itinerary";
 import type { PlaceSummary } from "@/types/place";
 import type { SaveTripRequest, TripResponse } from "@/types/trip";
 
 type TripDetailViewProps = {
   publicId: string;
-  categories: Category[];
 };
 
 function getItineraryErrorMessage(error: unknown) {
@@ -52,7 +50,7 @@ function getItineraryErrorMessage(error: unknown) {
   return "Đã xảy ra lỗi khi xử lý hành trình.";
 }
 
-export function TripDetailView({ publicId, categories }: TripDetailViewProps) {
+export function TripDetailView({ publicId }: TripDetailViewProps) {
   const router = useRouter();
   const { status, runAuthenticated } = useAuth();
   const [trip, setTrip] = useState<TripResponse | null>(null);
@@ -253,7 +251,6 @@ export function TripDetailView({ publicId, categories }: TripDetailViewProps) {
         </p>
       </header>
       <TripForm
-        categories={categories}
         initialTrip={trip}
         submitLabel="Lưu thay đổi"
         onSubmit={handleReplace}

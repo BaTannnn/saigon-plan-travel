@@ -6,10 +6,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/features/auth/auth-provider";
 import { TripForm } from "@/features/trips/components/trip-form";
 import { createTrip } from "@/lib/api/trip-api";
-import type { Category } from "@/types/category";
 import type { SaveTripRequest } from "@/types/trip";
 
-export function CreateTripView({ categories }: { categories: Category[] }) {
+export function CreateTripView() {
   const router = useRouter();
   const { status, runAuthenticated } = useAuth();
 
@@ -47,11 +46,7 @@ export function CreateTripView({ categories }: { categories: Category[] }) {
         </p>
       </header>
 
-      <TripForm
-        categories={categories}
-        submitLabel="Lưu chuyến đi"
-        onSubmit={handleCreate}
-      />
+      <TripForm submitLabel="Lưu chuyến đi" onSubmit={handleCreate} />
     </main>
   );
 }

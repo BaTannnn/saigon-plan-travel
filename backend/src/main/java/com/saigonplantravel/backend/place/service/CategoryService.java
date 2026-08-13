@@ -9,7 +9,6 @@ import com.saigonplantravel.backend.place.exception.CategoryAlreadyExistsExcepti
 import com.saigonplantravel.backend.place.exception.CategoryNotFoundException;
 import com.saigonplantravel.backend.place.mapper.PlaceMapper;
 import com.saigonplantravel.backend.place.repository.CategoryRepository;
-import java.util.Collection;
 import java.util.List;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -78,23 +77,4 @@ public class CategoryService {
         }
     }
 
-    public List<CategoryResponse> findCategoriesBySlugs(Collection<String> slugs) {
-        if (slugs.isEmpty()) {
-            return List.of();
-        }
-
-        return categoryRepository.findAllBySlugInOrderByNameAscIdAsc(slugs).stream()
-                .map(placeMapper::toCategoryResponse)
-                .toList();
-    }
-
-    public List<CategoryResponse> findCategoriesByIds(Collection<Long> ids) {
-        if (ids.isEmpty()) {
-            return List.of();
-        }
-
-        return categoryRepository.findAllByIdInOrderByNameAscIdAsc(ids).stream()
-                .map(placeMapper::toCategoryResponse)
-                .toList();
-    }
 }

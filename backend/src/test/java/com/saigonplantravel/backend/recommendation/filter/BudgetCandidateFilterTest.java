@@ -12,7 +12,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 class BudgetCandidateFilterTest {
@@ -111,7 +110,6 @@ class BudgetCandidateFilterTest {
                 new BigDecimal("106.6980500"),
                 TravelPace.BALANCED,
                 EnvironmentPreference.MIXED,
-                Set.of(),
                 OffsetDateTime.parse(
                         "2026-08-13T10:00:00+07:00"));
     }

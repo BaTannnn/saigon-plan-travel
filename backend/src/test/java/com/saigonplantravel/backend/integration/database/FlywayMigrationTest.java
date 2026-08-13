@@ -46,7 +46,7 @@ class FlywayMigrationTest {
         List<String> versions = jdbcTemplate.queryForList(
                 "SELECT version FROM flyway_schema_history WHERE success ORDER BY installed_rank", String.class);
 
-        assertThat(versions).containsExactly("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12");
+        assertThat(versions).containsExactly("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13");
         assertThat(jdbcTemplate.queryForObject(
                         "SELECT count(*) FROM flyway_schema_history WHERE version = '6' AND success", Integer.class))
                 .isEqualTo(1);
@@ -85,7 +85,10 @@ class FlywayMigrationTest {
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM trips", Integer.class))
                 .isZero();
 
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM trip_category_preferences", Integer.class))
+        assertThat(jdbcTemplate.queryForObject(
+                        "SELECT count(*) FROM pg_tables WHERE schemaname = 'public' "
+                                + "AND tablename = 'trip_category_preferences'",
+                        Integer.class))
                 .isZero();
         assertThat(jdbcTemplate.queryForObject(
                         """
@@ -126,10 +129,13 @@ class FlywayMigrationTest {
                 """,
                         Integer.class))
                 .isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject(
+                        "SELECT count(*) FROM flyway_schema_history WHERE version = '13' AND success", Integer.class))
+                .isEqualTo(1);
     }
 
     @Test
-    void appliesTripAndItineraryMigrationsAndCreatesTables() {
+    void appliesTripAndItineraryMigrationsAndCreatesFinalTables() {
         Integer migrationV7Count = jdbcTemplate.queryForObject(
                 """
                         SELECT count(*)
@@ -166,6 +172,15 @@ class FlywayMigrationTest {
                         """,
                 Integer.class);
 
+        Integer migrationV13Count = jdbcTemplate.queryForObject(
+                """
+                        SELECT count(*)
+                        FROM flyway_schema_history
+                        WHERE version = '13'
+                          AND success
+                        """,
+                Integer.class);
+
         Boolean tripsTableExists = jdbcTemplate.queryForObject(
                 """
                         SELECT to_regclass(
@@ -196,9 +211,11 @@ class FlywayMigrationTest {
 
         assertThat(migrationV10Count).isEqualTo(1);
 
+        assertThat(migrationV13Count).isEqualTo(1);
+
         assertThat(tripsTableExists).isTrue();
 
-        assertThat(preferencesTableExists).isTrue();
+        assertThat(preferencesTableExists).isFalse();
 
         assertThat(itinerariesTableExists).isTrue();
 

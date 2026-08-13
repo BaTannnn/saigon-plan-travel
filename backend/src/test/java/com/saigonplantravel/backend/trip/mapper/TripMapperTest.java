@@ -2,7 +2,6 @@ package com.saigonplantravel.backend.trip.mapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.saigonplantravel.backend.place.dto.CategoryResponse;
 import com.saigonplantravel.backend.trip.domain.EnvironmentPreference;
 import com.saigonplantravel.backend.trip.domain.TravelPace;
 import com.saigonplantravel.backend.trip.dto.TripResponse;
@@ -15,7 +14,6 @@ import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 class TripMapperTest {
@@ -37,13 +35,9 @@ class TripMapperTest {
                 new BigDecimal("106.6980500"),
                 TravelPace.BALANCED,
                 EnvironmentPreference.MIXED,
-                Set.of(1L, 3L),
                 createdAt);
 
-        List<CategoryResponse> categories = List.of(
-                new CategoryResponse(3L, "Nghệ thuật", "nghe-thuat"), new CategoryResponse(1L, "Văn hóa", "van-hoa"));
-
-        TripResponse response = mapper.toResponse(trip, categories);
+        TripResponse response = mapper.toResponse(trip);
 
         assertThat(response.publicId()).isEqualTo(trip.getPublicId());
 
@@ -64,8 +58,6 @@ class TripMapperTest {
         assertThat(response.travelPace()).isEqualTo(TravelPace.BALANCED);
 
         assertThat(response.environmentPreference()).isEqualTo(EnvironmentPreference.MIXED);
-
-        assertThat(response.categoryPreferences()).containsExactlyElementsOf(categories);
 
         assertThat(response.createdAt()).isEqualTo(createdAt);
 
@@ -93,16 +85,12 @@ class TripMapperTest {
                 new BigDecimal("106.6980500"),
                 TravelPace.BALANCED,
                 EnvironmentPreference.MIXED,
-                Set.of(1L),
                 timestamp);
 
-        List<CategoryResponse> categories = List.of(new CategoryResponse(1L, "Văn hóa", "van-hoa"));
-
-        TripSummaryResponse response = mapper.toSummaryResponse(trip, categories);
+        TripSummaryResponse response = mapper.toSummaryResponse(trip);
 
         assertThat(response.publicId()).isEqualTo(trip.getPublicId());
         assertThat(response.startLocationLabel()).isEqualTo("Chợ Bến Thành");
-        assertThat(response.categoryPreferences()).containsExactlyElementsOf(categories);
         assertThat(response.updatedAt()).isEqualTo(timestamp);
 
         List<String> responseFields = Arrays.stream(TripSummaryResponse.class.getRecordComponents())

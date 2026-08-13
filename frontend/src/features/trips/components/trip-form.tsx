@@ -2,7 +2,6 @@
 
 import { useState, type FormEvent } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,7 +14,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getTripFormFeedback } from "@/features/trips/trip-errors";
-import type { Category } from "@/types/category";
 import type {
   EnvironmentPreference,
   SaveTripRequest,
@@ -33,11 +31,9 @@ type TripFormValues = {
   longitude: string;
   travelPace: TravelPace;
   environmentPreference: EnvironmentPreference;
-  categorySlugs: string[];
 };
 
 type TripFormProps = {
-  categories: Category[];
   initialTrip?: TripResponse;
   submitLabel: string;
   onSubmit: (request: SaveTripRequest) => Promise<void>;
@@ -68,7 +64,6 @@ function initialValues(initialTrip?: TripResponse): TripFormValues {
       longitude: "",
       travelPace: "BALANCED",
       environmentPreference: "MIXED",
-      categorySlugs: [],
     };
   }
 
@@ -82,7 +77,6 @@ function initialValues(initialTrip?: TripResponse): TripFormValues {
     longitude: String(initialTrip.startLocation.longitude),
     travelPace: initialTrip.travelPace,
     environmentPreference: initialTrip.environmentPreference,
-    categorySlugs: initialTrip.categoryPreferences.map((item) => item.slug),
   };
 }
 
@@ -99,7 +93,6 @@ function toRequest(values: TripFormValues): SaveTripRequest {
     },
     travelPace: values.travelPace,
     environmentPreference: values.environmentPreference,
-    categorySlugs: values.categorySlugs,
   };
 }
 
@@ -110,7 +103,6 @@ function FieldError({ message }: { message?: string }) {
 }
 
 export function TripForm({
-  categories,
   initialTrip,
   submitLabel,
   onSubmit,
@@ -143,28 +135,9 @@ export function TripForm({
     });
   }
 
-  function toggleCategory(slug: string) {
-    const selected = values.categorySlugs.includes(slug);
-    if (!selected && values.categorySlugs.length >= 5) return;
-
-    update(
-      "categorySlugs",
-      selected
-        ? values.categorySlugs.filter((item) => item !== slug)
-        : [...values.categorySlugs, slug],
-    );
-  }
-
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setMessage(null);
-
-    if (values.categorySlugs.length === 0) {
-      setFieldErrors({
-        categorySlugs: "Hãy chọn ít nhất một danh mục.",
-      });
-      return;
-    }
 
     setPending(true);
     setFieldErrors({});
@@ -400,47 +373,6 @@ export function TripForm({
           </div>
         </div>
 
-        <fieldset className="grid gap-3">
-          <div>
-            <legend className="text-sm font-medium">Danh mục yêu thích</legend>
-            <p className="mt-1 mb-0 text-xs text-text-secondary">
-              Chọn từ 1 đến 5 danh mục. Thứ tự chọn không biểu thị ưu tiên.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {categories.map((category) => {
-              const selected = values.categorySlugs.includes(category.slug);
-              const disabled =
-                pending || (!selected && values.categorySlugs.length >= 5);
-
-              return (
-                <label
-                  key={category.id}
-                  className={
-                    disabled
-                      ? "cursor-not-allowed opacity-55"
-                      : "cursor-pointer"
-                  }
-                >
-                  <input
-                    className="peer sr-only"
-                    type="checkbox"
-                    checked={selected}
-                    onChange={() => toggleCategory(category.slug)}
-                    disabled={disabled}
-                  />
-                  <Badge
-                    className="h-10 rounded-full border-border bg-background px-3.5 font-bold text-primary-strong peer-focus-visible:ring-3 peer-focus-visible:ring-ring/50 peer-checked:border-primary peer-checked:bg-primary-soft"
-                    variant="outline"
-                  >
-                    {category.name}
-                  </Badge>
-                </label>
-              );
-            })}
-          </div>
-          <FieldError message={fieldErrors.categorySlugs} />
-        </fieldset>
       </Card>
 
       <div className="flex justify-end gap-3 max-md:flex-col-reverse">

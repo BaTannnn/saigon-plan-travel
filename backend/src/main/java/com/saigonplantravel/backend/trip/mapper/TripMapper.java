@@ -1,17 +1,15 @@
 package com.saigonplantravel.backend.trip.mapper;
 
-import com.saigonplantravel.backend.place.dto.CategoryResponse;
 import com.saigonplantravel.backend.trip.dto.StartLocationResponse;
 import com.saigonplantravel.backend.trip.dto.TripResponse;
 import com.saigonplantravel.backend.trip.dto.TripSummaryResponse;
 import com.saigonplantravel.backend.trip.entity.Trip;
-import java.util.List;
 import org.springframework.stereotype.Component;
 
 @Component
 public class TripMapper {
 
-    public TripResponse toResponse(Trip trip, List<CategoryResponse> categoryPreferences) {
+    public TripResponse toResponse(Trip trip) {
         StartLocationResponse startLocation = new StartLocationResponse(
                 trip.getStartLocationLabel(), trip.getStartLatitude(), trip.getStartLongitude());
 
@@ -24,12 +22,11 @@ public class TripMapper {
                 startLocation,
                 trip.getTravelPace(),
                 trip.getEnvironmentPreference(),
-                categoryPreferences,
                 trip.getCreatedAt(),
                 trip.getUpdatedAt());
     }
 
-    public TripSummaryResponse toSummaryResponse(Trip trip, List<CategoryResponse> categoryPreferences) {
+    public TripSummaryResponse toSummaryResponse(Trip trip) {
         return new TripSummaryResponse(
                 trip.getPublicId(),
                 trip.getTripDate(),
@@ -39,7 +36,6 @@ public class TripMapper {
                 trip.getStartLocationLabel(),
                 trip.getTravelPace(),
                 trip.getEnvironmentPreference(),
-                categoryPreferences,
                 trip.getUpdatedAt());
     }
 }

@@ -6,7 +6,6 @@ export type TripFormFeedback = {
 };
 
 function normalizeFieldName(field: string) {
-  if (field.startsWith("categorySlugs")) return "categorySlugs";
   if (field.startsWith("startLocation.")) return field;
   return field;
 }
@@ -32,13 +31,6 @@ export function getTripFormFeedback(error: unknown): TripFormFeedback {
       item.message,
     ]),
   );
-
-  if (error.problem?.code === "INVALID_CATEGORY_PREFERENCE") {
-    const unknown = error.problem.unknownCategorySlugs ?? [];
-    fieldErrors.categorySlugs = unknown.length
-      ? `Danh mục không còn hợp lệ: ${unknown.join(", ")}.`
-      : "Một hoặc nhiều danh mục không còn hợp lệ.";
-  }
 
   return {
     message:
