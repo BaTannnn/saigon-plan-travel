@@ -17,9 +17,9 @@ class PlaceRecommendationRequest(BaseModel):
     )
 
     top_k: int = Field(
-        default=5,
+        default=15,
         ge=1,
-        le=10,
+        le=30,
     )
 
 

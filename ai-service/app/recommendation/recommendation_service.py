@@ -9,9 +9,9 @@ from app.recommendation.place_retriever import (
 
 def recommend_places(
     query: str,
-    fetch_k: int = 30,
-    candidate_k: int = 15,
-    top_k: int = 5,
+    fetch_k: int = 50,
+    candidate_k: int = 30,
+    top_k: int = 15,
     lambda_weight: float = 0.7,
 ) -> list[PlaceCandidate]:
     query_embedding = embed_query(query)
