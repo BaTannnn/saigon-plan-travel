@@ -1,6 +1,5 @@
 from pydantic import BaseModel, Field
 from fastapi import APIRouter
-
 from app.rag.rag_service import answer_question
 
 

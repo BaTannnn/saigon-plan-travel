@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app.api.rag import router as rag_router
+from app.api.recommendation import router as recommendation_router
 from app.db.postgres import pool
 
 
@@ -23,3 +24,4 @@ app = FastAPI(
 )
 
 app.include_router(rag_router)
+app.include_router(recommendation_router)
