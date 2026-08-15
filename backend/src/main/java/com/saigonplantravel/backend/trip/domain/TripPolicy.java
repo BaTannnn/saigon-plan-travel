@@ -44,5 +44,4 @@ public class TripPolicy {
                     "INVALID_TRIP_DURATION", "endTime", "trip duration must be between 60 minutes and 18 hours");
         }
     }
-
 }

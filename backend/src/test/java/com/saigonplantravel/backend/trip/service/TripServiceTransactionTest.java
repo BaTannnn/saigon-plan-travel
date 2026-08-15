@@ -117,7 +117,6 @@ class TripServiceTransactionTest {
         assertThat(budget).isEqualByComparingTo("300000.00");
 
         assertThat(updatedAt).isEqualTo(originalTimestamp);
-
     }
     // Helper
     private Long insertUser(String emailPrefix) {

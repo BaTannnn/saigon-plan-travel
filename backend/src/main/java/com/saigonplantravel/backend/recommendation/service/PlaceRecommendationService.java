@@ -22,50 +22,32 @@ public class PlaceRecommendationService {
     private final AiRecommendationClient aiRecommendationClient;
     private final PlaceRepository placeRepository;
 
-    public PlaceRecommendationService(
-            AiRecommendationClient aiRecommendationClient,
-            PlaceRepository placeRepository) {
+    public PlaceRecommendationService(AiRecommendationClient aiRecommendationClient, PlaceRepository placeRepository) {
         this.aiRecommendationClient = aiRecommendationClient;
         this.placeRepository = placeRepository;
     }
 
-    public List<RecommendationCandidate> recommend(
-            String preferenceDescription) {
+    public List<RecommendationCandidate> recommend(String preferenceDescription) {
 
         AiPlaceRecommendationResponse aiResponse =
-                aiRecommendationClient.recommendPlaces(
-                        preferenceDescription.trim(),
-                        SEMANTIC_CANDIDATE_LIMIT);
+                aiRecommendationClient.recommendPlaces(preferenceDescription.trim(), SEMANTIC_CANDIDATE_LIMIT);
 
-        List<AiPlaceCandidateResponse> aiCandidates =
-                aiResponse.candidates();
+        List<AiPlaceCandidateResponse> aiCandidates = aiResponse.candidates();
 
         if (aiCandidates.isEmpty()) {
             return List.of();
         }
 
-        List<String> slugs = aiCandidates.stream()
-                .map(AiPlaceCandidateResponse::placeSlug)
-                .toList();
+        List<String> slugs =
+                aiCandidates.stream().map(AiPlaceCandidateResponse::placeSlug).toList();
 
-        Map<String, Place> placesBySlug =
-                placeRepository
-                        .findAllBySlugInAndActiveTrue(slugs)
-                        .stream()
-                        .collect(Collectors.toMap(
-                                Place::getSlug,
-                                Function.identity()));
+        Map<String, Place> placesBySlug = placeRepository.findAllBySlugInAndActiveTrue(slugs).stream()
+                .collect(Collectors.toMap(Place::getSlug, Function.identity()));
 
         return aiCandidates.stream()
-                .filter(candidate ->
-                        placesBySlug.containsKey(
-                                candidate.placeSlug()))
-                .map(candidate ->
-                        new RecommendationCandidate(
-                                placesBySlug.get(
-                                        candidate.placeSlug()),
-                                candidate.semanticScore(),
-                                candidate.matchedSection()))
+                .filter(candidate -> placesBySlug.containsKey(candidate.placeSlug()))
+                .map(candidate -> new RecommendationCandidate(
+                        placesBySlug.get(candidate.placeSlug()), candidate.semanticScore(), candidate.matchedSection()))
                 .toList();
     }
 }

@@ -1,6 +1,5 @@
 package com.saigonplantravel.backend.trip.repository;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.saigonplantravel.backend.testsupport.database.DatabaseTestFixtures;

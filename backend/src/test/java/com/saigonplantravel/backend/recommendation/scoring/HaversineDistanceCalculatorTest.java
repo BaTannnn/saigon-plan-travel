@@ -7,8 +7,7 @@ import org.junit.jupiter.api.Test;
 
 class HaversineDistanceCalculatorTest {
 
-    private final HaversineDistanceCalculator calculator =
-            new HaversineDistanceCalculator();
+    private final HaversineDistanceCalculator calculator = new HaversineDistanceCalculator();
 
     @Test
     void returnsZeroForSameCoordinates() {
@@ -19,9 +18,9 @@ class HaversineDistanceCalculatorTest {
                 new BigDecimal("10.7726400"),
                 new BigDecimal("106.6980500"));
 
-        assertThat(distance)
-                .isEqualTo(0.0);
+        assertThat(distance).isEqualTo(0.0);
     }
+
     @Test
     void calculatesStraightLineDistanceBetweenTwoCoordinates() {
 
@@ -31,37 +30,24 @@ class HaversineDistanceCalculatorTest {
                 new BigDecimal("10.7769000"),
                 new BigDecimal("106.7009000"));
 
-        assertThat(distance)
-                .isBetween(0.56, 0.58);
+        assertThat(distance).isBetween(0.56, 0.58);
     }
+
     @Test
     void distanceIsSymmetric() {
 
-        BigDecimal latitudeA =
-                new BigDecimal("10.7726400");
+        BigDecimal latitudeA = new BigDecimal("10.7726400");
 
-        BigDecimal longitudeA =
-                new BigDecimal("106.6980500");
+        BigDecimal longitudeA = new BigDecimal("106.6980500");
 
-        BigDecimal latitudeB =
-                new BigDecimal("10.7769000");
+        BigDecimal latitudeB = new BigDecimal("10.7769000");
 
-        BigDecimal longitudeB =
-                new BigDecimal("106.7009000");
+        BigDecimal longitudeB = new BigDecimal("106.7009000");
 
-        double fromAToB = calculator.calculateKm(
-                latitudeA,
-                longitudeA,
-                latitudeB,
-                longitudeB);
+        double fromAToB = calculator.calculateKm(latitudeA, longitudeA, latitudeB, longitudeB);
 
-        double fromBToA = calculator.calculateKm(
-                latitudeB,
-                longitudeB,
-                latitudeA,
-                longitudeA);
+        double fromBToA = calculator.calculateKm(latitudeB, longitudeB, latitudeA, longitudeA);
 
-        assertThat(fromAToB)
-                .isEqualTo(fromBToA);
+        assertThat(fromAToB).isEqualTo(fromBToA);
     }
 }

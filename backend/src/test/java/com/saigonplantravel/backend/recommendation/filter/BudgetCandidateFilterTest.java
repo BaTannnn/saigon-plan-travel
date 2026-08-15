@@ -16,73 +16,44 @@ import org.junit.jupiter.api.Test;
 
 class BudgetCandidateFilterTest {
 
-    private final BudgetCandidateFilter filter =
-            new BudgetCandidateFilter();
+    private final BudgetCandidateFilter filter = new BudgetCandidateFilter();
 
     @Test
     void removesOnlyCandidateWhoseMinimumCostExceedsTripBudget() {
 
-        RecommendationCandidate cheap =
-                candidate(place("cheap", "100000"));
+        RecommendationCandidate cheap = candidate(place("cheap", "100000"));
 
-        RecommendationCandidate exact =
-                candidate(place("exact", "500000"));
+        RecommendationCandidate exact = candidate(place("exact", "500000"));
 
-        RecommendationCandidate expensive =
-                candidate(place("expensive", "700000"));
+        RecommendationCandidate expensive = candidate(place("expensive", "700000"));
 
         Trip trip = tripWithBudget("500000");
 
-        List<RecommendationCandidate> result =
-                filter.filter(
-                        List.of(
-                                cheap,
-                                exact,
-                                expensive),
-                        trip);
+        List<RecommendationCandidate> result = filter.filter(List.of(cheap, exact, expensive), trip);
 
-        assertThat(result)
-                .extracting(candidate ->
-                        candidate.place().getSlug())
-                .containsExactly(
-                        "cheap",
-                        "exact");
+        assertThat(result).extracting(candidate -> candidate.place().getSlug()).containsExactly("cheap", "exact");
     }
 
     @Test
     void zeroBudgetKeepsOnlyFreePlace() {
 
-        RecommendationCandidate free =
-                candidate(place("free", "0"));
+        RecommendationCandidate free = candidate(place("free", "0"));
 
-        RecommendationCandidate paid =
-                candidate(place("paid", "10000"));
+        RecommendationCandidate paid = candidate(place("paid", "10000"));
 
         Trip trip = tripWithBudget("0");
 
-        List<RecommendationCandidate> result =
-                filter.filter(
-                        List.of(free, paid),
-                        trip);
+        List<RecommendationCandidate> result = filter.filter(List.of(free, paid), trip);
 
-        assertThat(result)
-                .extracting(candidate ->
-                        candidate.place().getSlug())
-                .containsExactly("free");
+        assertThat(result).extracting(candidate -> candidate.place().getSlug()).containsExactly("free");
     }
 
-    private RecommendationCandidate candidate(
-            Place place) {
+    private RecommendationCandidate candidate(Place place) {
 
-        return new RecommendationCandidate(
-                place,
-                0.80,
-                "HIGHLIGHTS");
+        return new RecommendationCandidate(place, 0.80, "HIGHLIGHTS");
     }
 
-    private Place place(
-            String slug,
-            String minCost) {
+    private Place place(String slug, String minCost) {
 
         return new Place(
                 slug,
@@ -96,8 +67,7 @@ class BudgetCandidateFilterTest {
                 true);
     }
 
-    private Trip tripWithBudget(
-            String budget) {
+    private Trip tripWithBudget(String budget) {
 
         return new Trip(
                 1L,
@@ -110,7 +80,6 @@ class BudgetCandidateFilterTest {
                 new BigDecimal("106.6980500"),
                 TravelPace.BALANCED,
                 EnvironmentPreference.MIXED,
-                OffsetDateTime.parse(
-                        "2026-08-13T10:00:00+07:00"));
+                OffsetDateTime.parse("2026-08-13T10:00:00+07:00"));
     }
 }

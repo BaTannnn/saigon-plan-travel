@@ -9,23 +9,15 @@ import org.springframework.web.client.RestClient;
 @Component
 public class AiRecommendationClient {
     private final RestClient restClient;
-    public AiRecommendationClient(
-            RestClient.Builder restClientBuilder,
-            @Value("${app.ai.base-url}") String baseUrl) {
 
-        this.restClient = restClientBuilder
-                .baseUrl(baseUrl)
-                .build();
+    public AiRecommendationClient(RestClient.Builder restClientBuilder, @Value("${app.ai.base-url}") String baseUrl) {
+
+        this.restClient = restClientBuilder.baseUrl(baseUrl).build();
     }
 
-    public AiPlaceRecommendationResponse recommendPlaces(
-            String query,
-            int topK) {
+    public AiPlaceRecommendationResponse recommendPlaces(String query, int topK) {
 
-        AiPlaceRecommendationRequest request =
-                new AiPlaceRecommendationRequest(
-                        query,
-                        topK);
+        AiPlaceRecommendationRequest request = new AiPlaceRecommendationRequest(query, topK);
 
         AiPlaceRecommendationResponse response = restClient
                 .post()

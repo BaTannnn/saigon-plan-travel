@@ -10,5 +10,4 @@ public record ScoredCandidate(
         double distanceScore,
         double budgetScore,
         double environmentScore,
-        double finalScore) {
-}
+        double finalScore) {}

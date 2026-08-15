@@ -1,75 +1,50 @@
 package com.saigonplantravel.backend.recommendation.scoring;
-import com.saigonplantravel.backend.place.entity.Place;
-import com.saigonplantravel.backend.recommendation.model.RecommendationCandidate;
-import com.saigonplantravel.backend.recommendation.model.ScoredCandidate;
-import com.saigonplantravel.backend.trip.entity.Trip;
-import org.junit.jupiter.api.Test;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 
-import java.math.BigDecimal;
+import com.saigonplantravel.backend.place.entity.Place;
+import com.saigonplantravel.backend.recommendation.model.RecommendationCandidate;
+import com.saigonplantravel.backend.recommendation.model.ScoredCandidate;
 import com.saigonplantravel.backend.trip.domain.EnvironmentPreference;
 import com.saigonplantravel.backend.trip.domain.TravelPace;
+import com.saigonplantravel.backend.trip.entity.Trip;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
+import org.junit.jupiter.api.Test;
 
 public class CandidateScorerTest {
 
-    private final CandidateScorer scorer =
-            new CandidateScorer(
-                    new HaversineDistanceCalculator(),
-                    new DistanceScorer(),
-                    new BudgetScorer(),
-                    new EnvironmentScorer());
+    private final CandidateScorer scorer = new CandidateScorer(
+            new HaversineDistanceCalculator(), new DistanceScorer(), new BudgetScorer(), new EnvironmentScorer());
 
     @Test
     void combinesCandidateSignalsIntoFinalScore() {
 
-        Place place = place(
-                "museum",
-                BigDecimal.ZERO,
-                true);
+        Place place = place("museum", BigDecimal.ZERO, true);
 
-        RecommendationCandidate candidate =
-                new RecommendationCandidate(
-                        place,
-                        0.90,
-                        "HIGHLIGHTS");
+        RecommendationCandidate candidate = new RecommendationCandidate(place, 0.90, "HIGHLIGHTS");
 
-        Trip trip = tripAtSameLocation(
-                new BigDecimal("500000"),
-                EnvironmentPreference.INDOOR);
+        Trip trip = tripAtSameLocation(new BigDecimal("500000"), EnvironmentPreference.INDOOR);
 
-        ScoredCandidate result =
-                scorer.score(
-                        candidate,
-                        trip);
+        ScoredCandidate result = scorer.score(candidate, trip);
 
-        assertThat(result.semanticScore())
-                .isEqualTo(0.90);
+        assertThat(result.semanticScore()).isEqualTo(0.90);
 
-        assertThat(result.distanceKm())
-                .isEqualTo(0.0);
+        assertThat(result.distanceKm()).isEqualTo(0.0);
 
-        assertThat(result.distanceScore())
-                .isEqualTo(1.0);
+        assertThat(result.distanceScore()).isEqualTo(1.0);
 
-        assertThat(result.budgetScore())
-                .isEqualTo(1.0);
+        assertThat(result.budgetScore()).isEqualTo(1.0);
 
-        assertThat(result.environmentScore())
-                .isEqualTo(1.0);
+        assertThat(result.environmentScore()).isEqualTo(1.0);
 
-        assertThat(result.finalScore())
-                .isCloseTo(
-                        0.945,
-                        within(0.000001));
+        assertThat(result.finalScore()).isCloseTo(0.945, within(0.000001));
     }
-    private Place place(
-            String slug,
-            BigDecimal minCost,
-            boolean indoor) {
+
+    private Place place(String slug, BigDecimal minCost, boolean indoor) {
 
         return new Place(
                 slug,
@@ -83,9 +58,7 @@ public class CandidateScorerTest {
                 indoor);
     }
 
-    private Trip tripAtSameLocation(
-            BigDecimal budget,
-            EnvironmentPreference environmentPreference) {
+    private Trip tripAtSameLocation(BigDecimal budget, EnvironmentPreference environmentPreference) {
 
         return new Trip(
                 1L,
@@ -98,7 +71,6 @@ public class CandidateScorerTest {
                 new BigDecimal("106.7009000"),
                 TravelPace.BALANCED,
                 environmentPreference,
-                OffsetDateTime.parse(
-                        "2026-08-15T10:00:00+07:00"));
+                OffsetDateTime.parse("2026-08-15T10:00:00+07:00"));
     }
 }

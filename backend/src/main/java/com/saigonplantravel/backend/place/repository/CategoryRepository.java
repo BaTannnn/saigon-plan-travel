@@ -17,5 +17,4 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     List<Category> findAllByOrderByNameAscIdAsc();
 
     List<Category> findAllBySlugInOrderByNameAscIdAsc(Collection<String> slugs);
-
 }

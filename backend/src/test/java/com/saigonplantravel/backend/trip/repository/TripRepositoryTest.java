@@ -95,14 +95,11 @@ class TripRepositoryTest {
     void listsOnlyOwnedTripsInDeterministicOrder() {
         Long ownerUserId = persistUser("list-owner@example.com");
         Long anotherUserId = persistUser("list-another@example.com");
-        Trip laterTrip =
-                newTrip(ownerUserId, LocalDate.of(2026, 8, 21), LocalTime.of(9, 0), "Điểm xuất phát B");
-        Trip tiedTripOne =
-                newTrip(ownerUserId, LocalDate.of(2026, 8, 20), LocalTime.of(8, 0), "Điểm xuất phát A1");
-        Trip tiedTripTwo =
-                newTrip(ownerUserId, LocalDate.of(2026, 8, 20), LocalTime.of(8, 0), "Điểm xuất phát A2");
-        Trip anotherUsersTrip = newTrip(
-                anotherUserId, LocalDate.of(2026, 8, 19), LocalTime.of(7, 0), "Không thuộc chủ sở hữu");
+        Trip laterTrip = newTrip(ownerUserId, LocalDate.of(2026, 8, 21), LocalTime.of(9, 0), "Điểm xuất phát B");
+        Trip tiedTripOne = newTrip(ownerUserId, LocalDate.of(2026, 8, 20), LocalTime.of(8, 0), "Điểm xuất phát A1");
+        Trip tiedTripTwo = newTrip(ownerUserId, LocalDate.of(2026, 8, 20), LocalTime.of(8, 0), "Điểm xuất phát A2");
+        Trip anotherUsersTrip =
+                newTrip(anotherUserId, LocalDate.of(2026, 8, 19), LocalTime.of(7, 0), "Không thuộc chủ sở hữu");
 
         tripRepository.saveAllAndFlush(List.of(laterTrip, tiedTripOne, tiedTripTwo, anotherUsersTrip));
 
@@ -198,7 +195,6 @@ class TripRepositoryTest {
         assertThat(reloadedTrip.getTravelPace()).isEqualTo(TravelPace.RELAXED);
 
         assertThat(reloadedTrip.getEnvironmentPreference()).isEqualTo(EnvironmentPreference.INDOOR);
-
     }
 
     private Long persistUser(String email) {

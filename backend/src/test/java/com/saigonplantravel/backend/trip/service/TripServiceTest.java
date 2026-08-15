@@ -91,11 +91,8 @@ class TripServiceTest {
         Long userId = 99L;
         UUID publicId = UUID.randomUUID();
         Trip trip = createTrip(userId, OffsetDateTime.parse("2026-08-01T10:00:00+07:00"));
-        TripResponse expectedResponse = responseFor(
-                trip.getPublicId(),
-                createValidRequest(),
-                trip.getCreatedAt(),
-                trip.getUpdatedAt());
+        TripResponse expectedResponse =
+                responseFor(trip.getPublicId(), createValidRequest(), trip.getCreatedAt(), trip.getUpdatedAt());
 
         when(tripRepository.findByPublicIdAndUserId(publicId, userId)).thenReturn(Optional.of(trip));
         when(tripMapper.toResponse(trip)).thenReturn(expectedResponse);

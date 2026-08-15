@@ -23,11 +23,7 @@ public class TripService {
     private final TripMapper tripMapper;
     private final Clock clock;
 
-    public TripService(
-            TripRepository tripRepository,
-            TripPolicy tripPolicy,
-            TripMapper tripMapper,
-            Clock clock) {
+    public TripService(TripRepository tripRepository, TripPolicy tripPolicy, TripMapper tripMapper, Clock clock) {
         this.tripRepository = tripRepository;
         this.tripPolicy = tripPolicy;
         this.tripMapper = tripMapper;

@@ -16,60 +16,35 @@ import org.junit.jupiter.api.Test;
 
 class OpeningHoursCandidateFilterTest {
 
-    private final OpeningHoursFeasibilityEvaluator evaluator =
-            new OpeningHoursFeasibilityEvaluator();
+    private final OpeningHoursFeasibilityEvaluator evaluator = new OpeningHoursFeasibilityEvaluator();
 
-    private final OpeningHoursCandidateFilter filter =
-            new OpeningHoursCandidateFilter(evaluator);
+    private final OpeningHoursCandidateFilter filter = new OpeningHoursCandidateFilter(evaluator);
 
     @Test
     void keepsOnlyCandidatesWithFeasibleOpeningHours() {
 
-        Place feasiblePlace = place(
-                "Feasible",
-                "feasible",
-                90);
+        Place feasiblePlace = place("Feasible", "feasible", 90);
 
-        feasiblePlace.markOpen(
-                (short) 4,
-                LocalTime.of(9, 0),
-                LocalTime.of(17, 0));
+        feasiblePlace.markOpen((short) 4, LocalTime.of(9, 0), LocalTime.of(17, 0));
 
-        Place closedPlace = place(
-                "Closed",
-                "closed",
-                90);
+        Place closedPlace = place("Closed", "closed", 90);
 
         closedPlace.markClosed((short) 4);
 
-        Place unknownPlace = place(
-                "Unknown",
-                "unknown",
-                90);
+        Place unknownPlace = place("Unknown", "unknown", 90);
 
-        List<RecommendationCandidate> candidates = List.of(
-                candidate(feasiblePlace, 0.80),
-                candidate(closedPlace, 0.95),
-                candidate(unknownPlace, 0.90)
-        );
+        List<RecommendationCandidate> candidates =
+                List.of(candidate(feasiblePlace, 0.80), candidate(closedPlace, 0.95), candidate(unknownPlace, 0.90));
 
         Trip trip = createTripForThursday();
 
-        List<RecommendationCandidate> result =
-                filter.filter(candidates, trip);
+        List<RecommendationCandidate> result = filter.filter(candidates, trip);
 
-        assertThat(
-                result.stream()
-                        .map(candidate ->
-                                candidate.place().getSlug())
-                        .toList())
+        assertThat(result.stream().map(candidate -> candidate.place().getSlug()).toList())
                 .containsExactly("feasible");
     }
 
-    private Place place(
-            String name,
-            String slug,
-            int estimatedVisitMinutes) {
+    private Place place(String name, String slug, int estimatedVisitMinutes) {
 
         return new Place(
                 name,
@@ -83,14 +58,9 @@ class OpeningHoursCandidateFilterTest {
                 true);
     }
 
-    private RecommendationCandidate candidate(
-            Place place,
-            double semanticScore) {
+    private RecommendationCandidate candidate(Place place, double semanticScore) {
 
-        return new RecommendationCandidate(
-                place,
-                semanticScore,
-                "HIGHLIGHTS");
+        return new RecommendationCandidate(place, semanticScore, "HIGHLIGHTS");
     }
 
     private Trip createTripForThursday() {
@@ -106,7 +76,6 @@ class OpeningHoursCandidateFilterTest {
                 new BigDecimal("106.6980500"),
                 TravelPace.BALANCED,
                 EnvironmentPreference.MIXED,
-                OffsetDateTime.parse(
-                        "2026-08-13T10:00:00+07:00"));
+                OffsetDateTime.parse("2026-08-13T10:00:00+07:00"));
     }
 }

@@ -10,26 +10,18 @@ import org.junit.jupiter.api.Test;
 
 class OpeningHoursFeasibilityEvaluatorTest {
 
-    private final OpeningHoursFeasibilityEvaluator evaluator =
-            new OpeningHoursFeasibilityEvaluator();
+    private final OpeningHoursFeasibilityEvaluator evaluator = new OpeningHoursFeasibilityEvaluator();
 
     @Test
     void returnsFeasibleWhenVisitFitsInsideAvailableWindow() {
         Place place = placeWithVisitDuration(90);
 
-        place.markOpen(
-                (short) 1,
-                LocalTime.of(9, 0),
-                LocalTime.of(17, 0));
+        place.markOpen((short) 1, LocalTime.of(9, 0), LocalTime.of(17, 0));
 
-        OpeningHoursFeasibility result = evaluator.evaluate(
-                place,
-                LocalDate.of(2026, 8, 10),
-                LocalTime.of(8, 0),
-                LocalTime.of(18, 0));
+        OpeningHoursFeasibility result =
+                evaluator.evaluate(place, LocalDate.of(2026, 8, 10), LocalTime.of(8, 0), LocalTime.of(18, 0));
 
-        assertThat(result)
-                .isEqualTo(OpeningHoursFeasibility.FEASIBLE);
+        assertThat(result).isEqualTo(OpeningHoursFeasibility.FEASIBLE);
     }
 
     @Test
@@ -38,47 +30,32 @@ class OpeningHoursFeasibilityEvaluatorTest {
 
         place.markClosed((short) 1);
 
-        OpeningHoursFeasibility result = evaluator.evaluate(
-                place,
-                LocalDate.of(2026, 8, 10),
-                LocalTime.of(8, 0),
-                LocalTime.of(18, 0));
+        OpeningHoursFeasibility result =
+                evaluator.evaluate(place, LocalDate.of(2026, 8, 10), LocalTime.of(8, 0), LocalTime.of(18, 0));
 
-        assertThat(result)
-                .isEqualTo(OpeningHoursFeasibility.INFEASIBLE);
+        assertThat(result).isEqualTo(OpeningHoursFeasibility.INFEASIBLE);
     }
 
     @Test
     void returnsInfeasibleWhenAvailableWindowIsTooShort() {
         Place place = placeWithVisitDuration(90);
 
-        place.markOpen(
-                (short) 1,
-                LocalTime.of(17, 0),
-                LocalTime.of(18, 0));
+        place.markOpen((short) 1, LocalTime.of(17, 0), LocalTime.of(18, 0));
 
-        OpeningHoursFeasibility result = evaluator.evaluate(
-                place,
-                LocalDate.of(2026, 8, 10),
-                LocalTime.of(8, 0),
-                LocalTime.of(18, 0));
+        OpeningHoursFeasibility result =
+                evaluator.evaluate(place, LocalDate.of(2026, 8, 10), LocalTime.of(8, 0), LocalTime.of(18, 0));
 
-        assertThat(result)
-                .isEqualTo(OpeningHoursFeasibility.INFEASIBLE);
+        assertThat(result).isEqualTo(OpeningHoursFeasibility.INFEASIBLE);
     }
 
     @Test
     void returnsUnknownWhenOpeningHoursAreMissing() {
         Place place = placeWithVisitDuration(90);
 
-        OpeningHoursFeasibility result = evaluator.evaluate(
-                place,
-                LocalDate.of(2026, 8, 10),
-                LocalTime.of(8, 0),
-                LocalTime.of(18, 0));
+        OpeningHoursFeasibility result =
+                evaluator.evaluate(place, LocalDate.of(2026, 8, 10), LocalTime.of(8, 0), LocalTime.of(18, 0));
 
-        assertThat(result)
-                .isEqualTo(OpeningHoursFeasibility.UNKNOWN);
+        assertThat(result).isEqualTo(OpeningHoursFeasibility.UNKNOWN);
     }
 
     private Place placeWithVisitDuration(int minutes) {
