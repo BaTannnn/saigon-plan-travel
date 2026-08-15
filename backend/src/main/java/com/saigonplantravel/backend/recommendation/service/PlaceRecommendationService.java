@@ -17,6 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class PlaceRecommendationService {
 
+    private static final int SEMANTIC_CANDIDATE_LIMIT = 15;
+
     private final AiRecommendationClient aiRecommendationClient;
     private final PlaceRepository placeRepository;
 
@@ -28,13 +30,12 @@ public class PlaceRecommendationService {
     }
 
     public List<RecommendationCandidate> recommend(
-            String query,
-            int candidateLimit) {
+            String preferenceDescription) {
 
         AiPlaceRecommendationResponse aiResponse =
                 aiRecommendationClient.recommendPlaces(
-                        query,
-                        candidateLimit);
+                        preferenceDescription.trim(),
+                        SEMANTIC_CANDIDATE_LIMIT);
 
         List<AiPlaceCandidateResponse> aiCandidates =
                 aiResponse.candidates();
