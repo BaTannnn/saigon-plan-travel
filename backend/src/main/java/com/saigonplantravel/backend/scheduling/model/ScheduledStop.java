@@ -12,4 +12,4 @@ public record ScheduledStop(
         int travelMinutes,
         double travelDistanceKm,
         BigDecimal estimatedCost,
-        double recommendationScore) {}
+        double selectionScore) {}

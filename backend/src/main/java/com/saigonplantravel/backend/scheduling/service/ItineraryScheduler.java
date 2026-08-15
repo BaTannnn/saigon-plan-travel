@@ -2,7 +2,10 @@ package com.saigonplantravel.backend.scheduling.service;
 
 import com.saigonplantravel.backend.place.entity.OpeningHour;
 import com.saigonplantravel.backend.place.entity.Place;
+import com.saigonplantravel.backend.recommendation.model.RecommendationCandidate;
 import com.saigonplantravel.backend.recommendation.model.ScoredCandidate;
+import com.saigonplantravel.backend.recommendation.ranking.CandidateRanker;
+import com.saigonplantravel.backend.recommendation.scoring.CandidateScorer;
 import com.saigonplantravel.backend.scheduling.model.ItineraryPlan;
 import com.saigonplantravel.backend.scheduling.model.ScheduledStop;
 import com.saigonplantravel.backend.scheduling.model.TravelEstimate;
@@ -18,15 +21,20 @@ import org.springframework.stereotype.Component;
 public class ItineraryScheduler {
 
     private final TravelEstimator travelEstimator;
+    private final CandidateScorer candidateScorer;
+    private final CandidateRanker candidateRanker;
 
-    public ItineraryScheduler(TravelEstimator travelEstimator) {
+    public ItineraryScheduler(
+            TravelEstimator travelEstimator, CandidateScorer candidateScorer, CandidateRanker candidateRanker) {
 
         this.travelEstimator = travelEstimator;
+        this.candidateScorer = candidateScorer;
+        this.candidateRanker = candidateRanker;
     }
 
-    public ItineraryPlan schedule(Trip trip, List<ScoredCandidate> rankedCandidates) {
+    public ItineraryPlan schedule(Trip trip, List<RecommendationCandidate> candidates) {
 
-        List<ScoredCandidate> remainingCandidates = new ArrayList<>(rankedCandidates);
+        List<RecommendationCandidate> remainingCandidates = new ArrayList<>(candidates);
 
         List<ScheduledStop> stops = new ArrayList<>();
 
@@ -44,42 +52,55 @@ public class ItineraryScheduler {
 
         while (!remainingCandidates.isEmpty()) {
 
-            int selectedIndex = -1;
-            ScheduledStop selectedStop = null;
+            List<CandidateEvaluation> feasibleCandidates = new ArrayList<>();
 
-            for (int i = 0; i < remainingCandidates.size(); i++) {
+            for (RecommendationCandidate candidate : remainingCandidates) {
 
-                ScoredCandidate candidate = remainingCandidates.get(i);
+                CandidateEvaluation evaluation = evaluateCandidate(
+                        candidate, trip, currentTime, currentLatitude, currentLongitude, remainingBudget);
 
-                ScheduledStop stop =
-                        trySchedule(candidate, trip, currentTime, currentLatitude, currentLongitude, remainingBudget);
-
-                if (stop != null) {
-                    selectedIndex = i;
-                    selectedStop = stop;
-                    break;
+                if (evaluation != null) {
+                    feasibleCandidates.add(evaluation);
                 }
             }
 
-            if (selectedStop == null) {
+            if (feasibleCandidates.isEmpty()) {
                 break;
             }
 
-            ScoredCandidate selectedCandidate = remainingCandidates.remove(selectedIndex);
+            List<ScoredCandidate> scoredCandidates = feasibleCandidates.stream()
+                    .map(CandidateEvaluation::scoredCandidate)
+                    .toList();
+
+            ScoredCandidate bestCandidate =
+                    candidateRanker.rank(scoredCandidates).getFirst();
+
+            CandidateEvaluation selected = feasibleCandidates.stream()
+                    .filter(evaluation -> evaluation
+                            .scoredCandidate()
+                            .place()
+                            .getSlug()
+                            .equals(bestCandidate.place().getSlug()))
+                    .findFirst()
+                    .orElseThrow();
+
+            remainingCandidates.remove(selected.candidate());
+
+            ScheduledStop selectedStop = selected.scheduledStop();
 
             stops.add(selectedStop);
 
             currentTime = selectedStop.visitEndTime();
 
-            currentLatitude = selectedCandidate.place().getLatitude();
+            currentLatitude = selected.candidate().place().getLatitude();
 
-            currentLongitude = selectedCandidate.place().getLongitude();
+            currentLongitude = selected.candidate().place().getLongitude();
 
             remainingBudget = remainingBudget.subtract(selectedStop.estimatedCost());
 
             totalTravelMinutes += selectedStop.travelMinutes();
 
-            totalVisitMinutes += selectedCandidate.place().getEstimatedVisitMinutes();
+            totalVisitMinutes += selected.candidate().place().getEstimatedVisitMinutes();
 
             totalDistanceKm += selectedStop.travelDistanceKm();
         }
@@ -89,8 +110,8 @@ public class ItineraryScheduler {
         return new ItineraryPlan(stops, totalEstimatedCost, totalTravelMinutes, totalVisitMinutes, totalDistanceKm);
     }
 
-    private ScheduledStop trySchedule(
-            ScoredCandidate candidate,
+    private CandidateEvaluation evaluateCandidate(
+            RecommendationCandidate candidate,
             Trip trip,
             LocalTime currentTime,
             BigDecimal currentLatitude,
@@ -99,7 +120,15 @@ public class ItineraryScheduler {
 
         Place place = candidate.place();
 
+        // Cheap hard constraint first
         if (place.getMinCost().compareTo(remainingBudget) > 0) {
+
+            return null;
+        }
+
+        OpeningHour openingHour = findOpeningHour(place, trip);
+
+        if (openingHour == null || Boolean.TRUE.equals(openingHour.getClosed())) {
 
             return null;
         }
@@ -108,13 +137,6 @@ public class ItineraryScheduler {
                 travelEstimator.estimate(currentLatitude, currentLongitude, place.getLatitude(), place.getLongitude());
 
         LocalTime arrivalTime = currentTime.plusMinutes(travel.estimatedMinutes());
-
-        OpeningHour openingHour = findOpeningHour(place, trip);
-
-        if (openingHour == null || Boolean.TRUE.equals(openingHour.getClosed())) {
-
-            return null;
-        }
 
         LocalTime visitStartTime = laterOf(arrivalTime, openingHour.getOpenTime());
 
@@ -130,7 +152,10 @@ public class ItineraryScheduler {
             return null;
         }
 
-        return new ScheduledStop(
+        ScoredCandidate scoredCandidate = candidateScorer.score(
+                candidate, trip, remainingBudget, travel.estimatedDistanceKm(), travel.estimatedMinutes());
+
+        ScheduledStop scheduledStop = new ScheduledStop(
                 place,
                 arrivalTime,
                 visitStartTime,
@@ -138,7 +163,9 @@ public class ItineraryScheduler {
                 travel.estimatedMinutes(),
                 travel.estimatedDistanceKm(),
                 place.getMinCost(),
-                candidate.finalScore());
+                scoredCandidate.finalScore());
+
+        return new CandidateEvaluation(candidate, scoredCandidate, scheduledStop);
     }
 
     private OpeningHour findOpeningHour(Place place, Trip trip) {
@@ -155,4 +182,7 @@ public class ItineraryScheduler {
 
         return first.isAfter(second) ? first : second;
     }
+
+    private record CandidateEvaluation(
+            RecommendationCandidate candidate, ScoredCandidate scoredCandidate, ScheduledStop scheduledStop) {}
 }

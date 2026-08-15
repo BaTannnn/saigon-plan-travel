@@ -12,7 +12,7 @@ public class CandidateRanker {
             .reversed()
             .thenComparing(
                     Comparator.comparingDouble(ScoredCandidate::semanticScore).reversed())
-            .thenComparingDouble(ScoredCandidate::distanceKm)
+            .thenComparingInt(ScoredCandidate::travelMinutes)
             .thenComparing(candidate -> candidate.place().getSlug());
 
     public List<ScoredCandidate> rank(List<ScoredCandidate> candidates) {

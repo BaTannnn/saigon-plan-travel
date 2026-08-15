@@ -3,50 +3,44 @@ package com.saigonplantravel.backend.recommendation.scoring;
 import com.saigonplantravel.backend.recommendation.model.RecommendationCandidate;
 import com.saigonplantravel.backend.recommendation.model.ScoredCandidate;
 import com.saigonplantravel.backend.trip.entity.Trip;
+import java.math.BigDecimal;
 import org.springframework.stereotype.Component;
 
 @Component
 public class CandidateScorer {
 
     private static final double SEMANTIC_WEIGHT = 0.55;
-    private static final double DISTANCE_WEIGHT = 0.20;
+    private static final double TRAVEL_WEIGHT = 0.20;
     private static final double BUDGET_WEIGHT = 0.15;
     private static final double ENVIRONMENT_WEIGHT = 0.10;
 
-    private final HaversineDistanceCalculator distanceCalculator;
-    private final DistanceScorer distanceScorer;
+    private final TravelScorer travelScorer;
     private final BudgetScorer budgetScorer;
     private final EnvironmentScorer environmentScorer;
 
-    public CandidateScorer(
-            HaversineDistanceCalculator distanceCalculator,
-            DistanceScorer distanceScorer,
-            BudgetScorer budgetScorer,
-            EnvironmentScorer environmentScorer) {
+    public CandidateScorer(TravelScorer travelScorer, BudgetScorer budgetScorer, EnvironmentScorer environmentScorer) {
 
-        this.distanceCalculator = distanceCalculator;
-        this.distanceScorer = distanceScorer;
+        this.travelScorer = travelScorer;
         this.budgetScorer = budgetScorer;
         this.environmentScorer = environmentScorer;
     }
 
-    public ScoredCandidate score(RecommendationCandidate candidate, Trip trip) {
+    public ScoredCandidate score(
+            RecommendationCandidate candidate,
+            Trip trip,
+            BigDecimal availableBudget,
+            double travelDistanceKm,
+            int travelMinutes) {
 
-        double distanceKm = distanceCalculator.calculateKm(
-                trip.getStartLatitude(),
-                trip.getStartLongitude(),
-                candidate.place().getLatitude(),
-                candidate.place().getLongitude());
+        double travelScore = travelScorer.score(travelMinutes);
 
-        double distanceScore = distanceScorer.score(distanceKm);
-
-        double budgetScore = budgetScorer.score(candidate.place().getMinCost(), trip.getBudget());
+        double budgetScore = budgetScorer.score(candidate.place().getMinCost(), availableBudget);
 
         double environmentScore = environmentScorer.score(
                 trip.getEnvironmentPreference(), candidate.place().getIndoor());
 
         double finalScore = SEMANTIC_WEIGHT * candidate.semanticScore()
-                + DISTANCE_WEIGHT * distanceScore
+                + TRAVEL_WEIGHT * travelScore
                 + BUDGET_WEIGHT * budgetScore
                 + ENVIRONMENT_WEIGHT * environmentScore;
 
@@ -54,8 +48,9 @@ public class CandidateScorer {
                 candidate.place(),
                 candidate.matchedSection(),
                 candidate.semanticScore(),
-                distanceKm,
-                distanceScore,
+                travelDistanceKm,
+                travelMinutes,
+                travelScore,
                 budgetScore,
                 environmentScore,
                 finalScore);

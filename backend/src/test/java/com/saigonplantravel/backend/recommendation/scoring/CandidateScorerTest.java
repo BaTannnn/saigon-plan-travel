@@ -17,11 +17,11 @@ import org.junit.jupiter.api.Test;
 
 public class CandidateScorerTest {
 
-    private final CandidateScorer scorer = new CandidateScorer(
-            new HaversineDistanceCalculator(), new DistanceScorer(), new BudgetScorer(), new EnvironmentScorer());
+    private final CandidateScorer scorer =
+            new CandidateScorer(new TravelScorer(), new BudgetScorer(), new EnvironmentScorer());
 
     @Test
-    void combinesCandidateSignalsIntoFinalScore() {
+    void combinesCurrentCandidateSignalsIntoFinalScore() {
 
         Place place = place("museum", BigDecimal.ZERO, true);
 
@@ -29,19 +29,37 @@ public class CandidateScorerTest {
 
         Trip trip = tripAtSameLocation(new BigDecimal("500000"), EnvironmentPreference.INDOOR);
 
-        ScoredCandidate result = scorer.score(candidate, trip);
+        ScoredCandidate result = scorer.score(candidate, trip, new BigDecimal("500000"), 2.0, 10);
 
         assertThat(result.semanticScore()).isEqualTo(0.90);
 
-        assertThat(result.distanceKm()).isEqualTo(0.0);
+        assertThat(result.travelDistanceKm()).isEqualTo(2.0);
 
-        assertThat(result.distanceScore()).isEqualTo(1.0);
+        assertThat(result.travelMinutes()).isEqualTo(10);
+
+        assertThat(result.travelScore()).isEqualTo(0.75);
 
         assertThat(result.budgetScore()).isEqualTo(1.0);
 
         assertThat(result.environmentScore()).isEqualTo(1.0);
 
-        assertThat(result.finalScore()).isCloseTo(0.945, within(0.000001));
+        assertThat(result.finalScore()).isCloseTo(0.895, within(0.000001));
+    }
+
+    @Test
+    void rescoringSameCandidateChangesWithCurrentTravelTime() {
+
+        Place place = place("museum", BigDecimal.ZERO, true);
+
+        RecommendationCandidate candidate = new RecommendationCandidate(place, 0.90, "HIGHLIGHTS");
+
+        Trip trip = tripAtSameLocation(new BigDecimal("500000"), EnvironmentPreference.INDOOR);
+
+        ScoredCandidate near = scorer.score(candidate, trip, new BigDecimal("500000"), 1.0, 5);
+
+        ScoredCandidate far = scorer.score(candidate, trip, new BigDecimal("500000"), 10.0, 60);
+
+        assertThat(near.finalScore()).isGreaterThan(far.finalScore());
     }
 
     private Place place(String slug, BigDecimal minCost, boolean indoor) {

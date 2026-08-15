@@ -7,9 +7,6 @@ import static org.mockito.Mockito.when;
 import com.saigonplantravel.backend.recommendation.filter.BudgetCandidateFilter;
 import com.saigonplantravel.backend.recommendation.filter.OpeningHoursCandidateFilter;
 import com.saigonplantravel.backend.recommendation.model.RecommendationCandidate;
-import com.saigonplantravel.backend.recommendation.model.ScoredCandidate;
-import com.saigonplantravel.backend.recommendation.ranking.CandidateRanker;
-import com.saigonplantravel.backend.recommendation.scoring.CandidateScorer;
 import com.saigonplantravel.backend.trip.entity.Trip;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,12 +28,6 @@ class RecommendationPipelineServiceTest {
     private BudgetCandidateFilter budgetCandidateFilter;
 
     @Mock
-    private CandidateScorer candidateScorer;
-
-    @Mock
-    private CandidateRanker candidateRanker;
-
-    @Mock
     private Trip trip;
 
     @Mock
@@ -45,26 +36,17 @@ class RecommendationPipelineServiceTest {
     @Mock
     private RecommendationCandidate candidateB;
 
-    @Mock
-    private ScoredCandidate scoredA;
-
-    @Mock
-    private ScoredCandidate scoredB;
-
     private RecommendationPipelineService service;
 
     @BeforeEach
     void setUp() {
+
         service = new RecommendationPipelineService(
-                placeRecommendationService,
-                openingHoursCandidateFilter,
-                budgetCandidateFilter,
-                candidateScorer,
-                candidateRanker);
+                placeRecommendationService, openingHoursCandidateFilter, budgetCandidateFilter);
     }
 
     @Test
-    void retrievesFiltersScoresAndRanksCandidates() {
+    void retrievesAndAppliesCoarseHardFilters() {
 
         String preference = "Tôi thích kiến trúc và mỹ thuật";
 
@@ -72,11 +54,7 @@ class RecommendationPipelineServiceTest {
 
         List<RecommendationCandidate> openingFiltered = List.of(candidateA, candidateB);
 
-        List<RecommendationCandidate> budgetFiltered = List.of(candidateA, candidateB);
-
-        List<ScoredCandidate> scored = List.of(scoredA, scoredB);
-
-        List<ScoredCandidate> ranked = List.of(scoredB, scoredA);
+        List<RecommendationCandidate> budgetFiltered = List.of(candidateB);
 
         when(placeRecommendationService.recommend(preference)).thenReturn(retrieved);
 
@@ -84,27 +62,19 @@ class RecommendationPipelineServiceTest {
 
         when(budgetCandidateFilter.filter(openingFiltered, trip)).thenReturn(budgetFiltered);
 
-        when(candidateScorer.score(candidateA, trip)).thenReturn(scoredA);
+        List<RecommendationCandidate> result = service.recommend(trip, preference);
 
-        when(candidateScorer.score(candidateB, trip)).thenReturn(scoredB);
-
-        when(candidateRanker.rank(scored)).thenReturn(ranked);
-
-        List<ScoredCandidate> result = service.recommend(trip, preference);
-
-        assertThat(result).containsExactly(scoredB, scoredA);
+        assertThat(result).containsExactly(candidateB);
 
         verify(placeRecommendationService).recommend(preference);
 
         verify(openingHoursCandidateFilter).filter(retrieved, trip);
 
         verify(budgetCandidateFilter).filter(openingFiltered, trip);
-
-        verify(candidateRanker).rank(scored);
     }
 
     @Test
-    void returnsEmptyWhenNoCandidateSurvivesHardFilters() {
+    void returnsEmptyWhenNoCandidateSurvivesFilters() {
 
         String preference = "Tôi thích kiến trúc";
 
@@ -116,9 +86,7 @@ class RecommendationPipelineServiceTest {
 
         when(budgetCandidateFilter.filter(List.of(), trip)).thenReturn(List.of());
 
-        when(candidateRanker.rank(List.of())).thenReturn(List.of());
-
-        List<ScoredCandidate> result = service.recommend(trip, preference);
+        List<RecommendationCandidate> result = service.recommend(trip, preference);
 
         assertThat(result).isEmpty();
     }
