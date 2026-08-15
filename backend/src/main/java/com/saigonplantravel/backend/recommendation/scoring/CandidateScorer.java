@@ -3,7 +3,9 @@ package com.saigonplantravel.backend.recommendation.scoring;
 import com.saigonplantravel.backend.recommendation.model.RecommendationCandidate;
 import com.saigonplantravel.backend.recommendation.model.ScoredCandidate;
 import com.saigonplantravel.backend.trip.entity.Trip;
+import org.springframework.stereotype.Component;
 
+@Component
 public class CandidateScorer {
 
     private static final double SEMANTIC_WEIGHT = 0.55;
@@ -28,39 +30,25 @@ public class CandidateScorer {
         this.environmentScorer = environmentScorer;
     }
 
-    public ScoredCandidate score(
-            RecommendationCandidate candidate,
-            Trip trip) {
+    public ScoredCandidate score(RecommendationCandidate candidate, Trip trip) {
 
-        double distanceKm =
-                distanceCalculator.calculateKm(
-                        trip.getStartLatitude(),
-                        trip.getStartLongitude(),
-                        candidate.place().getLatitude(),
-                        candidate.place().getLongitude());
+        double distanceKm = distanceCalculator.calculateKm(
+                trip.getStartLatitude(),
+                trip.getStartLongitude(),
+                candidate.place().getLatitude(),
+                candidate.place().getLongitude());
 
-        double distanceScore =
-                distanceScorer.score(distanceKm);
+        double distanceScore = distanceScorer.score(distanceKm);
 
-        double budgetScore =
-                budgetScorer.score(
-                        candidate.place().getMinCost(),
-                        trip.getBudget());
+        double budgetScore = budgetScorer.score(candidate.place().getMinCost(), trip.getBudget());
 
-        double environmentScore =
-                environmentScorer.score(
-                        trip.getEnvironmentPreference(),
-                        candidate.place().getIndoor());
+        double environmentScore = environmentScorer.score(
+                trip.getEnvironmentPreference(), candidate.place().getIndoor());
 
-        double finalScore =
-                SEMANTIC_WEIGHT
-                        * candidate.semanticScore()
-                        + DISTANCE_WEIGHT
-                        * distanceScore
-                        + BUDGET_WEIGHT
-                        * budgetScore
-                        + ENVIRONMENT_WEIGHT
-                        * environmentScore;
+        double finalScore = SEMANTIC_WEIGHT * candidate.semanticScore()
+                + DISTANCE_WEIGHT * distanceScore
+                + BUDGET_WEIGHT * budgetScore
+                + ENVIRONMENT_WEIGHT * environmentScore;
 
         return new ScoredCandidate(
                 candidate.place(),
