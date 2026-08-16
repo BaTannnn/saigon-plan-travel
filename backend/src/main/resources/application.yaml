@@ -16,6 +16,10 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+  http:
+    clients:
+      connect-timeout: 2s
+      read-timeout: 10s
 
 management:
   endpoints:
@@ -28,6 +32,8 @@ management:
       show-details: always
 
 app:
+  ai:
+    base-url: ${AI_SERVICE_URL:http://localhost:8000}
   security:
     cors:
       allowed-origin: ${CORS_ALLOWED_ORIGIN:http://localhost:3000}

@@ -2,7 +2,6 @@ package com.saigonplantravel.backend.place.dto.admin;
 
 import com.saigonplantravel.backend.place.dto.CategoryResponse;
 import com.saigonplantravel.backend.place.dto.OpeningHourResponse;
-
 import java.math.BigDecimal;
 import java.util.List;
 

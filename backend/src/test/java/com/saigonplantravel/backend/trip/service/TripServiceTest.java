@@ -3,12 +3,11 @@ package com.saigonplantravel.backend.trip.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.same;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
-import com.saigonplantravel.backend.place.dto.CategoryResponse;
-import com.saigonplantravel.backend.place.service.CategoryService;
 import com.saigonplantravel.backend.trip.domain.EnvironmentPreference;
 import com.saigonplantravel.backend.trip.domain.TravelPace;
 import com.saigonplantravel.backend.trip.domain.TripPolicy;
@@ -18,7 +17,6 @@ import com.saigonplantravel.backend.trip.dto.StartLocationResponse;
 import com.saigonplantravel.backend.trip.dto.TripResponse;
 import com.saigonplantravel.backend.trip.dto.TripSummaryResponse;
 import com.saigonplantravel.backend.trip.entity.Trip;
-import com.saigonplantravel.backend.trip.exception.InvalidCategoryPreferenceException;
 import com.saigonplantravel.backend.trip.exception.TripNotFoundException;
 import com.saigonplantravel.backend.trip.mapper.TripMapper;
 import com.saigonplantravel.backend.trip.repository.TripRepository;
@@ -29,7 +27,9 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,9 +44,6 @@ class TripServiceTest {
     private TripRepository tripRepository;
 
     @Mock
-    private CategoryService categoryService;
-
-    @Mock
     private TripPolicy tripPolicy;
 
     @Mock
@@ -54,157 +51,62 @@ class TripServiceTest {
 
     private TripService tripService;
 
-    private Clock fixedClock;
-
     @BeforeEach
     void setUp() {
-        fixedClock = Clock.fixed(Instant.parse("2026-08-01T03:00:00Z"), ZoneId.of("Asia/Ho_Chi_Minh"));
-
-        tripService = new TripService(tripRepository, categoryService, tripPolicy, tripMapper, fixedClock);
+        Clock fixedClock = Clock.fixed(Instant.parse("2026-08-01T03:00:00Z"), ZoneId.of("Asia/Ho_Chi_Minh"));
+        tripService = new TripService(tripRepository, tripPolicy, tripMapper, fixedClock);
     }
 
     @Test
-    void createsDraftWithResolvedCategoryIds() {
+    void createsOwnedTripAndMapsResponse() {
         SaveTripRequest request = createValidRequest();
-
-        List<CategoryResponse> categories = List.of(
-                new CategoryResponse(2L, "Nghệ thuật", "nghe-thuat"), new CategoryResponse(1L, "Văn hóa", "van-hoa"));
-
         OffsetDateTime now = OffsetDateTime.parse("2026-08-01T10:00:00+07:00");
-
-        TripResponse expectedResponse = new TripResponse(
-                UUID.randomUUID(),
-                request.tripDate(),
-                request.startTime(),
-                request.endTime(),
-                request.budget(),
-                new StartLocationResponse(
-                        request.startLocation().label(),
-                        request.startLocation().latitude(),
-                        request.startLocation().longitude()),
-                request.travelPace(),
-                request.environmentPreference(),
-                categories,
-                now,
-                now);
-
-        when(categoryService.findCategoriesBySlugs(request.categorySlugs())).thenReturn(categories);
+        TripResponse expectedResponse = responseFor(UUID.randomUUID(), request, now, now);
 
         when(tripRepository.save(any(Trip.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
-        when(tripMapper.toResponse(any(Trip.class), same(categories))).thenReturn(expectedResponse);
+        when(tripMapper.toResponse(any(Trip.class))).thenReturn(expectedResponse);
 
         TripResponse response = tripService.createTrip(99L, request);
 
         assertThat(response).isSameAs(expectedResponse);
-
-        verify(tripPolicy)
-                .validate(request.tripDate(), request.startTime(), request.endTime(), request.categorySlugs());
-
-        verify(categoryService).findCategoriesBySlugs(request.categorySlugs());
+        verify(tripPolicy).validate(request.tripDate(), request.startTime(), request.endTime());
 
         ArgumentCaptor<Trip> tripCaptor = ArgumentCaptor.forClass(Trip.class);
-
         verify(tripRepository).save(tripCaptor.capture());
-
         Trip savedTrip = tripCaptor.getValue();
 
         assertThat(savedTrip.getUserId()).isEqualTo(99L);
-
         assertThat(savedTrip.getTripDate()).isEqualTo(request.tripDate());
-
         assertThat(savedTrip.getStartTime()).isEqualTo(request.startTime());
-
         assertThat(savedTrip.getEndTime()).isEqualTo(request.endTime());
-
         assertThat(savedTrip.getBudget()).isEqualByComparingTo(request.budget());
-
         assertThat(savedTrip.getStartLocationLabel()).isEqualTo("Chợ Bến Thành");
-
-        assertThat(savedTrip.getPreferredCategoryIds()).containsExactlyInAnyOrder(1L, 2L);
-
         assertThat(savedTrip.getCreatedAt()).isEqualTo(now);
-
         assertThat(savedTrip.getUpdatedAt()).isEqualTo(now);
-
-        verify(tripMapper).toResponse(savedTrip, categories);
+        verify(tripMapper).toResponse(savedTrip);
     }
 
     @Test
-    void getsOwnedDraftWithResolvedCategories() {
+    void getsOwnedTripAndMapsResponse() {
         Long userId = 99L;
         UUID publicId = UUID.randomUUID();
-
-        OffsetDateTime createdAt = OffsetDateTime.parse("2026-08-01T10:00:00+07:00");
-
-        Trip trip = new Trip(
-                userId,
-                LocalDate.of(2026, 8, 20),
-                LocalTime.of(8, 0),
-                LocalTime.of(18, 0),
-                new BigDecimal("500000.00"),
-                "Chợ Bến Thành",
-                new BigDecimal("10.7726400"),
-                new BigDecimal("106.6980500"),
-                TravelPace.BALANCED,
-                EnvironmentPreference.MIXED,
-                Set.of(1L, 2L),
-                createdAt);
-
-        List<CategoryResponse> categories = List.of(
-                new CategoryResponse(2L, "Nghệ thuật", "nghe-thuat"), new CategoryResponse(1L, "Văn hóa", "van-hoa"));
-
-        TripResponse expectedResponse = new TripResponse(
-                trip.getPublicId(),
-                trip.getTripDate(),
-                trip.getStartTime(),
-                trip.getEndTime(),
-                trip.getBudget(),
-                new StartLocationResponse(
-                        trip.getStartLocationLabel(), trip.getStartLatitude(), trip.getStartLongitude()),
-                trip.getTravelPace(),
-                trip.getEnvironmentPreference(),
-                categories,
-                trip.getCreatedAt(),
-                trip.getUpdatedAt());
+        Trip trip = createTrip(userId, OffsetDateTime.parse("2026-08-01T10:00:00+07:00"));
+        TripResponse expectedResponse =
+                responseFor(trip.getPublicId(), createValidRequest(), trip.getCreatedAt(), trip.getUpdatedAt());
 
         when(tripRepository.findByPublicIdAndUserId(publicId, userId)).thenReturn(Optional.of(trip));
+        when(tripMapper.toResponse(trip)).thenReturn(expectedResponse);
 
-        when(categoryService.findCategoriesByIds(trip.getPreferredCategoryIds()))
-                .thenReturn(categories);
-
-        when(tripMapper.toResponse(trip, categories)).thenReturn(expectedResponse);
-
-        TripResponse response = tripService.getTrip(userId, publicId);
-
-        assertThat(response).isSameAs(expectedResponse);
-
+        assertThat(tripService.getTrip(userId, publicId)).isSameAs(expectedResponse);
         verify(tripRepository).findByPublicIdAndUserId(publicId, userId);
-
-        verify(categoryService).findCategoriesByIds(trip.getPreferredCategoryIds());
-
-        verify(tripMapper).toResponse(trip, categories);
+        verify(tripMapper).toResponse(trip);
     }
 
     @Test
-    void listsOwnedTripsWithOneBatchCategoryLookup() {
+    void listsOwnedTripsInRepositoryOrder() {
         Long userId = 42L;
         OffsetDateTime timestamp = OffsetDateTime.parse("2026-08-01T10:00:00+07:00");
-
-        Trip firstTrip = new Trip(
-                userId,
-                LocalDate.of(2026, 8, 20),
-                LocalTime.of(8, 0),
-                LocalTime.of(18, 0),
-                new BigDecimal("500000.00"),
-                "Chợ Bến Thành",
-                new BigDecimal("10.7726400"),
-                new BigDecimal("106.6980500"),
-                TravelPace.BALANCED,
-                EnvironmentPreference.MIXED,
-                Set.of(1L),
-                timestamp);
-
+        Trip firstTrip = createTrip(userId, timestamp);
         Trip secondTrip = new Trip(
                 userId,
                 LocalDate.of(2026, 8, 21),
@@ -216,78 +118,22 @@ class TripServiceTest {
                 new BigDecimal("106.6990000"),
                 TravelPace.RELAXED,
                 EnvironmentPreference.INDOOR,
-                Set.of(1L, 2L),
                 timestamp);
-
-        CategoryResponse art = new CategoryResponse(2L, "Nghệ thuật", "nghe-thuat");
-        CategoryResponse culture = new CategoryResponse(1L, "Văn hóa", "van-hoa");
-
-        TripSummaryResponse firstSummary = new TripSummaryResponse(
-                firstTrip.getPublicId(),
-                firstTrip.getTripDate(),
-                firstTrip.getStartTime(),
-                firstTrip.getEndTime(),
-                firstTrip.getBudget(),
-                firstTrip.getStartLocationLabel(),
-                firstTrip.getTravelPace(),
-                firstTrip.getEnvironmentPreference(),
-                List.of(culture),
-                firstTrip.getUpdatedAt());
-        TripSummaryResponse secondSummary = new TripSummaryResponse(
-                secondTrip.getPublicId(),
-                secondTrip.getTripDate(),
-                secondTrip.getStartTime(),
-                secondTrip.getEndTime(),
-                secondTrip.getBudget(),
-                secondTrip.getStartLocationLabel(),
-                secondTrip.getTravelPace(),
-                secondTrip.getEnvironmentPreference(),
-                List.of(art, culture),
-                secondTrip.getUpdatedAt());
+        TripSummaryResponse firstSummary = summaryFor(firstTrip);
+        TripSummaryResponse secondSummary = summaryFor(secondTrip);
 
         when(tripRepository.findAllByUserIdOrderByTripDateAscStartTimeAscPublicIdAsc(userId))
                 .thenReturn(List.of(firstTrip, secondTrip));
-        when(categoryService.findCategoriesByIds(Set.of(1L, 2L))).thenReturn(List.of(art, culture));
-        when(tripMapper.toSummaryResponse(firstTrip, List.of(culture))).thenReturn(firstSummary);
-        when(tripMapper.toSummaryResponse(secondTrip, List.of(art, culture))).thenReturn(secondSummary);
+        when(tripMapper.toSummaryResponse(firstTrip)).thenReturn(firstSummary);
+        when(tripMapper.toSummaryResponse(secondTrip)).thenReturn(secondSummary);
 
-        List<TripSummaryResponse> response = tripService.listTrips(userId);
-
-        assertThat(response).containsExactly(firstSummary, secondSummary);
-
-        verify(categoryService).findCategoriesByIds(Set.of(1L, 2L));
-        verifyNoMoreInteractions(categoryService);
+        assertThat(tripService.listTrips(userId)).containsExactly(firstSummary, secondSummary);
     }
 
     @Test
-    void rejectsUnknownCategoryBeforeSavingTrip() {
-        SaveTripRequest request = createValidRequest();
-
-        when(categoryService.findCategoriesBySlugs(request.categorySlugs()))
-                .thenReturn(List.of(new CategoryResponse(1L, "Văn hóa", "van-hoa")));
-
-        assertThatThrownBy(() -> tripService.createTrip(99L, request))
-                .isInstanceOf(InvalidCategoryPreferenceException.class)
-                .satisfies(exception -> {
-                    InvalidCategoryPreferenceException categoryException =
-                            (InvalidCategoryPreferenceException) exception;
-
-                    assertThat(categoryException.getUnknownCategorySlugs()).containsExactly("nghe-thuat");
-                });
-
-        verify(tripPolicy)
-                .validate(request.tripDate(), request.startTime(), request.endTime(), request.categorySlugs());
-
-        verify(tripRepository, never()).save(any(Trip.class));
-
-        verify(tripMapper, never()).toResponse(any(Trip.class), anyList());
-    }
-
-    @Test
-    void throwsTripNotFoundWhenDraftDoesNotBelongToUser() {
+    void throwsTripNotFoundWhenTripDoesNotBelongToUser() {
         Long userId = 99L;
         UUID publicId = UUID.randomUUID();
-
         when(tripRepository.findByPublicIdAndUserId(publicId, userId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> tripService.getTrip(userId, publicId))
@@ -295,34 +141,15 @@ class TripServiceTest {
                 .hasMessage("Trip not found");
 
         verify(tripRepository).findByPublicIdAndUserId(publicId, userId);
-
-        verify(categoryService, never()).findCategoriesByIds(any());
-
-        verify(tripMapper, never()).toResponse(any(Trip.class), anyList());
+        verifyNoInteractions(tripMapper);
     }
 
     @Test
     void replacesOwnedTripWithoutChangingIdentityOrCreatedAt() {
         Long userId = 99L;
-
         OffsetDateTime createdAt = OffsetDateTime.parse("2026-07-31T09:00:00+07:00");
-
-        Trip trip = new Trip(
-                userId,
-                LocalDate.of(2026, 8, 10),
-                LocalTime.of(8, 0),
-                LocalTime.of(16, 0),
-                new BigDecimal("300000.00"),
-                "Địa điểm xuất phát cũ",
-                new BigDecimal("10.7700000"),
-                new BigDecimal("106.6900000"),
-                TravelPace.FAST,
-                EnvironmentPreference.OUTDOOR,
-                Set.of(1L),
-                createdAt);
-
+        Trip trip = createTrip(userId, createdAt);
         UUID publicId = trip.getPublicId();
-
         SaveTripRequest request = new SaveTripRequest(
                 LocalDate.of(2026, 8, 20),
                 LocalTime.of(9, 0),
@@ -331,15 +158,75 @@ class TripServiceTest {
                 new StartLocationRequest(
                         "Bưu điện Trung tâm Sài Gòn", new BigDecimal("10.7798000"), new BigDecimal("106.6990000")),
                 TravelPace.RELAXED,
-                EnvironmentPreference.INDOOR,
-                List.of("am-thuc", "nghe-thuat"));
-
-        List<CategoryResponse> categories = List.of(
-                new CategoryResponse(4L, "Ẩm thực", "am-thuc"), new CategoryResponse(2L, "Nghệ thuật", "nghe-thuat"));
-
+                EnvironmentPreference.INDOOR);
         OffsetDateTime updatedAt = OffsetDateTime.parse("2026-08-01T10:00:00+07:00");
+        TripResponse expectedResponse = responseFor(publicId, request, createdAt, updatedAt);
 
-        TripResponse expectedResponse = new TripResponse(
+        when(tripRepository.findByPublicIdAndUserId(publicId, userId)).thenReturn(Optional.of(trip));
+        when(tripMapper.toResponse(trip)).thenReturn(expectedResponse);
+
+        assertThat(tripService.replaceTrip(userId, publicId, request)).isSameAs(expectedResponse);
+        assertThat(trip.getPublicId()).isEqualTo(publicId);
+        assertThat(trip.getUserId()).isEqualTo(userId);
+        assertThat(trip.getCreatedAt()).isEqualTo(createdAt);
+        assertThat(trip.getUpdatedAt()).isEqualTo(updatedAt);
+        assertThat(trip.getTripDate()).isEqualTo(request.tripDate());
+        assertThat(trip.getStartTime()).isEqualTo(request.startTime());
+        assertThat(trip.getEndTime()).isEqualTo(request.endTime());
+        assertThat(trip.getBudget()).isEqualByComparingTo(request.budget());
+        assertThat(trip.getStartLocationLabel()).isEqualTo("Bưu điện Trung tâm Sài Gòn");
+        assertThat(trip.getStartLatitude()).isEqualByComparingTo("10.7798000");
+        assertThat(trip.getStartLongitude()).isEqualByComparingTo("106.6990000");
+        assertThat(trip.getTravelPace()).isEqualTo(TravelPace.RELAXED);
+        assertThat(trip.getEnvironmentPreference()).isEqualTo(EnvironmentPreference.INDOOR);
+        verify(tripPolicy).validate(request.tripDate(), request.startTime(), request.endTime());
+        verify(tripRepository, never()).save(any(Trip.class));
+        verify(tripMapper).toResponse(trip);
+    }
+
+    @Test
+    void throwsTripNotFoundBeforeReplacingUnownedTrip() {
+        Long userId = 99L;
+        UUID publicId = UUID.randomUUID();
+        SaveTripRequest request = createValidRequest();
+        when(tripRepository.findByPublicIdAndUserId(publicId, userId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> tripService.replaceTrip(userId, publicId, request))
+                .isInstanceOf(TripNotFoundException.class);
+
+        verifyNoInteractions(tripPolicy, tripMapper);
+        verify(tripRepository, never()).save(any(Trip.class));
+    }
+
+    private Trip createTrip(Long userId, OffsetDateTime timestamp) {
+        return new Trip(
+                userId,
+                LocalDate.of(2026, 8, 20),
+                LocalTime.of(8, 0),
+                LocalTime.of(18, 0),
+                new BigDecimal("500000.00"),
+                "Chợ Bến Thành",
+                new BigDecimal("10.7726400"),
+                new BigDecimal("106.6980500"),
+                TravelPace.BALANCED,
+                EnvironmentPreference.MIXED,
+                timestamp);
+    }
+
+    private SaveTripRequest createValidRequest() {
+        return new SaveTripRequest(
+                LocalDate.of(2026, 8, 20),
+                LocalTime.of(8, 0),
+                LocalTime.of(18, 0),
+                new BigDecimal("500000.00"),
+                new StartLocationRequest("Chợ Bến Thành", new BigDecimal("10.7726400"), new BigDecimal("106.6980500")),
+                TravelPace.BALANCED,
+                EnvironmentPreference.MIXED);
+    }
+
+    private TripResponse responseFor(
+            UUID publicId, SaveTripRequest request, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
+        return new TripResponse(
                 publicId,
                 request.tripDate(),
                 request.startTime(),
@@ -351,147 +238,20 @@ class TripServiceTest {
                         request.startLocation().longitude()),
                 request.travelPace(),
                 request.environmentPreference(),
-                categories,
                 createdAt,
                 updatedAt);
-
-        when(tripRepository.findByPublicIdAndUserId(publicId, userId)).thenReturn(Optional.of(trip));
-
-        when(categoryService.findCategoriesBySlugs(request.categorySlugs())).thenReturn(categories);
-
-        when(tripMapper.toResponse(trip, categories)).thenReturn(expectedResponse);
-
-        TripResponse response = tripService.replaceTrip(userId, publicId, request);
-
-        assertThat(response).isSameAs(expectedResponse);
-
-        assertThat(trip.getPublicId()).isEqualTo(publicId);
-
-        assertThat(trip.getUserId()).isEqualTo(userId);
-
-        assertThat(trip.getCreatedAt()).isEqualTo(createdAt);
-
-        assertThat(trip.getUpdatedAt()).isEqualTo(updatedAt);
-
-        assertThat(trip.getTripDate()).isEqualTo(request.tripDate());
-
-        assertThat(trip.getStartTime()).isEqualTo(request.startTime());
-
-        assertThat(trip.getEndTime()).isEqualTo(request.endTime());
-
-        assertThat(trip.getBudget()).isEqualByComparingTo(request.budget());
-
-        assertThat(trip.getStartLocationLabel()).isEqualTo("Bưu điện Trung tâm Sài Gòn");
-
-        assertThat(trip.getStartLatitude()).isEqualByComparingTo("10.7798000");
-
-        assertThat(trip.getStartLongitude()).isEqualByComparingTo("106.6990000");
-
-        assertThat(trip.getTravelPace()).isEqualTo(TravelPace.RELAXED);
-
-        assertThat(trip.getEnvironmentPreference()).isEqualTo(EnvironmentPreference.INDOOR);
-
-        assertThat(trip.getPreferredCategoryIds()).containsExactlyInAnyOrder(2L, 4L);
-
-        verify(tripPolicy)
-                .validate(request.tripDate(), request.startTime(), request.endTime(), request.categorySlugs());
-
-        verify(tripRepository, never()).save(any(Trip.class));
-
-        verify(tripMapper).toResponse(trip, categories);
     }
 
-    @Test
-    void throwsTripNotFoundBeforeReplacingUnownedTrip() {
-        Long userId = 99L;
-        UUID publicId = UUID.randomUUID();
-
-        SaveTripRequest request = createValidRequest();
-
-        when(tripRepository.findByPublicIdAndUserId(publicId, userId)).thenReturn(Optional.empty());
-
-        assertThatThrownBy(() -> tripService.replaceTrip(userId, publicId, request))
-                .isInstanceOf(TripNotFoundException.class);
-
-        verifyNoInteractions(tripPolicy, categoryService, tripMapper);
-
-        verify(tripRepository, never()).save(any(Trip.class));
-    }
-
-    @Test
-    void doesNotMutateTripWhenCategoryIsUnknown() {
-        Long userId = 99L;
-
-        OffsetDateTime originalTimestamp = OffsetDateTime.parse("2026-07-31T09:00:00+07:00");
-
-        Trip trip = new Trip(
-                userId,
-                LocalDate.of(2026, 8, 10),
-                LocalTime.of(8, 0),
-                LocalTime.of(16, 0),
-                new BigDecimal("300000.00"),
-                "Địa điểm xuất phát cũ",
-                new BigDecimal("10.7700000"),
-                new BigDecimal("106.6900000"),
-                TravelPace.FAST,
-                EnvironmentPreference.OUTDOOR,
-                Set.of(1L),
-                originalTimestamp);
-
-        UUID publicId = trip.getPublicId();
-
-        SaveTripRequest request = new SaveTripRequest(
-                LocalDate.of(2026, 8, 20),
-                LocalTime.of(9, 0),
-                LocalTime.of(18, 0),
-                new BigDecimal("700000.00"),
-                new StartLocationRequest("Địa điểm mới", new BigDecimal("10.7798000"), new BigDecimal("106.6990000")),
-                TravelPace.RELAXED,
-                EnvironmentPreference.INDOOR,
-                List.of("van-hoa", "khong-ton-tai"));
-
-        when(tripRepository.findByPublicIdAndUserId(publicId, userId)).thenReturn(Optional.of(trip));
-
-        when(categoryService.findCategoriesBySlugs(request.categorySlugs()))
-                .thenReturn(List.of(new CategoryResponse(1L, "Văn hóa", "van-hoa")));
-
-        assertThatThrownBy(() -> tripService.replaceTrip(userId, publicId, request))
-                .isInstanceOf(InvalidCategoryPreferenceException.class);
-
-        assertThat(trip.getTripDate()).isEqualTo(LocalDate.of(2026, 8, 10));
-
-        assertThat(trip.getStartTime()).isEqualTo(LocalTime.of(8, 0));
-
-        assertThat(trip.getEndTime()).isEqualTo(LocalTime.of(16, 0));
-
-        assertThat(trip.getBudget()).isEqualByComparingTo("300000.00");
-
-        assertThat(trip.getStartLocationLabel()).isEqualTo("Địa điểm xuất phát cũ");
-
-        assertThat(trip.getTravelPace()).isEqualTo(TravelPace.FAST);
-
-        assertThat(trip.getEnvironmentPreference()).isEqualTo(EnvironmentPreference.OUTDOOR);
-
-        assertThat(trip.getPreferredCategoryIds()).containsExactly(1L);
-
-        assertThat(trip.getCreatedAt()).isEqualTo(originalTimestamp);
-
-        assertThat(trip.getUpdatedAt()).isEqualTo(originalTimestamp);
-
-        verify(tripRepository, never()).save(any(Trip.class));
-
-        verify(tripMapper, never()).toResponse(any(Trip.class), anyList());
-    }
-
-    private SaveTripRequest createValidRequest() {
-        return new SaveTripRequest(
-                LocalDate.of(2026, 8, 20),
-                LocalTime.of(8, 0),
-                LocalTime.of(18, 0),
-                new BigDecimal("500000.00"),
-                new StartLocationRequest("Chợ Bến Thành", new BigDecimal("10.7726400"), new BigDecimal("106.6980500")),
-                TravelPace.BALANCED,
-                EnvironmentPreference.MIXED,
-                List.of("van-hoa", "nghe-thuat"));
+    private TripSummaryResponse summaryFor(Trip trip) {
+        return new TripSummaryResponse(
+                trip.getPublicId(),
+                trip.getTripDate(),
+                trip.getStartTime(),
+                trip.getEndTime(),
+                trip.getBudget(),
+                trip.getStartLocationLabel(),
+                trip.getTravelPace(),
+                trip.getEnvironmentPreference(),
+                trip.getUpdatedAt());
     }
 }

@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type {
   EnvironmentPreference,
@@ -141,29 +140,6 @@ export function TripReview({
             label="Không gian"
             value={environmentLabels[trip.environmentPreference]}
           />
-        </div>
-      </section>
-
-      <section
-        className="mt-10 border-t border-border pt-8"
-        aria-labelledby="trip-preferences-heading"
-      >
-        <h2
-          id="trip-preferences-heading"
-          className="m-0 text-xs font-extrabold tracking-[0.12em] text-text-secondary uppercase"
-        >
-          Sở thích
-        </h2>
-        <div className="mt-4 flex flex-wrap gap-2">
-          {trip.categoryPreferences.map((category) => (
-            <Badge
-              key={category.id}
-              className="h-8 rounded-full bg-primary-soft px-3 text-primary-strong"
-              variant="secondary"
-            >
-              {category.name}
-            </Badge>
-          ))}
         </div>
       </section>
 

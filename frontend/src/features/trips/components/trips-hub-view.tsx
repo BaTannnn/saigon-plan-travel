@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -79,17 +78,6 @@ function TripCard({ trip }: { trip: TripSummaryResponse }) {
           {environmentLabels[trip.environmentPreference]}
         </p>
 
-        <div className="mt-4 flex flex-wrap gap-2">
-          {trip.categoryPreferences.map((category) => (
-            <Badge
-              key={category.id}
-              className="h-8 rounded-full bg-primary-soft px-3 text-primary-strong"
-              variant="secondary"
-            >
-              {category.name}
-            </Badge>
-          ))}
-        </div>
       </Link>
     </Card>
   );

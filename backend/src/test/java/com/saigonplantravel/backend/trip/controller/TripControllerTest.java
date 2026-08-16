@@ -20,7 +20,6 @@ import com.saigonplantravel.backend.common.exception.GlobalExceptionHandler;
 import com.saigonplantravel.backend.common.security.RestAuthenticationEntryPoint;
 import com.saigonplantravel.backend.common.security.SecurityConfig;
 import com.saigonplantravel.backend.common.security.jwt.JwtService;
-import com.saigonplantravel.backend.place.dto.CategoryResponse;
 import com.saigonplantravel.backend.trip.domain.EnvironmentPreference;
 import com.saigonplantravel.backend.trip.domain.TravelPace;
 import com.saigonplantravel.backend.trip.dto.SaveTripRequest;
@@ -28,7 +27,6 @@ import com.saigonplantravel.backend.trip.dto.StartLocationRequest;
 import com.saigonplantravel.backend.trip.dto.StartLocationResponse;
 import com.saigonplantravel.backend.trip.dto.TripResponse;
 import com.saigonplantravel.backend.trip.dto.TripSummaryResponse;
-import com.saigonplantravel.backend.trip.exception.InvalidCategoryPreferenceException;
 import com.saigonplantravel.backend.trip.exception.TripNotFoundException;
 import com.saigonplantravel.backend.trip.service.TripService;
 import java.math.BigDecimal;
@@ -86,7 +84,7 @@ class TripControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(header().string(HttpHeaders.LOCATION, "/api/v1/trips/" + tripPublicId))
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$", aMapWithSize(11)))
+                .andExpect(jsonPath("$", aMapWithSize(10)))
                 .andExpect(jsonPath("$.publicId").value(tripPublicId.toString()))
                 .andExpect(jsonPath("$.tripDate").value("2026-08-20"))
                 .andExpect(jsonPath("$.startTime").value("08:00"))
@@ -97,8 +95,6 @@ class TripControllerTest {
                 .andExpect(jsonPath("$.startLocation.longitude").value(106.6980500))
                 .andExpect(jsonPath("$.travelPace").value("BALANCED"))
                 .andExpect(jsonPath("$.environmentPreference").value("MIXED"))
-                .andExpect(jsonPath("$.categoryPreferences[0].slug").value("nghe-thuat"))
-                .andExpect(jsonPath("$.categoryPreferences[1].slug").value("van-hoa"))
                 .andExpect(jsonPath("$.id").doesNotExist())
                 .andExpect(jsonPath("$.userId").doesNotExist());
 
@@ -116,8 +112,7 @@ class TripControllerTest {
         mockMvc.perform(get("/api/v1/trips/{publicId}", tripPublicId).with(authenticatedAs(principal)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.publicId").value(tripPublicId.toString()))
-                .andExpect(jsonPath("$.startTime").value("08:00"))
-                .andExpect(jsonPath("$.categoryPreferences").isArray());
+                .andExpect(jsonPath("$.startTime").value("08:00"));
 
         verify(tripService).getTrip(principal.id(), tripPublicId);
     }
@@ -132,7 +127,7 @@ class TripControllerTest {
         mockMvc.perform(get("/api/v1/trips").with(authenticatedAs(principal)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$[0]", aMapWithSize(10)))
+                .andExpect(jsonPath("$[0]", aMapWithSize(9)))
                 .andExpect(jsonPath("$[0].publicId").value(tripPublicId.toString()))
                 .andExpect(jsonPath("$[0].startLocationLabel").value("Chợ Bến Thành, Quận 1"))
                 .andExpect(jsonPath("$[0].id").doesNotExist())
@@ -190,35 +185,6 @@ class TripControllerTest {
     }
 
     @Test
-    void rejectsInvalidRequestBeforeCallingService() throws Exception {
-
-        UserPrincipal principal = userPrincipal();
-
-        SaveTripRequest invalidRequest = new SaveTripRequest(
-                LocalDate.of(2026, 8, 20),
-                LocalTime.of(8, 0),
-                LocalTime.of(18, 0),
-                new BigDecimal("500000.00"),
-                new StartLocationRequest(
-                        "Chợ Bến Thành, Quận 1", new BigDecimal("10.7726400"), new BigDecimal("106.6980500")),
-                TravelPace.BALANCED,
-                EnvironmentPreference.MIXED,
-                List.of());
-
-        mockMvc.perform(post("/api/v1/trips")
-                        .with(authenticatedAs(principal))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalidRequest)))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
-                .andExpect(jsonPath("$.title").value("Invalid request"))
-                .andExpect(jsonPath("$.code").value("INVALID_REQUEST"))
-                .andExpect(jsonPath("$.fieldErrors[0].field").value("categorySlugs"));
-
-        verifyNoInteractions(tripService);
-    }
-
-    @Test
     void rejectsMalformedEnumWithoutCallingService() throws Exception {
 
         UserPrincipal principal = userPrincipal();
@@ -236,10 +202,7 @@ class TripControllerTest {
                     "longitude": 106.6980500
                   },
                   "travelPace": "SLOW",
-                  "environmentPreference": "MIXED",
-                  "categorySlugs": [
-                    "van-hoa"
-                  ]
+                  "environmentPreference": "MIXED"
                 }
                 """;
 
@@ -285,25 +248,6 @@ class TripControllerTest {
                 .andExpect(jsonPath("$.instance").value("/api/v1/trips/" + tripPublicId));
     }
 
-    @Test
-    void returnsUnknownCategorySlugs() throws Exception {
-
-        UserPrincipal principal = userPrincipal();
-        SaveTripRequest request = validRequest();
-
-        when(tripService.createTrip(principal.id(), request))
-                .thenThrow(new InvalidCategoryPreferenceException(List.of("khong-ton-tai")));
-
-        mockMvc.perform(post("/api/v1/trips")
-                        .with(authenticatedAs(principal))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
-                .andExpect(jsonPath("$.code").value("INVALID_CATEGORY_PREFERENCE"))
-                .andExpect(jsonPath("$.unknownCategorySlugs[0]").value("khong-ton-tai"));
-    }
-
     private RequestPostProcessor authenticatedAs(UserPrincipal principal) {
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(principal, null, principal.authorities());
@@ -329,8 +273,7 @@ class TripControllerTest {
                 new StartLocationRequest(
                         "Chợ Bến Thành, Quận 1", new BigDecimal("10.7726400"), new BigDecimal("106.6980500")),
                 TravelPace.BALANCED,
-                EnvironmentPreference.MIXED,
-                List.of("van-hoa", "nghe-thuat"));
+                EnvironmentPreference.MIXED);
     }
 
     private TripResponse tripResponse(UUID publicId) {
@@ -346,9 +289,6 @@ class TripControllerTest {
                         "Chợ Bến Thành, Quận 1", new BigDecimal("10.7726400"), new BigDecimal("106.6980500")),
                 TravelPace.BALANCED,
                 EnvironmentPreference.MIXED,
-                List.of(
-                        new CategoryResponse(2L, "Nghệ thuật", "nghe-thuat"),
-                        new CategoryResponse(1L, "Văn hóa", "van-hoa")),
                 timestamp,
                 timestamp);
     }
@@ -365,7 +305,6 @@ class TripControllerTest {
                 "Chợ Bến Thành, Quận 1",
                 TravelPace.BALANCED,
                 EnvironmentPreference.MIXED,
-                List.of(new CategoryResponse(1L, "Văn hóa", "van-hoa")),
                 timestamp);
     }
 }

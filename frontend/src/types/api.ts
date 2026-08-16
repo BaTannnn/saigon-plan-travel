@@ -11,5 +11,4 @@ export type ApiProblem = {
   instance?: string;
   code?: string;
   fieldErrors?: ApiFieldError[];
-  unknownCategorySlugs?: string[];
 };

@@ -5,9 +5,6 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -22,10 +19,9 @@ public class TripPolicy {
         this.clock = clock;
     }
 
-    public void validate(LocalDate tripDate, LocalTime startTime, LocalTime endTime, List<String> categorySlugs) {
+    public void validate(LocalDate tripDate, LocalTime startTime, LocalTime endTime) {
         validateTripDate(tripDate);
         validateTimeWindow(startTime, endTime);
-        validateCategoryDuplicates(categorySlugs);
     }
 
     private void validateTripDate(LocalDate tripDate) {
@@ -46,21 +42,6 @@ public class TripPolicy {
         if (durationMinutes < MIN_DURATION_MINUTES || durationMinutes > MAX_DURATION_MINUTES) {
             throw new InvalidTripException(
                     "INVALID_TRIP_DURATION", "endTime", "trip duration must be between 60 minutes and 18 hours");
-        }
-    }
-
-    private void validateCategoryDuplicates(List<String> categorySlugs) {
-        Set<String> uniqueSlugs = new HashSet<>();
-
-        for (String slug : categorySlugs) {
-            boolean added = uniqueSlugs.add(slug);
-
-            if (!added) {
-                throw new InvalidTripException(
-                        "DUPLICATE_CATEGORY_PREFERENCE",
-                        "categorySlugs",
-                        "category preferences must not contain duplicates");
-            }
         }
     }
 }

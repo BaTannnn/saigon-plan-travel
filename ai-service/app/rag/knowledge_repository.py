@@ -16,6 +16,13 @@ class SearchResult:
     source_uri: str
     similarity: float
 
+@dataclass
+class CandidateChunk:
+    place_slug: str
+    place_name: str
+    section: str
+    similarity: float
+    embedding: list[float]
 
 def upsert_chunk(
     *,
@@ -129,6 +136,51 @@ def search_similar_chunks(
             source_label=row[4],
             source_uri=row[5],
             similarity=float(row[6]),
+        )
+        for row in rows
+    ]
+
+def search_candidate_chunks(
+    query_embedding: list[float],
+    limit: int = 30,
+) -> list[CandidateChunk]:
+    query = """
+        SELECT
+            p.slug,
+            p.name,
+            c.section,
+            1 - (c.embedding <=> %s) AS similarity,
+            c.embedding
+        FROM place_knowledge_chunks c
+        JOIN places p
+            ON p.id = c.place_id
+        WHERE p.active = TRUE
+        ORDER BY c.embedding <=> %s
+        LIMIT %s
+    """
+
+    vector = Vector(query_embedding)
+
+    with get_connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                query,
+                (
+                    vector,
+                    vector,
+                    limit,
+                ),
+            )
+
+            rows = cursor.fetchall()
+
+    return [
+        CandidateChunk(
+            place_slug=row[0],
+            place_name=row[1],
+            section=row[2],
+            similarity=float(row[3]),
+            embedding=row[4].to_list(),
         )
         for row in rows
     ]

@@ -1,5 +1,3 @@
-import type { Category } from "@/types/category";
-
 export type TravelPace = "RELAXED" | "BALANCED" | "FAST";
 
 export type EnvironmentPreference = "INDOOR" | "OUTDOOR" | "MIXED";
@@ -18,7 +16,6 @@ export type SaveTripRequest = {
   startLocation: StartLocationRequest;
   travelPace: TravelPace;
   environmentPreference: EnvironmentPreference;
-  categorySlugs: string[];
 };
 
 export type TripResponse = {
@@ -30,7 +27,6 @@ export type TripResponse = {
   startLocation: StartLocationRequest;
   travelPace: TravelPace;
   environmentPreference: EnvironmentPreference;
-  categoryPreferences: Category[];
   createdAt: string;
   updatedAt: string;
 };
@@ -44,6 +40,5 @@ export type TripSummaryResponse = {
   startLocationLabel: string;
   travelPace: TravelPace;
   environmentPreference: EnvironmentPreference;
-  categoryPreferences: Category[];
   updatedAt: string;
 };

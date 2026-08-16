@@ -3,8 +3,6 @@ package com.saigonplantravel.backend.trip.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.saigonplantravel.backend.auth.entity.UserAccount;
-import com.saigonplantravel.backend.place.entity.Category;
-import com.saigonplantravel.backend.place.repository.CategoryRepository;
 import com.saigonplantravel.backend.trip.domain.EnvironmentPreference;
 import com.saigonplantravel.backend.trip.domain.TravelPace;
 import com.saigonplantravel.backend.trip.entity.Trip;
@@ -13,16 +11,12 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,21 +51,13 @@ class TripRepositoryTest {
     private TripRepository tripRepository;
 
     @Autowired
-    private CategoryRepository categoryRepository;
-
-    @Autowired
     private EntityManager entityManager;
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
-
     @Test
-    void persistsAndLoadsOwnedTripWithCategoryPreferences() {
+    void persistsAndLoadsOwnedTrip() {
         Long ownerUserId = persistUser("owner@example.com");
 
         Long anotherUserId = persistUser("another@example.com");
-
-        Set<Long> categoryIds = findCategoryIds(Set.of("van-hoa", "nghe-thuat"));
 
         OffsetDateTime timestamp = OffsetDateTime.parse("2026-08-03T10:00:00+07:00");
 
@@ -86,12 +72,10 @@ class TripRepositoryTest {
                 new BigDecimal("106.6980500"),
                 TravelPace.BALANCED,
                 EnvironmentPreference.MIXED,
-                categoryIds,
                 timestamp);
 
         Trip savedTrip = tripRepository.saveAndFlush(trip);
 
-        Long internalTripId = savedTrip.getId();
         UUID publicId = savedTrip.getPublicId();
 
         entityManager.clear();
@@ -99,48 +83,23 @@ class TripRepositoryTest {
         Trip loadedTrip =
                 tripRepository.findByPublicIdAndUserId(publicId, ownerUserId).orElseThrow();
 
-        /*
-         * Detach sau khi repository đã load Trip.
-         * Nếu EntityGraph không tải category IDs,
-         * truy cập collection sau clear có thể lỗi lazy load.
-         */
-        entityManager.clear();
-
         assertThat(loadedTrip.getPublicId()).isEqualTo(publicId);
 
         assertThat(loadedTrip.getUserId()).isEqualTo(ownerUserId);
 
-        assertThat(loadedTrip.getPreferredCategoryIds()).containsExactlyInAnyOrderElementsOf(categoryIds);
-
         assertThat(tripRepository.findByPublicIdAndUserId(publicId, anotherUserId))
                 .isEmpty();
-
-        Integer preferenceRowCount = jdbcTemplate.queryForObject(
-                """
-                        SELECT count(*)
-                        FROM trip_category_preferences
-                        WHERE trip_id = ?
-                        """,
-                Integer.class,
-                internalTripId);
-
-        assertThat(preferenceRowCount).isEqualTo(2);
     }
 
     @Test
     void listsOnlyOwnedTripsInDeterministicOrder() {
         Long ownerUserId = persistUser("list-owner@example.com");
         Long anotherUserId = persistUser("list-another@example.com");
-        Set<Long> categoryIds = findCategoryIds(Set.of("van-hoa"));
-
-        Trip laterTrip =
-                newTrip(ownerUserId, LocalDate.of(2026, 8, 21), LocalTime.of(9, 0), "Điểm xuất phát B", categoryIds);
-        Trip tiedTripOne =
-                newTrip(ownerUserId, LocalDate.of(2026, 8, 20), LocalTime.of(8, 0), "Điểm xuất phát A1", categoryIds);
-        Trip tiedTripTwo =
-                newTrip(ownerUserId, LocalDate.of(2026, 8, 20), LocalTime.of(8, 0), "Điểm xuất phát A2", categoryIds);
-        Trip anotherUsersTrip = newTrip(
-                anotherUserId, LocalDate.of(2026, 8, 19), LocalTime.of(7, 0), "Không thuộc chủ sở hữu", categoryIds);
+        Trip laterTrip = newTrip(ownerUserId, LocalDate.of(2026, 8, 21), LocalTime.of(9, 0), "Điểm xuất phát B");
+        Trip tiedTripOne = newTrip(ownerUserId, LocalDate.of(2026, 8, 20), LocalTime.of(8, 0), "Điểm xuất phát A1");
+        Trip tiedTripTwo = newTrip(ownerUserId, LocalDate.of(2026, 8, 20), LocalTime.of(8, 0), "Điểm xuất phát A2");
+        Trip anotherUsersTrip =
+                newTrip(anotherUserId, LocalDate.of(2026, 8, 19), LocalTime.of(7, 0), "Không thuộc chủ sở hữu");
 
         tripRepository.saveAllAndFlush(List.of(laterTrip, tiedTripOne, tiedTripTwo, anotherUsersTrip));
 
@@ -162,15 +121,11 @@ class TripRepositoryTest {
                 .containsExactlyElementsOf(expectedPublicIds)
                 .doesNotContain(anotherUsersTrip.getPublicId());
         assertThat(ownedTrips).allMatch(trip -> trip.getUserId().equals(ownerUserId));
-        assertThat(ownedTrips)
-                .allSatisfy(trip -> assertThat(trip.getPreferredCategoryIds()).containsExactlyElementsOf(categoryIds));
     }
 
     @Test
-    void replacesTripDetailsAndCategoryPreferences() {
+    void replacesTripDetailsThroughDirtyChecking() {
         Long ownerUserId = persistUser("replace-owner@example.com");
-
-        Set<Long> originalCategoryIds = findCategoryIds(Set.of("van-hoa", "nghe-thuat"));
 
         OffsetDateTime createdAt = OffsetDateTime.parse("2026-08-01T09:00:00+07:00");
 
@@ -185,20 +140,15 @@ class TripRepositoryTest {
                 new BigDecimal("106.6900000"),
                 TravelPace.FAST,
                 EnvironmentPreference.OUTDOOR,
-                originalCategoryIds,
                 createdAt);
 
         Trip savedTrip = tripRepository.saveAndFlush(trip);
 
         UUID publicId = savedTrip.getPublicId();
-        Long internalTripId = savedTrip.getId();
-
         entityManager.clear();
 
         Trip managedTrip =
                 tripRepository.findByPublicIdAndUserId(publicId, ownerUserId).orElseThrow();
-
-        Set<Long> replacementCategoryIds = findCategoryIds(Set.of("ngoai-troi"));
 
         OffsetDateTime updatedAt = OffsetDateTime.parse("2026-08-03T10:00:00+07:00");
 
@@ -212,7 +162,6 @@ class TripRepositoryTest {
                 new BigDecimal("106.6990000"),
                 TravelPace.RELAXED,
                 EnvironmentPreference.INDOOR,
-                replacementCategoryIds,
                 updatedAt);
 
         /*
@@ -246,19 +195,6 @@ class TripRepositoryTest {
         assertThat(reloadedTrip.getTravelPace()).isEqualTo(TravelPace.RELAXED);
 
         assertThat(reloadedTrip.getEnvironmentPreference()).isEqualTo(EnvironmentPreference.INDOOR);
-
-        assertThat(reloadedTrip.getPreferredCategoryIds()).containsExactlyInAnyOrderElementsOf(replacementCategoryIds);
-
-        Integer preferenceRowCount = jdbcTemplate.queryForObject(
-                """
-                        SELECT count(*)
-                        FROM trip_category_preferences
-                        WHERE trip_id = ?
-                        """,
-                Integer.class,
-                internalTripId);
-
-        assertThat(preferenceRowCount).isEqualTo(1);
     }
 
     private Long persistUser(String email) {
@@ -270,8 +206,7 @@ class TripRepositoryTest {
         return user.getId();
     }
 
-    private Trip newTrip(
-            Long userId, LocalDate tripDate, LocalTime startTime, String startLocationLabel, Set<Long> categoryIds) {
+    private Trip newTrip(Long userId, LocalDate tripDate, LocalTime startTime, String startLocationLabel) {
         return new Trip(
                 userId,
                 tripDate,
@@ -283,15 +218,6 @@ class TripRepositoryTest {
                 new BigDecimal("106.6980500"),
                 TravelPace.BALANCED,
                 EnvironmentPreference.MIXED,
-                categoryIds,
                 OffsetDateTime.parse("2026-08-03T10:00:00+07:00"));
-    }
-
-    private Set<Long> findCategoryIds(Collection<String> slugs) {
-        var categories = categoryRepository.findAllBySlugInOrderByNameAscIdAsc(slugs);
-
-        assertThat(categories).hasSize(slugs.size());
-
-        return categories.stream().map(Category::getId).collect(Collectors.toSet());
     }
 }

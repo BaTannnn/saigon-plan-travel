@@ -21,7 +21,7 @@ export default function TripsError({
       <Alert className="max-w-xl rounded-mint-lg border-border bg-surface p-6 shadow-mint-md">
         <AlertTitle>Không thể chuẩn bị biểu mẫu chuyến đi</AlertTitle>
         <AlertDescription>
-          Danh mục địa điểm chưa tải được. Hãy kiểm tra backend rồi thử lại.
+          Không thể tải dữ liệu chuyến đi. Hãy kiểm tra kết nối và thử lại.
         </AlertDescription>
         <div className="mt-5 flex gap-3">
           <Button type="button" onClick={reset}>Thử lại</Button>
