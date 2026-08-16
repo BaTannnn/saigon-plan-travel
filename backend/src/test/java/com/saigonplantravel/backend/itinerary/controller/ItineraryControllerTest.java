@@ -18,13 +18,9 @@ import com.saigonplantravel.backend.common.exception.GlobalExceptionHandler;
 import com.saigonplantravel.backend.common.security.RestAuthenticationEntryPoint;
 import com.saigonplantravel.backend.common.security.SecurityConfig;
 import com.saigonplantravel.backend.common.security.jwt.JwtService;
-import com.saigonplantravel.backend.itinerary.dto.ItineraryDetailItemResponse;
-import com.saigonplantravel.backend.itinerary.dto.ItineraryDetailResponse;
-import com.saigonplantravel.backend.itinerary.dto.ItineraryPlaceResponse;
-import com.saigonplantravel.backend.itinerary.dto.ItineraryScheduleResponse;
-import com.saigonplantravel.backend.itinerary.dto.ItinerarySummaryResponse;
-import com.saigonplantravel.backend.itinerary.dto.SaveItineraryItemRequest;
+import com.saigonplantravel.backend.itinerary.dto.*;
 import com.saigonplantravel.backend.itinerary.exception.DuplicateItineraryPlaceException;
+import com.saigonplantravel.backend.itinerary.exception.InvalidItineraryOrderException;
 import com.saigonplantravel.backend.itinerary.exception.ItineraryItemNotFoundException;
 import com.saigonplantravel.backend.itinerary.service.ItineraryService;
 import java.math.BigDecimal;
@@ -235,6 +231,156 @@ class ItineraryControllerTest {
                         .with(authenticatedAs(principal)))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("ITINERARY_ITEM_NOT_FOUND"));
+    }
+    @Test
+    void reordersItemsAndReturnsRecalculatedItinerary()
+            throws Exception {
+
+        UserPrincipal principal =
+                userPrincipal();
+
+        UUID tripPublicId =
+                UUID.randomUUID();
+
+        UUID firstItemPublicId =
+                UUID.randomUUID();
+
+        UUID secondItemPublicId =
+                UUID.randomUUID();
+
+        ReorderItineraryItemsRequest request =
+                new ReorderItineraryItemsRequest(
+                        List.of(
+                                secondItemPublicId,
+                                firstItemPublicId));
+
+        ItineraryDetailResponse response =
+                itineraryResponse(
+                        tripPublicId);
+
+        when(itineraryService.reorderItems(
+                principal.id(),
+                tripPublicId,
+                request.itemPublicIds()))
+                .thenReturn(response);
+
+        mockMvc.perform(
+                        put(
+                                "/api/v1/trips/{tripPublicId}/itinerary/items/order",
+                                tripPublicId)
+                                .with(
+                                        authenticatedAs(
+                                                principal))
+                                .contentType(
+                                        MediaType.APPLICATION_JSON)
+                                .content(
+                                        objectMapper.writeValueAsString(
+                                                request)))
+                .andExpect(
+                        status().isOk())
+                .andExpect(
+                        jsonPath("$.items")
+                                .isArray())
+                .andExpect(
+                        jsonPath("$.items[0].schedule")
+                                .exists())
+                .andExpect(
+                        jsonPath("$.summary")
+                                .exists())
+                .andExpect(
+                        jsonPath("$.issues")
+                                .isArray());
+
+        verify(itineraryService)
+                .reorderItems(
+                        principal.id(),
+                        tripPublicId,
+                        request.itemPublicIds());
+    }
+    @Test
+    void rejectsEmptyReorderBeforeCallingService()
+            throws Exception {
+
+        UserPrincipal principal =
+                userPrincipal();
+
+        UUID tripPublicId =
+                UUID.randomUUID();
+
+        mockMvc.perform(
+                        put(
+                                "/api/v1/trips/{tripPublicId}/itinerary/items/order",
+                                tripPublicId)
+                                .with(
+                                        authenticatedAs(
+                                                principal))
+                                .contentType(
+                                        MediaType.APPLICATION_JSON)
+                                .content(
+                                        """
+                                        {
+                                          "itemPublicIds": []
+                                        }
+                                        """))
+                .andExpect(
+                        status().isBadRequest())
+                .andExpect(
+                        jsonPath("$.code")
+                                .value(
+                                        "INVALID_REQUEST"));
+
+        verifyNoInteractions(
+                itineraryService);
+    }
+    @Test
+    void mapsInvalidItineraryOrderToBadRequest()
+            throws Exception {
+
+        UserPrincipal principal =
+                userPrincipal();
+
+        UUID tripPublicId =
+                UUID.randomUUID();
+
+        UUID itemPublicId =
+                UUID.randomUUID();
+
+        ReorderItineraryItemsRequest request =
+                new ReorderItineraryItemsRequest(
+                        List.of(
+                                itemPublicId));
+
+        when(itineraryService.reorderItems(
+                principal.id(),
+                tripPublicId,
+                request.itemPublicIds()))
+                .thenThrow(
+                        new InvalidItineraryOrderException());
+
+        mockMvc.perform(
+                        put(
+                                "/api/v1/trips/{tripPublicId}/itinerary/items/order",
+                                tripPublicId)
+                                .with(
+                                        authenticatedAs(
+                                                principal))
+                                .contentType(
+                                        MediaType.APPLICATION_JSON)
+                                .content(
+                                        objectMapper.writeValueAsString(
+                                                request)))
+                .andExpect(
+                        status().isBadRequest())
+                .andExpect(
+                        jsonPath("$.code")
+                                .value(
+                                        "INVALID_ITINERARY_ORDER"));
+
+        verify(itineraryService)
+                .reorderItems(
+                        principal.id(),
+                        tripPublicId,
+                        request.itemPublicIds());
     }
 
     private ItineraryDetailResponse itineraryResponse(UUID tripPublicId) {

@@ -2,6 +2,7 @@ package com.saigonplantravel.backend.itinerary.controller;
 
 import com.saigonplantravel.backend.auth.security.UserPrincipal;
 import com.saigonplantravel.backend.itinerary.dto.ItineraryDetailResponse;
+import com.saigonplantravel.backend.itinerary.dto.ReorderItineraryItemsRequest;
 import com.saigonplantravel.backend.itinerary.dto.SaveItineraryItemRequest;
 import com.saigonplantravel.backend.itinerary.service.ItineraryService;
 import jakarta.validation.Valid;
@@ -59,5 +60,16 @@ public class ItineraryController {
             @Valid @RequestBody SaveItineraryItemRequest request) {
 
         return itineraryService.replaceItemPlace(principal.id(), tripPublicId, itemPublicId, request.placeId());
+    }
+    @PutMapping("/items/order")
+    public ItineraryDetailResponse reorderItems(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable UUID tripPublicId,
+            @Valid @RequestBody ReorderItineraryItemsRequest request) {
+
+        return itineraryService.reorderItems(
+                principal.id(),
+                tripPublicId,
+                request.itemPublicIds());
     }
 }

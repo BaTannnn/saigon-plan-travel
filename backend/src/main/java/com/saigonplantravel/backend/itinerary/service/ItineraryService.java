@@ -5,6 +5,7 @@ import com.saigonplantravel.backend.itinerary.entity.Itinerary;
 import com.saigonplantravel.backend.itinerary.entity.ItineraryItem;
 import com.saigonplantravel.backend.itinerary.exception.DuplicateItineraryPlaceException;
 import com.saigonplantravel.backend.itinerary.exception.InactiveItineraryPlaceException;
+import com.saigonplantravel.backend.itinerary.exception.InvalidItineraryOrderException;
 import com.saigonplantravel.backend.itinerary.exception.ItineraryItemNotFoundException;
 import com.saigonplantravel.backend.itinerary.mapper.ItineraryDetailMapper;
 import com.saigonplantravel.backend.itinerary.model.CalculatedItinerary;
@@ -154,5 +155,34 @@ public class ItineraryService {
         CalculatedItinerary calculated = recalculationService.recalculate(trip, List.of());
 
         return itineraryDetailMapper.toEmptyResponse(tripPublicId, calculated);
+    }
+
+    @Transactional
+    public ItineraryDetailResponse reorderItems(Long userId, UUID tripPublicId, List<UUID> orderedItemPublicIds) {
+
+        Trip trip = findOwnedTrip(userId, tripPublicId);
+
+        Itinerary itinerary =
+                itineraryRepository.findByTripId(trip.getId()).orElseThrow(InvalidItineraryOrderException::new);
+
+        OffsetDateTime now = OffsetDateTime.now(clock);
+
+        /*
+         * Phase 1:
+         * Move current sequence numbers outside
+         * the active range to avoid violating
+         * UNIQUE(itinerary_id, sequence_no).
+         */
+        itinerary.shiftSequencesForReorder(now);
+
+        itineraryRepository.flush();
+
+        /*
+         * Phase 2:
+         * Apply the user-defined final order.
+         */
+        itinerary.reorderItems(orderedItemPublicIds, now);
+
+        return recalculateAndMap(tripPublicId, trip, itinerary);
     }
 }

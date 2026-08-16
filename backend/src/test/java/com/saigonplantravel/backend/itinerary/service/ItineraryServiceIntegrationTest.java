@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.saigonplantravel.backend.itinerary.dto.ItineraryDetailResponse;
 import com.saigonplantravel.backend.itinerary.exception.DuplicateItineraryPlaceException;
 import com.saigonplantravel.backend.itinerary.exception.InactiveItineraryPlaceException;
+import com.saigonplantravel.backend.itinerary.exception.InvalidItineraryOrderException;
 import com.saigonplantravel.backend.itinerary.exception.ItineraryItemNotFoundException;
 import com.saigonplantravel.backend.place.exception.PlaceNotFoundException;
 import com.saigonplantravel.backend.testsupport.database.DatabaseTestFixtures;
@@ -14,6 +15,7 @@ import com.saigonplantravel.backend.testsupport.database.DatabaseTestFixtures.Tr
 import com.saigonplantravel.backend.trip.exception.TripNotFoundException;
 import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -344,6 +346,91 @@ class ItineraryServiceIntegrationTest {
                         foreignResponse.items().getFirst().publicId(),
                         firstPlace.placeId()))
                 .isInstanceOf(ItineraryItemNotFoundException.class);
+    }
+
+    @Test
+    void reorderChangesItemOrderAndKeepsContinuousSequences() {
+
+        Long userId = fixtures.insertUser("reorder-owner");
+
+        TripFixture trip = fixtures.insertValidTrip(userId);
+
+        PlaceFixture first = place("Reorder first", "reorder-first");
+
+        PlaceFixture second = place("Reorder second", "reorder-second");
+
+        PlaceFixture third = place("Reorder third", "reorder-third");
+
+        itineraryService.addItem(userId, trip.tripPublicId(), first.placeId());
+
+        itineraryService.addItem(userId, trip.tripPublicId(), second.placeId());
+
+        ItineraryDetailResponse beforeReorder = itineraryService.addItem(userId, trip.tripPublicId(), third.placeId());
+
+        UUID firstItemPublicId = beforeReorder.items().get(0).publicId();
+
+        UUID secondItemPublicId = beforeReorder.items().get(1).publicId();
+
+        UUID thirdItemPublicId = beforeReorder.items().get(2).publicId();
+
+        ItineraryDetailResponse result = itineraryService.reorderItems(
+                userId, trip.tripPublicId(), List.of(thirdItemPublicId, firstItemPublicId, secondItemPublicId));
+
+        assertThat(result.items())
+                .extracting(item -> item.publicId())
+                .containsExactly(thirdItemPublicId, firstItemPublicId, secondItemPublicId);
+
+        assertThat(result.items()).extracting(item -> item.sequenceNo()).containsExactly(1, 2, 3);
+
+        assertThat(result.items())
+                .extracting(item -> item.place().slug())
+                .containsExactly(placeSlug(third.placeId()), placeSlug(first.placeId()), placeSlug(second.placeId()));
+
+        /*
+         * Recalculation phải chạy lại theo order mới.
+         */
+        assertThat(result.items()).allSatisfy(item -> {
+            assertThat(item.schedule()).isNotNull();
+
+            assertThat(item.schedule().arrivalTime()).isNotNull();
+
+            assertThat(item.schedule().visitEndTime()).isNotNull();
+        });
+
+        entityManager.flush();
+
+        assertThat(databaseSequences(trip.tripId())).containsExactly(1, 2, 3);
+    }
+
+    @Test
+    void rejectsReorderWhenItemsAreMissing() {
+
+        Long userId = fixtures.insertUser("invalid-reorder-owner");
+
+        TripFixture trip = fixtures.insertValidTrip(userId);
+
+        PlaceFixture first = place("Invalid reorder first", "invalid-reorder-first");
+
+        PlaceFixture second = place("Invalid reorder second", "invalid-reorder-second");
+
+        ItineraryDetailResponse firstResponse = itineraryService.addItem(userId, trip.tripPublicId(), first.placeId());
+
+        itineraryService.addItem(userId, trip.tripPublicId(), second.placeId());
+
+        UUID firstItemPublicId = firstResponse.items().getFirst().publicId();
+
+        assertThatThrownBy(() -> itineraryService.reorderItems(userId, trip.tripPublicId(), List.of(firstItemPublicId)))
+                .isInstanceOf(InvalidItineraryOrderException.class);
+
+        /*
+         * Transaction rollback phải giữ DB
+         * ở trạng thái hợp lệ.
+         */
+        entityManager.clear();
+
+        ItineraryDetailResponse loaded = itineraryService.getItinerary(userId, trip.tripPublicId());
+
+        assertThat(loaded.items()).hasSize(2);
     }
 
     private PlaceFixture place(String name, String slug) {
