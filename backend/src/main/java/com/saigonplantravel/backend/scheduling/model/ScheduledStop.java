@@ -11,5 +11,4 @@ public record ScheduledStop(
         LocalTime visitEndTime,
         int travelMinutes,
         double travelDistanceKm,
-        BigDecimal estimatedCost,
-        double selectionScore) {}
+        BigDecimal estimatedCost) {}

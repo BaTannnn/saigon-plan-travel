@@ -162,8 +162,7 @@ public class ItineraryScheduler {
                 visitEndTime,
                 travel.estimatedMinutes(),
                 travel.estimatedDistanceKm(),
-                place.getMinCost(),
-                scoredCandidate.finalScore());
+                place.getMinCost());
 
         return new CandidateEvaluation(candidate, scoredCandidate, scheduledStop);
     }
