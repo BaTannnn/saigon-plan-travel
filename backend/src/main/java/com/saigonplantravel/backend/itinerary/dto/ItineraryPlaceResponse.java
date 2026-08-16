@@ -1,3 +1,9 @@
 package com.saigonplantravel.backend.itinerary.dto;
 
-public record ItineraryPlaceResponse(String slug, String name) {}
+import java.math.BigDecimal;
+
+public record ItineraryPlaceResponse(
+        String slug,
+        String name,
+        BigDecimal latitude,
+        BigDecimal longitude) {}
