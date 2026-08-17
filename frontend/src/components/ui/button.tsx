@@ -11,7 +11,7 @@ const buttonVariants = cva(
       variant: {
         default: "bg-primary text-primary-foreground hover:bg-primary-strong",
         accent:
-          "bg-[linear-gradient(110deg,var(--accent),color-mix(in_srgb,var(--accent)_84%,var(--surface)))] text-accent-foreground shadow-mint-accent hover:brightness-95",
+          "bg-accent text-accent-foreground hover:bg-accent-strong",
         outline:
           "border-border bg-card text-foreground hover:bg-secondary hover:text-secondary-foreground aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
         secondary:

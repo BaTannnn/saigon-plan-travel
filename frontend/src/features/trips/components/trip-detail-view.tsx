@@ -22,6 +22,7 @@ import {
   addItineraryItem,
   deleteItineraryItem,
   getItinerary,
+  reorderItineraryItems,
   replaceItineraryItem,
 } from "@/lib/api/itinerary-api";
 import { getTrip, replaceTrip } from "@/lib/api/trip-api";
@@ -117,7 +118,6 @@ export function TripDetailView({ publicId }: TripDetailViewProps) {
     }
   }, [publicId, runAuthenticated, status]);
 
-
   async function handleReplace(request: SaveTripRequest) {
     const updated = await runAuthenticated((token) =>
       replaceTrip(publicId, request, token),
@@ -135,7 +135,9 @@ export function TripDetailView({ publicId }: TripDetailViewProps) {
         addItineraryItem(publicId, { placeId: place.id }, token),
       );
       setItinerary(updated);
-      const addedItem = updated.items.find((item) => item.place.id === place.id);
+      const addedItem = updated.items.find(
+        (item) => item.place.slug === place.slug,
+      );
       setSelectedItemPublicId(addedItem?.publicId ?? null);
     } catch (error) {
       setItineraryError(getItineraryErrorMessage(error));
@@ -191,19 +193,37 @@ export function TripDetailView({ publicId }: TripDetailViewProps) {
     }
   }
 
+  async function handleReorderItems(itemPublicIds: string[]) {
+    setItineraryMutating(true);
+    setItineraryError(null);
+
+    try {
+      const updated = await runAuthenticated((token) =>
+        reorderItineraryItems(publicId, { itemPublicIds }, token),
+      );
+      setItinerary(updated);
+    } catch (error) {
+      setItineraryError(getItineraryErrorMessage(error));
+      throw error;
+    } finally {
+      setItineraryMutating(false);
+    }
+  }
+
   function handleSectionChange(nextSection: TripWorkspaceSection) {
-  setEditing(false);
-  setSection(nextSection);
+    setEditing(false);
+    setSection(nextSection);
 
-  if (nextSection === "overview") {
-    setSelectedItemPublicId(null);
-    return;
+    if (nextSection === "overview") {
+      setSelectedItemPublicId(null);
+      return;
+    }
+
+    if (!itineraryLoaded) {
+      void loadItinerary();
+    }
   }
 
-  if (!itineraryLoaded) {
-    void loadItinerary();
-  }
-}
   if (status === "loading" || loading) {
     return (
       <main
@@ -261,7 +281,9 @@ export function TripDetailView({ publicId }: TripDetailViewProps) {
     <TripReview trip={trip} onEdit={() => setEditing(true)} />
   );
 
-  const itineraryItems = itinerary?.items ?? [];
+  const itineraryItems = [...(itinerary?.items ?? [])].sort(
+    (left, right) => left.sequenceNo - right.sequenceNo,
+  );
 
   return (
     <main className="grid min-h-[calc(100dvh_-_4rem)] grid-cols-1 bg-background md:min-h-[calc(100dvh_-_5rem)] xl:h-[calc(100dvh_-_5rem)] xl:min-h-[680px] xl:grid-cols-[210px_clamp(470px,34vw,580px)_minmax(0,1fr)] xl:overflow-hidden">
@@ -285,6 +307,7 @@ export function TripDetailView({ publicId }: TripDetailViewProps) {
             onAdd={handleAddPlace}
             onDelete={handleDeleteItem}
             onReplace={handleReplacePlace}
+            onReorder={handleReorderItems}
             onSelectItem={setSelectedItemPublicId}
           />
         )}

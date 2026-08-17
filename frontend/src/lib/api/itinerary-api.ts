@@ -1,6 +1,7 @@
 import { requestJson } from "@/lib/api/api-client";
 import type {
   ItineraryResponse,
+  ReorderItineraryItemsRequest,
   SaveItineraryItemRequest,
 } from "@/types/itinerary";
 
@@ -69,6 +70,22 @@ export function replaceItineraryItem(
       tripPublicId,
       `/items/${encodeURIComponent(itemPublicId)}`,
     ),
+    {
+      method: "PUT",
+      body: request,
+      token,
+      cache: "no-store",
+    },
+  );
+}
+
+export function reorderItineraryItems(
+  tripPublicId: string,
+  request: ReorderItineraryItemsRequest,
+  token: string,
+) {
+  return requestJson<ItineraryResponse>(
+    getItineraryUrl(tripPublicId, "/items/order"),
     {
       method: "PUT",
       body: request,
