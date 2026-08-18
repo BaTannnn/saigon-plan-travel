@@ -1,8 +1,6 @@
-const currencyFormatter = new Intl.NumberFormat("vi-VN", {
-  style: "currency",
-  currency: "VND",
-  maximumFractionDigits: 0,
-});
+import { formatCurrency } from "@/lib/formatters";
+
+export { formatDuration } from "@/lib/formatters";
 
 export function formatCost(minCost: number, maxCost: number) {
   if (minCost === 0 && maxCost === 0) {
@@ -10,20 +8,10 @@ export function formatCost(minCost: number, maxCost: number) {
   }
 
   if (minCost === maxCost) {
-    return currencyFormatter.format(minCost);
+    return formatCurrency(minCost);
   }
 
-  return `${currencyFormatter.format(minCost)} – ${currencyFormatter.format(maxCost)}`;
-}
-
-export function formatDuration(minutes: number) {
-  if (minutes < 60) {
-    return `${minutes} phút`;
-  }
-
-  const hours = Math.floor(minutes / 60);
-  const remainder = minutes % 60;
-  return remainder ? `${hours} giờ ${remainder} phút` : `${hours} giờ`;
+  return `${formatCurrency(minCost)} – ${formatCurrency(maxCost)}`;
 }
 
 export const dayNames: Record<number, string> = {

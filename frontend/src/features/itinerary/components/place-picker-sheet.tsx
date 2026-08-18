@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { Filter, MapPin, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,7 +29,7 @@ export type PlacePickerMode = "add" | "replace";
 type PlacePickerSheetProps = {
   open: boolean;
   mode: PlacePickerMode;
-  excludedPlaceIds: number[];
+  excludedPlaceSlugs: string[];
   busy?: boolean;
   onOpenChange: (open: boolean) => void;
   onSelect: (place: PlaceSummary) => Promise<void>;
@@ -37,10 +37,15 @@ type PlacePickerSheetProps = {
 
 const ALL_VALUE = "__all__";
 
+type CatalogLoadResult = [
+  Awaited<ReturnType<typeof getPlaceCatalog>>,
+  Awaited<ReturnType<typeof getCategories>>,
+];
+
 export function PlacePickerSheet({
   open,
   mode,
-  excludedPlaceIds,
+  excludedPlaceSlugs,
   busy = false,
   onOpenChange,
   onSelect,
@@ -52,56 +57,66 @@ export function PlacePickerSheet({
   const [category, setCategory] = useState(ALL_VALUE);
   const [indoor, setIndoor] = useState(ALL_VALUE);
   const [maxCost, setMaxCost] = useState("");
-  const [catalogLoading, setCatalogLoading] = useState(true);
+  const [catalogLoaded, setCatalogLoaded] = useState(false);
   const [filterLoading, setFilterLoading] = useState(false);
-  const loading = catalogLoading || filterLoading;
   const [error, setError] = useState<string | null>(null);
   const [selectedPlaceId, setSelectedPlaceId] = useState<number | null>(null);
+  const catalogRequestRef = useRef<Promise<CatalogLoadResult> | null>(null);
+  const catalogLoading = open && !catalogLoaded && error === null;
+  const loading = catalogLoading || filterLoading;
 
   useEffect(() => {
-  let cancelled = false;
+    if (!open || catalogLoaded) return;
 
-  Promise.all([getPlaceCatalog(), getCategories()])
-    .then(([placeCatalog, categoryList]) => {
-      if (cancelled) return;
+    let cancelled = false;
+    const request =
+      catalogRequestRef.current ??
+      Promise.all([getPlaceCatalog(), getCategories()]);
+    catalogRequestRef.current = request;
 
-      setCatalog(placeCatalog.content);
-      setPlaces(placeCatalog.content);
-      setCategories(categoryList);
-    })
-    .catch(() => {
-      if (cancelled) return;
+    request
+      .then(([placeCatalog, categoryList]) => {
+        if (cancelled) return;
 
-      setError("Không thể tải dữ liệu địa điểm. Vui lòng thử lại.");
-    })
-    .finally(() => {
-      if (!cancelled) {
-        setCatalogLoading(false);
-      }
-    });
+        setCatalog(placeCatalog.content);
+        setPlaces(placeCatalog.content);
+        setCategories(categoryList);
+        setCatalogLoaded(true);
+      })
+      .catch(() => {
+        if (cancelled) return;
 
-  return () => {
-    cancelled = true;
-  };
-}, []);
+        setError("Không thể tải dữ liệu địa điểm. Vui lòng thử lại.");
+      })
+      .finally(() => {
+        if (catalogRequestRef.current === request) {
+          catalogRequestRef.current = null;
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [catalogLoaded, open]);
 
   function handleOpenChange(nextOpen: boolean) {
-  if (!nextOpen) {
-    setQuery("");
-    setCategory(ALL_VALUE);
-    setIndoor(ALL_VALUE);
-    setMaxCost("");
-    setPlaces(catalog);
-    setSelectedPlaceId(null);
-    setError(null);
+    if (!nextOpen) {
+      setQuery("");
+      setCategory(ALL_VALUE);
+      setIndoor(ALL_VALUE);
+      setMaxCost("");
+      setPlaces(catalog);
+      setSelectedPlaceId(null);
+      setError(null);
+    }
+
+    onOpenChange(nextOpen);
   }
 
-  onOpenChange(nextOpen);
-  }
   const visiblePlaces = useMemo(() => {
-    const excluded = new Set(excludedPlaceIds);
-    return places.filter((place) => !excluded.has(place.id));
-  }, [excludedPlaceIds, places]);
+    const excluded = new Set(excludedPlaceSlugs);
+    return places.filter((place) => !excluded.has(place.slug));
+  }, [excludedPlaceSlugs, places]);
 
   async function applyFilters(event?: FormEvent<HTMLFormElement>) {
     event?.preventDefault();
@@ -213,7 +228,9 @@ export function PlacePickerSheet({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent position="popper">
-                    <SelectItem value={ALL_VALUE}>Trong nhà & ngoài trời</SelectItem>
+                    <SelectItem value={ALL_VALUE}>
+                      Trong nhà & ngoài trời
+                    </SelectItem>
                     <SelectItem value="true">Trong nhà</SelectItem>
                     <SelectItem value="false">Ngoài trời</SelectItem>
                   </SelectContent>
@@ -221,7 +238,10 @@ export function PlacePickerSheet({
               </div>
 
               <div className="grid gap-1.5">
-                <Label className="text-xs text-text-secondary" htmlFor="picker-max-cost">
+                <Label
+                  className="text-xs text-text-secondary"
+                  htmlFor="picker-max-cost"
+                >
                   Chi phí tối đa (VND)
                 </Label>
                 <Input

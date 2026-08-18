@@ -88,16 +88,33 @@ function MapViewport({
   return null;
 }
 
+function hasValidCoordinates(item: ItineraryItemResponse) {
+  const { latitude, longitude } = item.place;
+
+  return (
+    Number.isFinite(latitude) &&
+    Number.isFinite(longitude) &&
+    latitude >= -90 &&
+    latitude <= 90 &&
+    longitude >= -180 &&
+    longitude <= 180
+  );
+}
+
 export function ItineraryMap({
   origin,
   items,
   selectedItemPublicId,
   onSelectItem,
 }: ItineraryMapProps) {
+  const validItems = useMemo(
+    () => items.filter(hasValidCoordinates),
+    [items],
+  );
   const selectedItem = useMemo(
     () =>
-      items.find((item) => item.publicId === selectedItemPublicId) ?? null,
-    [items, selectedItemPublicId],
+      validItems.find((item) => item.publicId === selectedItemPublicId) ?? null,
+    [validItems, selectedItemPublicId],
   );
 
   return (
@@ -115,7 +132,7 @@ export function ItineraryMap({
         />
         <MapViewport
           origin={origin}
-          items={items}
+          items={validItems}
           selectedItemPublicId={selectedItemPublicId}
         />
         <ZoomControl position="bottomright" />
@@ -130,7 +147,7 @@ export function ItineraryMap({
           </Tooltip>
         </Marker>
 
-        {items.map((item) => (
+        {validItems.map((item) => (
           <Marker
             key={item.publicId}
             position={[item.place.latitude, item.place.longitude]}
