@@ -1,18 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  ArrowDown,
-  ArrowUp,
-  Clock3,
-  MapPin,
-  MoreHorizontal,
-  PencilLine,
-  Plus,
-  Route,
-  Trash2,
-  WalletCards,
-} from "lucide-react";
+import { MapPin, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ItineraryGenerationSheet } from "@/features/itinerary/components/itinerary-generation-sheet";
@@ -20,15 +9,11 @@ import {
   ItineraryIssues,
   ItinerarySummary,
 } from "@/features/itinerary/components/itinerary-insights";
+import { ItineraryTimeline } from "@/features/itinerary/components/itinerary-timeline";
 import {
   PlacePickerSheet,
   type PlacePickerMode,
 } from "@/features/itinerary/components/place-picker-sheet";
-import {
-  formatCurrency,
-  formatDistance,
-  formatTime,
-} from "@/lib/formatters";
 import type {
   ItineraryGenerationPreviewResponse,
   ItineraryResponse,
@@ -57,6 +42,7 @@ type ItineraryViewProps = {
   onGeneratePreview: (
     preferenceDescription: string,
   ) => Promise<ItineraryGenerationPreviewResponse>;
+  onApplyPreview: (placeSlugs: string[]) => Promise<void>;
 };
 
 function formatDate(value: string) {
@@ -81,6 +67,7 @@ export function ItineraryView({
   onReorder,
   onSelectItem,
   onGeneratePreview,
+  onApplyPreview,
 }: ItineraryViewProps) {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [picker, setPicker] = useState<PickerState | null>(null);
@@ -161,7 +148,10 @@ export function ItineraryView({
           đổi.
         </p>
         <div className="mt-4">
-          <ItineraryGenerationSheet onGenerate={onGeneratePreview} />
+          <ItineraryGenerationSheet
+            onGenerate={onGeneratePreview}
+            onApply={onApplyPreview}
+          />
         </div>
       </header>
 
@@ -265,134 +255,20 @@ export function ItineraryView({
                 </div>
               </div>
             ) : (
-              <ol className="grid gap-3">
-                {items.map((item, index) => {
-                  const selected = item.publicId === selectedItemPublicId;
-                  const menuOpen = openMenuId === item.publicId;
-
-                  return (
-                    <li
-                      key={item.publicId}
-                      className={`relative ${
-                        index < items.length - 1
-                          ? "after:absolute after:top-full after:left-8 after:h-3 after:w-px after:bg-primary/30 after:content-['']"
-                          : ""
-                      }`}
-                    >
-                      <div
-                        className={`grid grid-cols-[minmax(0,1fr)_40px] items-stretch rounded-xl border p-1 transition ${
-                          selected
-                            ? "border-primary/55 bg-primary-soft/35 shadow-mint-sm"
-                            : "border-border bg-surface hover:border-primary/35"
-                        }`}
-                      >
-                        <button
-                          type="button"
-                          className="grid min-w-0 grid-cols-[42px_1fr] items-start gap-3 rounded-lg p-2 text-left"
-                          onClick={() => onSelectItem(item.publicId)}
-                        >
-                          <span className="grid size-10 place-items-center rounded-full bg-primary text-sm font-black text-primary-foreground">
-                            {item.sequenceNo}
-                          </span>
-
-                          <span className="min-w-0">
-                            <strong className="block truncate text-base text-text-primary">
-                              {item.place.name}
-                            </strong>
-                            <span className="mt-1.5 flex items-center gap-1 text-[0.8rem] leading-5 font-semibold text-text-primary tabular-nums">
-                              <Clock3
-                                className="size-3.5 text-primary"
-                                aria-hidden="true"
-                              />
-                              {formatTime(item.schedule.visitStartTime)} –{" "}
-                              {formatTime(item.schedule.visitEndTime)}
-                            </span>
-                            <span className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-xs leading-5 text-text-secondary">
-                              <span className="tabular-nums">
-                                Đến {formatTime(item.schedule.arrivalTime)}
-                              </span>
-                              <span className="inline-flex items-center gap-1 tabular-nums">
-                                <Route className="size-3.5" aria-hidden="true" />
-                                {item.schedule.travelMinutes} phút ·{" "}
-                                {formatDistance(item.schedule.travelDistanceKm)}
-                              </span>
-                              <span className="inline-flex items-center gap-1 text-ochre-foreground tabular-nums">
-                                <WalletCards
-                                  className="size-3.5 text-ochre"
-                                  aria-hidden="true"
-                                />
-                                {formatCurrency(item.schedule.estimatedCost)}
-                              </span>
-                            </span>
-                          </span>
-                        </button>
-
-                        <button
-                          type="button"
-                          className="m-auto grid size-9 place-items-center rounded-lg text-text-secondary transition hover:bg-muted hover:text-text-primary"
-                          aria-label={`Tùy chọn cho ${item.place.name}`}
-                          aria-expanded={menuOpen}
-                          disabled={mutating}
-                          onClick={() =>
-                            setOpenMenuId(menuOpen ? null : item.publicId)
-                          }
-                        >
-                          <MoreHorizontal className="size-5" aria-hidden="true" />
-                        </button>
-                      </div>
-
-                      {menuOpen ? (
-                        <div className="absolute top-12 right-3 z-20 min-w-48 rounded-xl border border-border bg-popover p-1.5 shadow-mint-md">
-                          <button
-                            type="button"
-                            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-semibold hover:bg-muted disabled:cursor-not-allowed disabled:opacity-45"
-                            onClick={() => handleMove(index, -1)}
-                            disabled={mutating || index === 0}
-                          >
-                            <ArrowUp className="size-4" aria-hidden="true" />
-                            Di chuyển lên
-                          </button>
-                          <button
-                            type="button"
-                            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-semibold hover:bg-muted disabled:cursor-not-allowed disabled:opacity-45"
-                            onClick={() => handleMove(index, 1)}
-                            disabled={mutating || index === items.length - 1}
-                          >
-                            <ArrowDown className="size-4" aria-hidden="true" />
-                            Di chuyển xuống
-                          </button>
-                          <button
-                            type="button"
-                            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-semibold hover:bg-muted disabled:cursor-not-allowed disabled:opacity-45"
-                            onClick={() => {
-                              setOpenMenuId(null);
-                              setPicker({
-                                mode: "replace",
-                                itemPublicId: item.publicId,
-                              });
-                            }}
-                            disabled={mutating}
-                          >
-                            <PencilLine className="size-4" aria-hidden="true" />
-                            Thay địa điểm
-                          </button>
-                          <button
-                            type="button"
-                            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-semibold text-destructive hover:bg-destructive/10 disabled:cursor-not-allowed disabled:opacity-45"
-                            onClick={() =>
-                              handleDelete(item.publicId, item.place.name)
-                            }
-                            disabled={mutating}
-                          >
-                            <Trash2 className="size-4" aria-hidden="true" />
-                            Xóa khỏi hành trình
-                          </button>
-                        </div>
-                      ) : null}
-                    </li>
-                  );
-                })}
-              </ol>
+              <ItineraryTimeline
+                items={items}
+                selectedItemPublicId={selectedItemPublicId}
+                openMenuId={openMenuId}
+                mutating={mutating}
+                onSelectItem={onSelectItem}
+                onToggleMenu={setOpenMenuId}
+                onMove={handleMove}
+                onReplace={(itemPublicId) => {
+                  setOpenMenuId(null);
+                  setPicker({ mode: "replace", itemPublicId });
+                }}
+                onDelete={handleDelete}
+              />
             )}
           </section>
         </>

@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { Clock3, Route, Sparkles, WalletCards } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -12,22 +12,15 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import {
-  ItineraryIssues,
-  ItinerarySummary,
-} from "@/features/itinerary/components/itinerary-insights";
+import { ItineraryGenerationPreview } from "@/features/itinerary/components/itinerary-generation-preview";
 import { ApiError } from "@/lib/api/api-client";
-import {
-  formatCurrency,
-  formatDistance,
-  formatTime,
-} from "@/lib/formatters";
 import type { ItineraryGenerationPreviewResponse } from "@/types/itinerary";
 
 type ItineraryGenerationSheetProps = {
   onGenerate: (
     preferenceDescription: string,
   ) => Promise<ItineraryGenerationPreviewResponse>;
+  onApply: (placeSlugs: string[]) => Promise<void>;
 };
 
 function getGenerationErrorMessage(error: unknown) {
@@ -44,6 +37,7 @@ function getGenerationErrorMessage(error: unknown) {
 
 export function ItineraryGenerationSheet({
   onGenerate,
+  onApply,
 }: ItineraryGenerationSheetProps) {
   const [open, setOpen] = useState(false);
   const [preferenceDescription, setPreferenceDescription] = useState("");
@@ -51,15 +45,18 @@ export function ItineraryGenerationSheet({
     useState<ItineraryGenerationPreviewResponse | null>(null);
   const [generationLoading, setGenerationLoading] = useState(false);
   const [generationError, setGenerationError] = useState<string | null>(null);
+  const [applyLoading, setApplyLoading] = useState(false);
+  const [applyError, setApplyError] = useState<string | null>(null);
 
   const preference = preferenceDescription.trim();
 
   async function handleGenerate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!preference || generationLoading) return;
+    if (!preference || generationLoading || applyLoading) return;
 
     setGenerationLoading(true);
     setGenerationError(null);
+    setApplyError(null);
     setGenerationPreview(null);
 
     try {
@@ -72,8 +69,43 @@ export function ItineraryGenerationSheet({
     }
   }
 
+  async function handleApply() {
+    if (
+      !generationPreview ||
+      generationPreview.stops.length === 0 ||
+      applyLoading
+    ) {
+      return;
+    }
+
+    const placeSlugs = generationPreview.stops.map(
+      (stop) => stop.place.slug,
+    );
+
+    setApplyLoading(true);
+    setApplyError(null);
+
+    try {
+      await onApply(placeSlugs);
+      setGenerationPreview(null);
+      setGenerationError(null);
+      setApplyError(null);
+      setPreferenceDescription("");
+      setOpen(false);
+    } catch {
+      setApplyError("Không thể áp dụng hành trình. Vui lòng thử lại.");
+    } finally {
+      setApplyLoading(false);
+    }
+  }
+
+  function handleOpenChange(nextOpen: boolean) {
+    if (!nextOpen && applyLoading) return;
+    setOpen(nextOpen);
+  }
+
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
+    <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetTrigger asChild>
         <Button type="button" variant="outline" size="sm">
           <Sparkles className="size-4 text-primary" aria-hidden="true" />
@@ -106,7 +138,7 @@ export function ItineraryGenerationSheet({
                 }
                 placeholder="Tôi thích lịch sử, kiến trúc, bảo tàng và muốn lịch trình nhẹ nhàng..."
                 rows={4}
-                disabled={generationLoading}
+                disabled={generationLoading || applyLoading}
                 className="min-h-28 w-full resize-y rounded-lg border border-input bg-surface px-3 py-2 text-sm text-text-primary outline-none transition placeholder:text-text-secondary/70 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/25 disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
@@ -114,16 +146,21 @@ export function ItineraryGenerationSheet({
             <div className="flex flex-wrap gap-2">
               <Button
                 type="submit"
-                variant="accent"
-                disabled={!preference || generationLoading}
+                variant={generationPreview ? "outline" : "accent"}
+                disabled={!preference || generationLoading || applyLoading}
               >
                 <Sparkles className="size-4" aria-hidden="true" />
-                {generationLoading ? "Đang tạo hành trình..." : "Tạo gợi ý"}
+                {generationLoading
+                  ? "Đang tạo hành trình..."
+                  : generationPreview
+                    ? "Tạo lại"
+                    : "Tạo gợi ý"}
               </Button>
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => setOpen(false)}
+                disabled={applyLoading}
               >
                 Hủy
               </Button>
@@ -140,76 +177,13 @@ export function ItineraryGenerationSheet({
           ) : null}
 
           {generationPreview ? (
-            <section className="mt-7 border-t border-border pt-6">
-              <h2 className="m-0 text-base font-bold text-text-primary">
-                Gợi ý hành trình
-              </h2>
-              <p className="mt-1 mb-0 text-sm text-text-secondary">
-                Đây là bản xem trước và chưa thay đổi hành trình hiện tại.
-              </p>
-
-              {generationPreview.stops.length === 0 ? (
-                <div className="mt-4 rounded-xl border border-dashed border-border bg-surface/60 px-4 py-8 text-center text-sm text-text-secondary">
-                  Chưa tìm được lịch trình phù hợp với các điều kiện hiện tại.
-                </div>
-              ) : (
-                <ol className="mt-4 grid gap-3">
-                  {generationPreview.stops.map((stop, index) => (
-                    <li
-                      key={`${stop.sequenceNo}-${stop.place.slug}`}
-                      className={`relative grid grid-cols-[40px_minmax(0,1fr)] gap-3 ${
-                        index < generationPreview.stops.length - 1
-                          ? "after:absolute after:top-10 after:bottom-[-12px] after:left-5 after:w-px after:bg-primary/25 after:content-['']"
-                          : ""
-                      }`}
-                    >
-                      <span className="z-10 grid size-10 place-items-center rounded-full bg-primary text-sm font-black text-primary-foreground">
-                        {stop.sequenceNo}
-                      </span>
-                      <div className="min-w-0 rounded-xl border border-border bg-surface p-3">
-                        <strong className="block truncate text-base text-text-primary">
-                          {stop.place.name}
-                        </strong>
-                        <span className="mt-1.5 flex items-center gap-1 text-[0.8rem] leading-5 font-semibold text-text-primary tabular-nums">
-                          <Clock3
-                            className="size-3.5 text-primary"
-                            aria-hidden="true"
-                          />
-                          {formatTime(stop.schedule.visitStartTime)} –{" "}
-                          {formatTime(stop.schedule.visitEndTime)}
-                        </span>
-                        <span className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-xs leading-5 text-text-secondary">
-                          <span className="inline-flex items-center gap-1 tabular-nums">
-                            <Route className="size-3.5" aria-hidden="true" />
-                            {stop.schedule.travelMinutes} phút ·{" "}
-                            {formatDistance(
-                              stop.schedule.travelDistanceKm,
-                            )}
-                          </span>
-                          <span className="inline-flex items-center gap-1 text-ochre-foreground tabular-nums">
-                            <WalletCards
-                              className="size-3.5 text-ochre"
-                              aria-hidden="true"
-                            />
-                            {formatCurrency(stop.schedule.estimatedCost)}
-                          </span>
-                        </span>
-                      </div>
-                    </li>
-                  ))}
-                </ol>
-              )}
-
-              <ItinerarySummary
-                summary={generationPreview.summary}
-                headingId="generation-preview-summary-heading"
-              />
-              <ItineraryIssues
-                issues={generationPreview.issues}
-                places={generationPreview.stops.map((stop) => stop.place)}
-                headingId="generation-preview-issues-heading"
-              />
-            </section>
+            <ItineraryGenerationPreview
+              preview={generationPreview}
+              applyError={applyError}
+              applyLoading={applyLoading}
+              generationLoading={generationLoading}
+              onApply={handleApply}
+            />
           ) : null}
         </div>
       </SheetContent>

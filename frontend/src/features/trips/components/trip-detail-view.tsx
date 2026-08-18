@@ -20,6 +20,7 @@ import { TripOriginMapShell } from "@/features/trips/map/trip-origin-map-shell";
 import { ApiError } from "@/lib/api/api-client";
 import {
   addItineraryItem,
+  applyGeneratedItinerary,
   deleteItineraryItem,
   generateItineraryPreview,
   getItinerary,
@@ -226,6 +227,13 @@ export function TripDetailView({ publicId }: TripDetailViewProps) {
     );
   }
 
+  async function handleApplyPreview(placeSlugs: string[]) {
+    const updated = await runAuthenticated((token) =>
+      applyGeneratedItinerary(publicId, { placeSlugs }, token),
+    );
+    setItinerary(updated);
+  }
+
   function handleSectionChange(nextSection: TripWorkspaceSection) {
     setEditing(false);
     setSection(nextSection);
@@ -326,6 +334,7 @@ export function TripDetailView({ publicId }: TripDetailViewProps) {
             onReorder={handleReorderItems}
             onSelectItem={setSelectedItemPublicId}
             onGeneratePreview={handleGeneratePreview}
+            onApplyPreview={handleApplyPreview}
           />
         )}
       </section>
