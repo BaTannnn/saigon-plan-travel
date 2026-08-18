@@ -11,18 +11,26 @@ import {
   Plus,
   Route,
   Trash2,
-  TriangleAlert,
   WalletCards,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ItineraryGenerationSheet } from "@/features/itinerary/components/itinerary-generation-sheet";
+import {
+  ItineraryIssues,
+  ItinerarySummary,
+} from "@/features/itinerary/components/itinerary-insights";
 import {
   PlacePickerSheet,
   type PlacePickerMode,
 } from "@/features/itinerary/components/place-picker-sheet";
-import { formatCurrency, formatDuration } from "@/lib/formatters";
+import {
+  formatCurrency,
+  formatDistance,
+  formatTime,
+} from "@/lib/formatters";
 import type {
-  ItineraryIssueType,
+  ItineraryGenerationPreviewResponse,
   ItineraryResponse,
 } from "@/types/itinerary";
 import type { PlaceSummary } from "@/types/place";
@@ -46,19 +54,10 @@ type ItineraryViewProps = {
   onReplace: (itemPublicId: string, place: PlaceSummary) => Promise<void>;
   onReorder: (itemPublicIds: string[]) => Promise<void>;
   onSelectItem: (itemPublicId: string | null) => void;
+  onGeneratePreview: (
+    preferenceDescription: string,
+  ) => Promise<ItineraryGenerationPreviewResponse>;
 };
-
-const issueLabels: Record<ItineraryIssueType, string> = {
-  PLACE_CLOSED: "Địa điểm đóng cửa",
-  OPENING_HOURS_UNKNOWN: "Chưa có thông tin giờ mở cửa",
-  ENDS_AFTER_CLOSING: "Lịch tham quan kết thúc sau giờ đóng cửa",
-  ENDS_AFTER_TRIP: "Lịch trình vượt quá thời gian chuyến đi",
-  OVER_BUDGET: "Lịch trình vượt ngân sách",
-};
-
-const distanceFormatter = new Intl.NumberFormat("vi-VN", {
-  maximumFractionDigits: 1,
-});
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("vi-VN", {
@@ -66,14 +65,6 @@ function formatDate(value: string) {
     day: "numeric",
     month: "long",
   }).format(new Date(`${value}T00:00:00`));
-}
-
-function formatTime(value: string) {
-  return value.slice(0, 5);
-}
-
-function formatDistance(value: number) {
-  return `${distanceFormatter.format(value)} km`;
 }
 
 export function ItineraryView({
@@ -89,6 +80,7 @@ export function ItineraryView({
   onReplace,
   onReorder,
   onSelectItem,
+  onGeneratePreview,
 }: ItineraryViewProps) {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [picker, setPicker] = useState<PickerState | null>(null);
@@ -168,6 +160,9 @@ export function ItineraryView({
           Quản lý thứ tự ghé thăm và xem lịch trình được cập nhật sau mỗi thay
           đổi.
         </p>
+        <div className="mt-4">
+          <ItineraryGenerationSheet onGenerate={onGeneratePreview} />
+        </div>
       </header>
 
       <section className="mt-8" aria-label="Điểm xuất phát">
@@ -204,72 +199,16 @@ export function ItineraryView({
 
       {itinerary ? (
         <>
-          <section className="mt-6" aria-labelledby="itinerary-summary-heading">
-            <h2
-              id="itinerary-summary-heading"
-              className="m-0 text-xs font-extrabold tracking-[0.12em] text-text-secondary uppercase"
-            >
-              Tổng quan lịch trình
-            </h2>
-            <dl className="mt-3 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-4">
-              <div className="bg-surface p-2.5">
-                <dt className="text-xs text-text-secondary">Chi phí</dt>
-                <dd className="mt-1 text-sm font-bold text-text-primary tabular-nums">
-                  {formatCurrency(itinerary.summary.totalEstimatedCost)}
-                </dd>
-              </div>
-              <div className="bg-surface p-2.5">
-                <dt className="text-xs text-text-secondary">Di chuyển</dt>
-                <dd className="mt-1 text-sm font-bold text-text-primary tabular-nums">
-                  {formatDuration(itinerary.summary.totalTravelMinutes)}
-                </dd>
-              </div>
-              <div className="bg-surface p-2.5">
-                <dt className="text-xs text-text-secondary">Tham quan</dt>
-                <dd className="mt-1 text-sm font-bold text-text-primary tabular-nums">
-                  {formatDuration(itinerary.summary.totalVisitMinutes)}
-                </dd>
-              </div>
-              <div className="bg-surface p-2.5">
-                <dt className="text-xs text-text-secondary">Quãng đường</dt>
-                <dd className="mt-1 text-sm font-bold text-text-primary tabular-nums">
-                  {formatDistance(itinerary.summary.totalDistanceKm)}
-                </dd>
-              </div>
-            </dl>
-          </section>
+          <ItinerarySummary
+            summary={itinerary.summary}
+            headingId="itinerary-summary-heading"
+          />
 
-          {itinerary.issues.length > 0 ? (
-            <section className="mt-5" aria-labelledby="itinerary-issues-heading">
-              <h2 id="itinerary-issues-heading" className="sr-only">
-                Lưu ý lịch trình
-              </h2>
-              <ul className="divide-y divide-ochre/20 overflow-hidden rounded-xl border border-ochre/30 bg-ochre-soft">
-                {itinerary.issues.map((issue, index) => {
-                  const placeName = issue.placeSlug
-                    ? items.find((item) => item.place.slug === issue.placeSlug)
-                        ?.place.name
-                    : null;
-
-                  return (
-                    <li
-                      key={`${issue.type}-${issue.placeSlug ?? "trip"}-${index}`}
-                      className="flex items-start gap-2 px-3 py-2.5 text-sm text-ochre-foreground"
-                    >
-                      <TriangleAlert
-                        className="mt-0.5 size-4 shrink-0 text-ochre"
-                        aria-hidden="true"
-                      />
-                      <span>
-                        <strong>{issueLabels[issue.type]}</strong>
-                        {placeName ? ` · ${placeName}` : ""}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-            </section>
-          ) : null}
+          <ItineraryIssues
+            issues={itinerary.issues}
+            places={items.map((item) => item.place)}
+            headingId="itinerary-issues-heading"
+          />
 
           <section className="mt-6" aria-labelledby="itinerary-items-heading">
             <div className="mb-3 flex items-center justify-between gap-3">

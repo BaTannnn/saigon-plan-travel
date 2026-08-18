@@ -21,12 +21,16 @@ import { ApiError } from "@/lib/api/api-client";
 import {
   addItineraryItem,
   deleteItineraryItem,
+  generateItineraryPreview,
   getItinerary,
   reorderItineraryItems,
   replaceItineraryItem,
 } from "@/lib/api/itinerary-api";
 import { getTrip, replaceTrip } from "@/lib/api/trip-api";
-import type { ItineraryResponse } from "@/types/itinerary";
+import type {
+  ItineraryGenerationPreviewResponse,
+  ItineraryResponse,
+} from "@/types/itinerary";
 import type { PlaceSummary } from "@/types/place";
 import type { SaveTripRequest, TripResponse } from "@/types/trip";
 
@@ -210,6 +214,18 @@ export function TripDetailView({ publicId }: TripDetailViewProps) {
     }
   }
 
+  function handleGeneratePreview(
+    preferenceDescription: string,
+  ): Promise<ItineraryGenerationPreviewResponse> {
+    return runAuthenticated((token) =>
+      generateItineraryPreview(
+        publicId,
+        { preferenceDescription },
+        token,
+      ),
+    );
+  }
+
   function handleSectionChange(nextSection: TripWorkspaceSection) {
     setEditing(false);
     setSection(nextSection);
@@ -309,6 +325,7 @@ export function TripDetailView({ publicId }: TripDetailViewProps) {
             onReplace={handleReplacePlace}
             onReorder={handleReorderItems}
             onSelectItem={setSelectedItemPublicId}
+            onGeneratePreview={handleGeneratePreview}
           />
         )}
       </section>
