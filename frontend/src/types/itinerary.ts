@@ -48,6 +48,26 @@ export type ItineraryResponse = {
   issues: ItineraryIssueResponse[];
 };
 
+export type GenerateItineraryPreviewRequest = {
+  preferenceDescription: string;
+};
+
+export type GeneratedItineraryStopResponse = {
+  sequenceNo: number;
+  place: ItineraryPlaceResponse;
+  schedule: ItineraryScheduleResponse;
+};
+
+export type ItineraryGenerationPreviewResponse = {
+  stops: GeneratedItineraryStopResponse[];
+  summary: ItinerarySummaryResponse;
+  issues: ItineraryIssueResponse[];
+};
+
+export type ApplyGeneratedItineraryRequest = {
+  placeSlugs: string[];
+};
+
 export type SaveItineraryItemRequest = {
   placeId: number;
 };

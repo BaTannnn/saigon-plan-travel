@@ -1,5 +1,8 @@
 import { requestJson } from "@/lib/api/api-client";
 import type {
+  ApplyGeneratedItineraryRequest,
+  GenerateItineraryPreviewRequest,
+  ItineraryGenerationPreviewResponse,
   ItineraryResponse,
   ReorderItineraryItemsRequest,
   SaveItineraryItemRequest,
@@ -88,6 +91,38 @@ export function reorderItineraryItems(
     getItineraryUrl(tripPublicId, "/items/order"),
     {
       method: "PUT",
+      body: request,
+      token,
+      cache: "no-store",
+    },
+  );
+}
+
+export function generateItineraryPreview(
+  tripPublicId: string,
+  request: GenerateItineraryPreviewRequest,
+  token: string,
+) {
+  return requestJson<ItineraryGenerationPreviewResponse>(
+    getItineraryUrl(tripPublicId, "/generation-preview"),
+    {
+      method: "POST",
+      body: request,
+      token,
+      cache: "no-store",
+    },
+  );
+}
+
+export function applyGeneratedItinerary(
+  tripPublicId: string,
+  request: ApplyGeneratedItineraryRequest,
+  token: string,
+) {
+  return requestJson<ItineraryResponse>(
+    getItineraryUrl(tripPublicId, "/generation-apply"),
+    {
+      method: "POST",
       body: request,
       token,
       cache: "no-store",
