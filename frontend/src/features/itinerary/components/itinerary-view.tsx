@@ -211,28 +211,28 @@ export function ItineraryView({
             >
               Tổng quan lịch trình
             </h2>
-            <dl className="mt-3 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border bg-border">
-              <div className="bg-surface p-3">
+            <dl className="mt-3 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-4">
+              <div className="bg-surface p-2.5">
                 <dt className="text-xs text-text-secondary">Chi phí</dt>
-                <dd className="mt-1 text-sm font-bold text-text-primary">
+                <dd className="mt-1 text-sm font-bold text-text-primary tabular-nums">
                   {formatCurrency(itinerary.summary.totalEstimatedCost)}
                 </dd>
               </div>
-              <div className="bg-surface p-3">
+              <div className="bg-surface p-2.5">
                 <dt className="text-xs text-text-secondary">Di chuyển</dt>
-                <dd className="mt-1 text-sm font-bold text-text-primary">
+                <dd className="mt-1 text-sm font-bold text-text-primary tabular-nums">
                   {formatDuration(itinerary.summary.totalTravelMinutes)}
                 </dd>
               </div>
-              <div className="bg-surface p-3">
+              <div className="bg-surface p-2.5">
                 <dt className="text-xs text-text-secondary">Tham quan</dt>
-                <dd className="mt-1 text-sm font-bold text-text-primary">
+                <dd className="mt-1 text-sm font-bold text-text-primary tabular-nums">
                   {formatDuration(itinerary.summary.totalVisitMinutes)}
                 </dd>
               </div>
-              <div className="bg-surface p-3">
+              <div className="bg-surface p-2.5">
                 <dt className="text-xs text-text-secondary">Quãng đường</dt>
-                <dd className="mt-1 text-sm font-bold text-text-primary">
+                <dd className="mt-1 text-sm font-bold text-text-primary tabular-nums">
                   {formatDistance(itinerary.summary.totalDistanceKm)}
                 </dd>
               </div>
@@ -244,7 +244,7 @@ export function ItineraryView({
               <h2 id="itinerary-issues-heading" className="sr-only">
                 Lưu ý lịch trình
               </h2>
-              <ul className="grid gap-2">
+              <ul className="divide-y divide-ochre/20 overflow-hidden rounded-xl border border-ochre/30 bg-ochre-soft">
                 {itinerary.issues.map((issue, index) => {
                   const placeName = issue.placeSlug
                     ? items.find((item) => item.place.slug === issue.placeSlug)
@@ -254,7 +254,7 @@ export function ItineraryView({
                   return (
                     <li
                       key={`${issue.type}-${issue.placeSlug ?? "trip"}-${index}`}
-                      className="flex items-start gap-2 rounded-xl border border-ochre/30 bg-ochre-soft px-3 py-2.5 text-sm text-ochre-foreground"
+                      className="flex items-start gap-2 px-3 py-2.5 text-sm text-ochre-foreground"
                     >
                       <TriangleAlert
                         className="mt-0.5 size-4 shrink-0 text-ochre"
@@ -341,10 +341,10 @@ export function ItineraryView({
                       }`}
                     >
                       <div
-                        className={`grid grid-cols-[minmax(0,1fr)_40px] items-stretch rounded-xl border bg-surface p-1 transition ${
+                        className={`grid grid-cols-[minmax(0,1fr)_40px] items-stretch rounded-xl border p-1 transition ${
                           selected
-                            ? "border-primary/50 shadow-mint-sm"
-                            : "border-border hover:border-primary/35"
+                            ? "border-primary/55 bg-primary-soft/35 shadow-mint-sm"
+                            : "border-border bg-surface hover:border-primary/35"
                         }`}
                       >
                         <button
@@ -360,19 +360,24 @@ export function ItineraryView({
                             <strong className="block truncate text-base text-text-primary">
                               {item.place.name}
                             </strong>
-                            <span className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs leading-5 text-text-secondary">
-                              <span className="inline-flex items-center gap-1">
-                                <Clock3 className="size-3.5" aria-hidden="true" />
-                                Đến {formatTime(item.schedule.arrivalTime)} ·{" "}
-                                {formatTime(item.schedule.visitStartTime)} –{" "}
-                                {formatTime(item.schedule.visitEndTime)}
+                            <span className="mt-1.5 flex items-center gap-1 text-[0.8rem] leading-5 font-semibold text-text-primary tabular-nums">
+                              <Clock3
+                                className="size-3.5 text-primary"
+                                aria-hidden="true"
+                              />
+                              {formatTime(item.schedule.visitStartTime)} –{" "}
+                              {formatTime(item.schedule.visitEndTime)}
+                            </span>
+                            <span className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-xs leading-5 text-text-secondary">
+                              <span className="tabular-nums">
+                                Đến {formatTime(item.schedule.arrivalTime)}
                               </span>
-                              <span className="inline-flex items-center gap-1">
+                              <span className="inline-flex items-center gap-1 tabular-nums">
                                 <Route className="size-3.5" aria-hidden="true" />
                                 {item.schedule.travelMinutes} phút ·{" "}
                                 {formatDistance(item.schedule.travelDistanceKm)}
                               </span>
-                              <span className="inline-flex items-center gap-1 text-ochre-foreground">
+                              <span className="inline-flex items-center gap-1 text-ochre-foreground tabular-nums">
                                 <WalletCards
                                   className="size-3.5 text-ochre"
                                   aria-hidden="true"

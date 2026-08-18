@@ -286,7 +286,7 @@ export function TripDetailView({ publicId }: TripDetailViewProps) {
   );
 
   return (
-    <main className="grid min-h-[calc(100dvh_-_4rem)] grid-cols-1 bg-background md:min-h-[calc(100dvh_-_5rem)] xl:h-[calc(100dvh_-_5rem)] xl:min-h-[680px] xl:grid-cols-[210px_clamp(470px,34vw,580px)_minmax(0,1fr)] xl:overflow-hidden">
+    <main className="grid min-h-[calc(100dvh_-_4rem)] grid-cols-1 bg-background md:min-h-[calc(100dvh_-_5rem)] xl:h-[calc(100dvh_-_5rem)] xl:min-h-[680px] xl:grid-cols-[210px_minmax(0,calc(53%_-_210px))_minmax(0,47%)] xl:overflow-hidden">
       <TripWorkspaceSidebar
         section={section}
         onSectionChange={handleSectionChange}
