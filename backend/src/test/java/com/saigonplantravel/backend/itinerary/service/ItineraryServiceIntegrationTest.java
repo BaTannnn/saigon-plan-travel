@@ -4,10 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.saigonplantravel.backend.itinerary.dto.ItineraryDetailResponse;
-import com.saigonplantravel.backend.itinerary.exception.DuplicateItineraryPlaceException;
-import com.saigonplantravel.backend.itinerary.exception.InactiveItineraryPlaceException;
-import com.saigonplantravel.backend.itinerary.exception.InvalidItineraryOrderException;
-import com.saigonplantravel.backend.itinerary.exception.ItineraryItemNotFoundException;
+import com.saigonplantravel.backend.itinerary.exception.*;
 import com.saigonplantravel.backend.place.exception.PlaceNotFoundException;
 import com.saigonplantravel.backend.testsupport.database.DatabaseTestFixtures;
 import com.saigonplantravel.backend.testsupport.database.DatabaseTestFixtures.PlaceFixture;
@@ -431,6 +428,143 @@ class ItineraryServiceIntegrationTest {
         ItineraryDetailResponse loaded = itineraryService.getItinerary(userId, trip.tripPublicId());
 
         assertThat(loaded.items()).hasSize(2);
+    }
+
+    @Test
+    void applyGeneratedItineraryReplacesExistingItemsAndPreservesGeneratedOrder() {
+
+        Long userId = fixtures.insertUser("apply-generated-owner");
+
+        TripFixture trip = fixtures.insertValidTrip(userId);
+
+        PlaceFixture oldFirst = place("Old first", "old-first");
+
+        PlaceFixture oldSecond = place("Old second", "old-second");
+
+        PlaceFixture generatedFirst = place("Generated first", "generated-first");
+
+        PlaceFixture generatedSecond = place("Generated second", "generated-second");
+
+        /*
+         * Existing manual itinerary:
+         *
+         * oldFirst -> oldSecond
+         */
+        itineraryService.addItem(userId, trip.tripPublicId(), oldFirst.placeId());
+
+        ItineraryDetailResponse manual = itineraryService.addItem(userId, trip.tripPublicId(), oldSecond.placeId());
+
+        UUID itineraryPublicId = manual.publicId();
+
+        /*
+         * AI preview approved by user:
+         *
+         * generatedSecond -> generatedFirst
+         */
+        ItineraryDetailResponse result = itineraryService.applyGeneratedItinerary(
+                userId,
+                trip.tripPublicId(),
+                List.of(placeSlug(generatedSecond.placeId()), placeSlug(generatedFirst.placeId())));
+
+        /*
+         * Itinerary resource itself remains the same.
+         */
+        assertThat(result.publicId()).isEqualTo(itineraryPublicId);
+
+        /*
+         * Old manual items have been replaced.
+         */
+        assertThat(result.items()).hasSize(2);
+
+        assertThat(result.items())
+                .extracting(item -> item.place().slug())
+                .containsExactly(placeSlug(generatedSecond.placeId()), placeSlug(generatedFirst.placeId()));
+
+        assertThat(result.items()).extracting(item -> item.sequenceNo()).containsExactly(1, 2);
+
+        /*
+         * Applied itinerary becomes a normal
+         * calculated itinerary immediately.
+         */
+        assertThat(result.items()).allSatisfy(item -> {
+            assertThat(item.schedule()).isNotNull();
+
+            assertThat(item.schedule().arrivalTime()).isNotNull();
+
+            assertThat(item.schedule().visitEndTime()).isNotNull();
+        });
+
+        entityManager.flush();
+
+        assertThat(countRows("itinerary_items", "itinerary_id", itineraryId(trip.tripId())))
+                .isEqualTo(2);
+
+        assertThat(databaseSequences(trip.tripId())).containsExactly(1, 2);
+    }
+
+    @Test
+    void applyGeneratedItineraryCreatesItineraryWhenNoneExists() {
+
+        Long userId = fixtures.insertUser("apply-generated-empty-owner");
+
+        TripFixture trip = fixtures.insertValidTrip(userId);
+
+        PlaceFixture first = place("Generated first", "generated-empty-first");
+
+        PlaceFixture second = place("Generated second", "generated-empty-second");
+
+        ItineraryDetailResponse result = itineraryService.applyGeneratedItinerary(
+                userId, trip.tripPublicId(), List.of(placeSlug(first.placeId()), placeSlug(second.placeId())));
+
+        assertThat(result.publicId()).isNotNull();
+
+        assertThat(result.items())
+                .extracting(item -> item.place().slug())
+                .containsExactly(placeSlug(first.placeId()), placeSlug(second.placeId()));
+
+        assertThat(result.items()).extracting(item -> item.sequenceNo()).containsExactly(1, 2);
+
+        assertThat(countRows("itineraries", "trip_id", trip.tripId())).isEqualTo(1);
+    }
+
+    @Test
+    void invalidGeneratedItineraryDoesNotReplaceExistingManualItems() {
+
+        Long userId = fixtures.insertUser("invalid-generated-owner");
+
+        TripFixture trip = fixtures.insertValidTrip(userId);
+
+        PlaceFixture manualPlace = place("Manual place", "manual-preserved");
+
+        ItineraryDetailResponse before = itineraryService.addItem(userId, trip.tripPublicId(), manualPlace.placeId());
+
+        assertThatThrownBy(() -> itineraryService.applyGeneratedItinerary(
+                        userId, trip.tripPublicId(), List.of("place-does-not-exist")))
+                .isInstanceOf(InvalidGeneratedItineraryException.class);
+
+        ItineraryDetailResponse after = itineraryService.getItinerary(userId, trip.tripPublicId());
+
+        assertThat(after.publicId()).isEqualTo(before.publicId());
+
+        assertThat(after.items()).hasSize(1);
+
+        assertThat(after.items().getFirst().place().slug()).isEqualTo(placeSlug(manualPlace.placeId()));
+    }
+
+    @Test
+    void rejectsGeneratedItineraryWithDuplicatePlaces() {
+
+        Long userId = fixtures.insertUser("duplicate-generated-owner");
+
+        TripFixture trip = fixtures.insertValidTrip(userId);
+
+        PlaceFixture place = this.place("Duplicate generated", "duplicate-generated");
+
+        String slug = placeSlug(place.placeId());
+
+        assertThatThrownBy(() ->
+                        itineraryService.applyGeneratedItinerary(userId, trip.tripPublicId(), List.of(slug, slug)))
+                .isInstanceOf(InvalidGeneratedItineraryException.class);
     }
 
     private PlaceFixture place(String name, String slug) {

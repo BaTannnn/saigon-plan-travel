@@ -49,7 +49,9 @@ public class ItineraryDetailMapper {
     private ItineraryDetailItemResponse toItemResponse(ItineraryItem item, ScheduledStop stop) {
 
         ItineraryPlaceResponse place = new ItineraryPlaceResponse(
-                item.getPlace().getSlug(), item.getPlace().getName(), item.getPlace().getLatitude(),
+                item.getPlace().getSlug(),
+                item.getPlace().getName(),
+                item.getPlace().getLatitude(),
                 item.getPlace().getLongitude());
 
         ItineraryScheduleResponse schedule = new ItineraryScheduleResponse(

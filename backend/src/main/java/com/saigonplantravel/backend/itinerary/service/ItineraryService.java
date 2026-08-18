@@ -3,10 +3,7 @@ package com.saigonplantravel.backend.itinerary.service;
 import com.saigonplantravel.backend.itinerary.dto.ItineraryDetailResponse;
 import com.saigonplantravel.backend.itinerary.entity.Itinerary;
 import com.saigonplantravel.backend.itinerary.entity.ItineraryItem;
-import com.saigonplantravel.backend.itinerary.exception.DuplicateItineraryPlaceException;
-import com.saigonplantravel.backend.itinerary.exception.InactiveItineraryPlaceException;
-import com.saigonplantravel.backend.itinerary.exception.InvalidItineraryOrderException;
-import com.saigonplantravel.backend.itinerary.exception.ItineraryItemNotFoundException;
+import com.saigonplantravel.backend.itinerary.exception.*;
 import com.saigonplantravel.backend.itinerary.mapper.ItineraryDetailMapper;
 import com.saigonplantravel.backend.itinerary.model.CalculatedItinerary;
 import com.saigonplantravel.backend.itinerary.repository.ItineraryRepository;
@@ -18,8 +15,11 @@ import com.saigonplantravel.backend.trip.exception.TripNotFoundException;
 import com.saigonplantravel.backend.trip.repository.TripRepository;
 import java.time.Clock;
 import java.time.OffsetDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -184,5 +184,62 @@ public class ItineraryService {
         itinerary.reorderItems(orderedItemPublicIds, now);
 
         return recalculateAndMap(tripPublicId, trip, itinerary);
+    }
+
+    @Transactional
+    public ItineraryDetailResponse applyGeneratedItinerary(Long userId, UUID tripPublicId, List<String> placeSlugs) {
+
+        Trip trip = findOwnedTrip(userId, tripPublicId);
+
+        List<Place> orderedPlaces = resolveGeneratedPlaces(placeSlugs);
+
+        OffsetDateTime now = OffsetDateTime.now(clock);
+
+        Itinerary itinerary = itineraryRepository.findByTripId(trip.getId()).orElse(null);
+
+        if (itinerary == null) {
+
+            itinerary = new Itinerary(trip, now);
+
+        } else {
+
+            /*
+             * User đã xác nhận replace preview AI.
+             *
+             * Xóa itinerary items cũ trước,
+             * rồi flush để giải phóng sequence_no.
+             */
+            itinerary.clearItems(now);
+
+            itineraryRepository.flush();
+        }
+
+        for (Place place : orderedPlaces) {
+
+            itinerary.appendItem(place, now);
+        }
+
+        Itinerary saved = itineraryRepository.save(itinerary);
+
+        return recalculateAndMap(tripPublicId, trip, saved);
+    }
+
+    private List<Place> resolveGeneratedPlaces(List<String> placeSlugs) {
+
+        if (placeSlugs == null || placeSlugs.isEmpty() || new HashSet<>(placeSlugs).size() != placeSlugs.size()) {
+
+            throw new InvalidGeneratedItineraryException();
+        }
+
+        List<Place> places = placeRepository.findAllBySlugInAndActiveTrue(placeSlugs);
+
+        if (places.size() != placeSlugs.size()) {
+
+            throw new InvalidGeneratedItineraryException();
+        }
+
+        Map<String, Place> placesBySlug = places.stream().collect(Collectors.toMap(Place::getSlug, place -> place));
+
+        return placeSlugs.stream().map(placesBySlug::get).toList();
     }
 }

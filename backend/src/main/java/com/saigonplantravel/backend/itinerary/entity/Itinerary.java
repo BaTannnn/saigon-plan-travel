@@ -86,6 +86,13 @@ public class Itinerary {
         this.updatedAt = updatedAt;
     }
 
+    public void clearItems(OffsetDateTime updatedAt) {
+
+        items.clear();
+
+        this.updatedAt = updatedAt;
+    }
+
     public void resequenceItems(OffsetDateTime updatedAt) {
         items.sort(Comparator.comparing(ItineraryItem::getSequenceNo));
 

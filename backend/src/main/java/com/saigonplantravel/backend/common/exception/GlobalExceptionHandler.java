@@ -2,10 +2,7 @@ package com.saigonplantravel.backend.common.exception;
 
 import com.saigonplantravel.backend.auth.exception.EmailAlreadyExistsException;
 import com.saigonplantravel.backend.auth.exception.InvalidCredentialsException;
-import com.saigonplantravel.backend.itinerary.exception.DuplicateItineraryPlaceException;
-import com.saigonplantravel.backend.itinerary.exception.InactiveItineraryPlaceException;
-import com.saigonplantravel.backend.itinerary.exception.InvalidItineraryOrderException;
-import com.saigonplantravel.backend.itinerary.exception.ItineraryItemNotFoundException;
+import com.saigonplantravel.backend.itinerary.exception.*;
 import com.saigonplantravel.backend.place.exception.CategoryNotFoundException;
 import com.saigonplantravel.backend.place.exception.PlaceNotFoundException;
 import com.saigonplantravel.backend.trip.exception.InvalidTripException;
@@ -216,24 +213,32 @@ public class GlobalExceptionHandler {
         problem.setProperty("code", "ITINERARY_PLACE_INACTIVE");
         return problem;
     }
+
     @ExceptionHandler(InvalidItineraryOrderException.class)
     public ProblemDetail handleInvalidItineraryOrder(
             InvalidItineraryOrderException exception, HttpServletRequest request) {
 
-        ProblemDetail problem =
-                ProblemDetail.forStatusAndDetail(
-                        HttpStatus.BAD_REQUEST,
-                        exception.getMessage());
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, exception.getMessage());
 
-        problem.setTitle(
-                "Invalid itinerary order");
+        problem.setTitle("Invalid itinerary order");
         problem.setInstance(URI.create(request.getRequestURI()));
-        problem.setProperty(
-                "code",
-                "INVALID_ITINERARY_ORDER");
+        problem.setProperty("code", "INVALID_ITINERARY_ORDER");
 
         return problem;
     }
+
+    @ExceptionHandler(InvalidGeneratedItineraryException.class)
+    public ProblemDetail handleInvalidGeneratedItinerary(InvalidGeneratedItineraryException exception) {
+
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, exception.getMessage());
+
+        problem.setTitle("Invalid generated itinerary");
+
+        problem.setProperty("code", "INVALID_GENERATED_ITINERARY");
+
+        return problem;
+    }
+
     @ExceptionHandler(Exception.class)
     public ProblemDetail handleUnexpected(Exception exception, HttpServletRequest request) {
         log.error("Unexpected error while handling {}", request.getRequestURI(), exception);
