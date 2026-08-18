@@ -61,15 +61,13 @@ public class ItineraryController {
 
         return itineraryService.replaceItemPlace(principal.id(), tripPublicId, itemPublicId, request.placeId());
     }
+
     @PutMapping("/items/order")
     public ItineraryDetailResponse reorderItems(
             @AuthenticationPrincipal UserPrincipal principal,
             @PathVariable UUID tripPublicId,
             @Valid @RequestBody ReorderItineraryItemsRequest request) {
 
-        return itineraryService.reorderItems(
-                principal.id(),
-                tripPublicId,
-                request.itemPublicIds());
+        return itineraryService.reorderItems(principal.id(), tripPublicId, request.itemPublicIds());
     }
 }
