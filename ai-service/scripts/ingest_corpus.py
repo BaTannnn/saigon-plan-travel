@@ -5,7 +5,7 @@ from app.rag.corpus_schema import PlaceCorpus
 from app.rag.embedding_service import embed_document
 from app.rag.knowledge_repository import upsert_chunk
 from app.rag.place_lookup import resolve_place_id
-
+from app.db.postgres import pool
 
 CORPUS_DIR = Path("corpus")
 
@@ -86,4 +86,9 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    pool.open()
+
+    try:
+        main()
+    finally:
+        pool.close()
