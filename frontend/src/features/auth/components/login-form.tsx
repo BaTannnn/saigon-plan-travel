@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/features/auth/auth-provider";
+import { PasswordInput } from "@/features/auth/components/password-input";
 import { ApiError } from "@/lib/api/api-client";
 
 function loginErrorMessage(error: unknown) {
@@ -51,7 +52,7 @@ export function LoginForm({ registered = false }: { registered?: boolean }) {
   }
 
   return (
-    <form className="grid gap-4" onSubmit={handleSubmit}>
+    <form className="grid gap-5" onSubmit={handleSubmit}>
       {registered ? (
         <Alert className="border-primary/30 bg-primary-soft text-primary-strong">
           <AlertTitle>Đăng ký thành công</AlertTitle>
@@ -78,15 +79,15 @@ export function LoginForm({ registered = false }: { registered?: boolean }) {
           maxLength={255}
           required
           disabled={pending}
+          className="h-11"
         />
       </div>
 
       <div className="grid gap-2">
         <Label htmlFor="login-password">Mật khẩu</Label>
-        <Input
+        <PasswordInput
           id="login-password"
           name="password"
-          type="password"
           autoComplete="current-password"
           maxLength={64}
           required
@@ -94,7 +95,7 @@ export function LoginForm({ registered = false }: { registered?: boolean }) {
         />
       </div>
 
-      <Button className="mt-1 w-full" type="submit" size="lg" disabled={pending}>
+      <Button className="mt-1 w-full" type="submit" disabled={pending}>
         {pending ? "Đang đăng nhập…" : "Đăng nhập"}
       </Button>
     </form>
