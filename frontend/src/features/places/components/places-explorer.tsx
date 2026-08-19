@@ -28,9 +28,6 @@ type PlacesExplorerProps = {
   filters: PlacesSearchFilters;
 };
 
-const eyebrowClassName =
-  "m-0 text-xs font-extrabold tracking-[0.12em] text-primary uppercase";
-
 export function PlacesExplorer({
   result,
   categories,
@@ -68,8 +65,7 @@ export function PlacesExplorer({
         )}
       >
         <div>
-          <p className={eyebrowClassName}>Khám phá Sài Gòn</p>
-          <h1 className="mt-1 mb-[18px] max-w-[520px] text-[clamp(1.65rem,2.2vw,2.35rem)] leading-[1.16] font-bold tracking-[-0.045em] max-md:mb-3.5 max-md:text-[1.65rem]">
+          <h1 className="m-0 mb-[18px] max-w-[520px] text-[clamp(1.65rem,2.2vw,2.35rem)] leading-[1.16] font-bold tracking-[-0.045em] max-md:mb-3.5 max-md:text-[1.65rem]">
             Hôm nay bạn muốn khám phá đâu?
           </h1>
           <Button
@@ -99,8 +95,7 @@ export function PlacesExplorer({
 
         <div className="mt-1 mb-3 flex items-center justify-between">
           <div>
-            <p className={eyebrowClassName}>Địa điểm nổi bật</p>
-            <h2 className="mt-0.5 text-lg font-bold">
+            <h2 className="m-0 text-lg font-bold">
               {result.totalElements} kết quả
             </h2>
           </div>

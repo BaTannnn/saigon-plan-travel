@@ -348,13 +348,7 @@ export function TripForm({
 
       <section className="grid gap-5 border-b border-border py-6 first:pt-0">
         <div>
-          <p className="m-0 text-xs font-extrabold tracking-[0.12em] text-primary uppercase">
-            Thời gian
-          </p>
-          <h2 className="mt-1 text-xl font-bold">Khung chuyến đi</h2>
-          <p className="mt-1 mb-0 text-sm text-text-secondary">
-            Chọn ngày, khoảng thời gian và ngân sách dự kiến.
-          </p>
+          <h2 className="m-0 text-xl font-bold">Khung chuyến đi</h2>
         </div>
 
         <div className="grid grid-cols-3 gap-4 max-md:grid-cols-1">
@@ -446,10 +440,7 @@ export function TripForm({
 
       <section className="grid gap-5 border-b border-border py-6">
         <div>
-          <p className="m-0 text-xs font-extrabold tracking-[0.12em] text-primary uppercase">
-            Điểm xuất phát
-          </p>
-          <h2 className="mt-1 text-xl font-bold">Bạn bắt đầu từ đâu?</h2>
+          <h2 className="m-0 text-xl font-bold">Bạn bắt đầu từ đâu?</h2>
           <p className="mt-1 mb-0 text-sm text-text-secondary">
             Nhập địa chỉ hoặc tên địa điểm. Bạn cũng có thể dùng vị trí hiện tại.
           </p>
@@ -585,10 +576,7 @@ export function TripForm({
 
       <section className="grid gap-5 border-b border-border py-6">
         <div>
-          <p className="m-0 text-xs font-extrabold tracking-[0.12em] text-primary uppercase">
-            Phong cách
-          </p>
-          <h2 className="mt-1 text-xl font-bold">Sở thích chuyến đi</h2>
+          <h2 className="m-0 text-xl font-bold">Sở thích chuyến đi</h2>
         </div>
 
         <div className="grid grid-cols-2 gap-4 max-md:grid-cols-1">

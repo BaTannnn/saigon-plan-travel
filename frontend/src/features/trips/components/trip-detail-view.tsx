@@ -289,13 +289,10 @@ export function TripDetailView({ publicId }: TripDetailViewProps) {
   const overviewContent = editing ? (
     <>
       <header className="mb-7">
-        <p className="m-0 text-xs font-extrabold tracking-[0.12em] text-primary uppercase">
-          PUT · Thay thế đầy đủ
-        </p>
-        <h1 className="mt-1.5 mb-2 text-[clamp(2rem,5vw,3.2rem)] leading-[1.08] font-bold tracking-[-0.05em]">
+        <h1 className="m-0 text-[clamp(2rem,5vw,3.2rem)] leading-[1.08] font-bold tracking-[-0.05em]">
           Chỉnh sửa chuyến đi
         </h1>
-        <p className="m-0 text-text-secondary">
+        <p className="mt-2 mb-0 text-text-secondary">
           Khi lưu, toàn bộ trường bên dưới sẽ thay thế phiên bản hiện tại.
         </p>
       </header>

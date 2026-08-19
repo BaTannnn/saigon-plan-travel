@@ -15,9 +15,7 @@ export default async function LoginPage({
 
   return (
     <AuthCard
-      eyebrow="Chào mừng trở lại"
       title="Đăng nhập"
-      description="Tiếp tục quản lý các chuyến đi của riêng bạn."
       alternateText="Chưa có tài khoản?"
       alternateHref="/register"
       alternateLabel="Đăng ký"

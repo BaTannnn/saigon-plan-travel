@@ -21,9 +21,6 @@ type PlaceDetailViewProps = {
   place: PlaceDetail;
 };
 
-const eyebrowClassName =
-  "m-0 text-xs font-extrabold tracking-[0.12em] text-primary uppercase";
-
 const detailCardClassName =
   "block rounded-mint-md border border-border bg-surface p-[clamp(22px,4vw,36px)] shadow-mint-sm ring-0";
 
@@ -97,8 +94,7 @@ export function PlaceDetailView({ place }: PlaceDetailViewProps) {
         <div className="grid gap-6">
           <Card asChild>
             <section className={detailCardClassName}>
-              <p className={eyebrowClassName}>Giới thiệu</p>
-              <h2 className="mt-[5px] mb-3.5 text-2xl font-bold">
+              <h2 className="mt-0 mb-3.5 text-2xl font-bold">
                 Về địa điểm
               </h2>
               <p className="m-0 leading-[1.8] text-text-secondary">
@@ -111,8 +107,7 @@ export function PlaceDetailView({ place }: PlaceDetailViewProps) {
 
           <Card asChild>
             <section className={detailCardClassName}>
-              <p className={eyebrowClassName}>Lịch hoạt động</p>
-              <h2 className="mt-[5px] mb-3.5 text-2xl font-bold">Giờ mở cửa</h2>
+              <h2 className="mt-0 mb-3.5 text-2xl font-bold">Giờ mở cửa</h2>
               <div className="grid">
                 {Object.entries(dayNames).map(([day, label]) => {
                   const opening = hoursByDay.get(Number(day));

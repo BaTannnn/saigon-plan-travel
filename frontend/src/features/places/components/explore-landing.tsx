@@ -37,10 +37,7 @@ export function ExploreLanding() {
       <section className="relative border-b border-border bg-[radial-gradient(circle_at_85%_15%,var(--primary-soft),transparent_32%),linear-gradient(145deg,var(--background),var(--surface))]">
         <div className="mx-auto grid min-h-[calc(100dvh_-_5rem)] w-[min(1180px,calc(100%_-_40px))] grid-cols-[minmax(0,1fr)_minmax(380px,0.9fr)] items-center gap-16 py-16 max-lg:grid-cols-1 max-lg:gap-10 max-md:min-h-0 max-md:w-[min(100%_-_28px,760px)] max-md:py-12">
           <div className="max-w-2xl">
-            <p className="m-0 text-sm font-extrabold tracking-[0.16em] text-primary uppercase">
-              SaigonPlanTravel
-            </p>
-            <h1 className="mt-4 mb-0 text-[clamp(3rem,6vw,5.6rem)] leading-[0.95] font-black tracking-[-0.065em] text-primary-strong">
+            <h1 className="m-0 text-[clamp(3rem,6vw,5.6rem)] leading-[0.95] font-black tracking-[-0.065em] text-primary-strong">
               Lên kế hoạch khám phá Sài Gòn theo cách của bạn.
             </h1>
             <p className="mt-6 max-w-xl text-[1.05rem] leading-8 text-text-secondary">
@@ -139,10 +136,7 @@ export function ExploreLanding() {
       <section className="bg-surface py-20 max-md:py-14">
         <div className="mx-auto w-[min(1080px,calc(100%_-_40px))] max-md:w-[min(100%_-_28px,760px)]">
           <div className="max-w-2xl">
-            <p className="m-0 text-xs font-extrabold tracking-[0.14em] text-primary uppercase">
-              Quy trình đơn giản
-            </p>
-            <h2 className="mt-3 mb-0 text-[clamp(2rem,4vw,3.2rem)] leading-tight font-black tracking-[-0.045em]">
+            <h2 className="m-0 text-[clamp(2rem,4vw,3.2rem)] leading-tight font-black tracking-[-0.045em]">
               Từ ý tưởng chuyến đi đến một hành trình có thể chỉnh sửa.
             </h2>
           </div>

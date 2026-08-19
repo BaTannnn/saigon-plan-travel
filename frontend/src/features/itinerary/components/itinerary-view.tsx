@@ -137,16 +137,9 @@ export function ItineraryView({
   return (
     <article>
       <header>
-        <p className="m-0 text-xs font-extrabold tracking-[0.14em] text-primary uppercase">
-          Hành trình
-        </p>
-        <h1 className="mt-2 mb-0 text-[clamp(1.85rem,3.4vw,2.7rem)] leading-[1.08] font-bold tracking-[-0.045em] capitalize">
+        <h1 className="m-0 text-[clamp(1.85rem,3.4vw,2.7rem)] leading-[1.08] font-bold tracking-[-0.045em] capitalize">
           {formatDate(trip.tripDate)}
         </h1>
-        <p className="mt-3 mb-0 text-sm leading-6 text-text-secondary">
-          Quản lý thứ tự ghé thăm và xem lịch trình được cập nhật sau mỗi thay
-          đổi.
-        </p>
         <div className="mt-5">
           <ItineraryGenerationSheet
             onGenerate={onGeneratePreview}

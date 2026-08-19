@@ -40,11 +40,7 @@ export function TripWorkspaceSidebar({
       </Link>
 
       <div className="mt-5 border-t border-border pt-4 xl:mt-7 xl:pt-5">
-        <p className="hidden px-2 text-[0.68rem] font-extrabold tracking-[0.12em] text-text-secondary uppercase xl:block">
-          Không gian chuyến đi
-        </p>
-
-        <div className="mt-0 flex gap-2 xl:mt-3 xl:flex-col">
+        <div className="flex gap-2 xl:flex-col">
           {sections.map(({ value, label, icon: Icon }) => {
             const active = section === value;
 

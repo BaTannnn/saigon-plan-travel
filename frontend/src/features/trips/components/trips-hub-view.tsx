@@ -212,15 +212,9 @@ export function TripsHubView() {
     <main className="mx-auto w-[min(1120px,calc(100%_-_32px))] py-9 pb-16 max-md:py-6">
       <header className="mb-7 flex items-end justify-between gap-5 max-sm:items-start max-sm:flex-col">
         <div>
-          <p className="m-0 text-xs font-extrabold tracking-[0.12em] text-primary uppercase">
-            Chuyến đi
-          </p>
-          <h1 className="mt-1.5 mb-2 text-3xl leading-tight font-bold tracking-[-0.04em] max-md:text-2xl">
+          <h1 className="m-0 text-3xl leading-tight font-bold tracking-[-0.04em] max-md:text-2xl">
             Chuyến đi của tôi
           </h1>
-          <p className="m-0 max-w-2xl leading-7 text-text-secondary">
-            Những ngày bạn đã lên kế hoạch.
-          </p>
         </div>
         <Button asChild variant="accent" className="max-sm:w-full">
           <Link href="/trips/new">Tạo chuyến đi</Link>

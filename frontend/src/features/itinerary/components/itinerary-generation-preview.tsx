@@ -28,10 +28,7 @@ export function ItineraryGenerationPreview({
 }: ItineraryGenerationPreviewProps) {
   return (
     <section className="mt-7 border-t border-border pt-6">
-      <p className="m-0 text-xs font-extrabold tracking-[0.12em] text-primary uppercase">
-        Bản đề xuất
-      </p>
-      <h2 className="mt-1 mb-0 text-lg font-bold text-text-primary">
+      <h2 className="m-0 text-lg font-bold text-text-primary">
         Gợi ý hành trình
       </h2>
       <p className="mt-1 mb-0 text-sm text-text-secondary">
