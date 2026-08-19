@@ -19,7 +19,7 @@ export function AuthCard({
 }: AuthCardProps) {
   return (
     <main className="grid min-h-[calc(100dvh_-_5rem)] place-items-center bg-background px-4 py-8 sm:px-6 sm:py-10 max-md:min-h-[calc(100dvh_-_4rem)] max-md:py-5">
-      <Card className="w-full max-w-[440px] rounded-mint-md border-border bg-surface p-7 shadow-mint-sm ring-0 sm:p-8">
+      <Card className="w-full max-w-[440px] border border-border/50 bg-card p-7 sm:p-8">
         <div className="mb-7">
           <div className="mb-5 flex items-center gap-2 text-primary">
             <span className="grid size-8 place-items-center rounded-md bg-primary-soft">

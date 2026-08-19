@@ -87,7 +87,7 @@ export function FilterPanel({
   return (
     <div
       className={cn(
-        "rounded-mint-md border border-border bg-surface p-3.5 shadow-mint-sm",
+        "rounded-mint-md border border-border/50 bg-card p-4 shadow-mint-sm",
         className,
       )}
     >

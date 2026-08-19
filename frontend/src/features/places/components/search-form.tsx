@@ -14,7 +14,7 @@ export function SearchForm({ filters, compact = false }: SearchFormProps) {
   return (
     <form
       className={cn(
-        "flex min-h-[52px] items-center gap-2 rounded-[15px] border border-border bg-surface py-[5px] pr-1.5 pl-4 shadow-mint-md max-md:min-h-[50px] max-md:shadow-mint-sm",
+        "flex min-h-[52px] items-center gap-2 rounded-mint-md border border-border/50 bg-card py-[5px] pr-1.5 pl-4 shadow-mint-sm max-md:min-h-[50px]",
         compact && "w-full",
       )}
       action="/places"

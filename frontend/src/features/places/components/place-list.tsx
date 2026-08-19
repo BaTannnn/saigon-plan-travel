@@ -23,7 +23,7 @@ export function PlaceList({ places, selectedSlug, onSelect }: PlaceListProps) {
 
   if (places.length === 0) {
     return (
-      <Card className="grid flex-1 content-center place-items-center rounded-mint-md border border-dashed border-border bg-surface px-5 py-9 text-center ring-0">
+      <Card className="grid flex-1 content-center place-items-center border border-dashed border-border/60 bg-card px-5 py-9 text-center">
         <span className="text-5xl text-primary" aria-hidden="true">
           ⌁
         </span>

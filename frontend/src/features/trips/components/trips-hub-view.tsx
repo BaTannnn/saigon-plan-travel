@@ -74,7 +74,7 @@ function TripCalendarTile({
     <article className="relative">
       <Link
         href={`/trips/${trip.publicId}`}
-        className="group relative flex min-h-64 flex-col rounded-xl border border-border bg-surface p-5 text-foreground transition-colors hover:border-primary/55 hover:bg-primary-soft/25 focus-visible:border-primary max-sm:min-h-0"
+        className="group relative flex min-h-64 flex-col rounded-mint-md border border-border/50 bg-card p-5 text-foreground shadow-mint-sm transition-[border-color,box-shadow] hover:border-primary/35 focus-visible:border-primary max-sm:min-h-0"
         aria-label={`Mở chuyến đi ${formatDate(trip.tripDate)}`}
       >
         <p className="m-0 pr-10 text-xs font-extrabold tracking-[0.11em] text-text-secondary uppercase">
@@ -112,7 +112,7 @@ function TripCalendarTile({
             type="button"
             variant="ghost"
             size="icon-sm"
-            className="absolute top-2.5 right-2.5 z-10 size-9 bg-surface/90 text-text-secondary hover:bg-muted hover:text-text-primary"
+            className="absolute top-2.5 right-2.5 z-10 size-9 bg-card text-text-secondary hover:bg-muted hover:text-text-primary"
             aria-label={`Tùy chọn cho chuyến đi ${formatDate(trip.tripDate)}`}
           >
             <MoreHorizontal className="size-5" aria-hidden="true" />
@@ -269,7 +269,7 @@ export function TripsHubView() {
           <AlertDescription>{loadError}</AlertDescription>
         </Alert>
       ) : trips?.length === 0 ? (
-        <Card className="items-start rounded-xl border border-border bg-surface p-7 shadow-none ring-0">
+        <Card className="items-start border border-border/50 bg-card p-7">
           <p className="m-0 text-xs font-extrabold tracking-[0.12em] text-primary uppercase">
             Chưa có chuyến đi
           </p>

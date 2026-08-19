@@ -77,9 +77,9 @@ export function ExploreLanding() {
 
           <div className="relative mx-auto w-full max-w-[520px] max-lg:max-w-[620px]">
             <div className="absolute -top-8 -right-8 size-40 rounded-full bg-primary-soft blur-2xl" />
-            <div className="relative overflow-hidden rounded-[28px] border border-border bg-surface shadow-mint-md">
+            <div className="relative overflow-hidden rounded-mint-md border border-border/50 bg-card shadow-mint-sm">
               <div className="grid min-h-[520px] grid-cols-[42%_1fr] max-sm:min-h-[430px]">
-                <div className="border-r border-border bg-[linear-gradient(160deg,var(--surface),var(--background))] p-5">
+                <div className="border-r border-border/50 bg-background p-5">
                   <p className="text-[0.68rem] font-extrabold tracking-[0.12em] text-primary uppercase">
                     Hành trình
                   </p>
@@ -92,7 +92,7 @@ export function ExploreLanding() {
                       (name, index) => (
                         <div
                           key={name}
-                          className="grid grid-cols-[34px_1fr] items-center gap-2.5 rounded-xl border border-border bg-white p-2.5"
+                          className="grid grid-cols-[34px_1fr] items-center gap-2.5 rounded-xl border border-border/40 bg-card p-2.5 shadow-mint-sm"
                         >
                           <span className="grid size-8 place-items-center rounded-full bg-primary text-xs font-black text-primary-foreground">
                             {index + 1}
@@ -120,7 +120,7 @@ export function ExploreLanding() {
                   <div className="absolute bottom-[22%] left-[26%] grid size-12 place-items-center rounded-full border-4 border-white bg-primary text-lg font-black text-white shadow-mint-md">
                     3
                   </div>
-                  <div className="absolute right-5 bottom-5 left-5 rounded-xl border border-white/80 bg-white/90 p-3 shadow-mint-sm backdrop-blur">
+                  <div className="absolute right-5 bottom-5 left-5 rounded-xl border border-border/40 bg-card p-3 shadow-mint-sm">
                     <div className="flex items-center gap-2 text-xs font-bold text-primary-strong">
                       <MapPin className="size-4" />
                       Lịch trình và bản đồ luôn đồng bộ
@@ -133,7 +133,7 @@ export function ExploreLanding() {
         </div>
       </section>
 
-      <section className="bg-surface py-20 max-md:py-14">
+      <section className="bg-background py-20 max-md:py-14">
         <div className="mx-auto w-[min(1080px,calc(100%_-_40px))] max-md:w-[min(100%_-_28px,760px)]">
           <div className="max-w-2xl">
             <h2 className="m-0 text-[clamp(2rem,4vw,3.2rem)] leading-tight font-black tracking-[-0.045em]">
@@ -147,10 +147,10 @@ export function ExploreLanding() {
               return (
                 <article
                   key={step.title}
-                  className="rounded-mint-lg border border-border bg-background p-6 shadow-mint-sm"
+                  className="rounded-mint-md border border-border/50 bg-card p-6 shadow-mint-sm"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="grid size-11 place-items-center rounded-xl bg-primary-soft text-primary">
+                    <span className="grid size-10 place-items-center rounded-full bg-primary-soft text-primary">
                       <Icon className="size-5" />
                     </span>
                     <span className="text-xs font-black tracking-[0.12em] text-text-secondary">

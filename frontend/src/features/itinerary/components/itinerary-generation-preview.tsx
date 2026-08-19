@@ -36,7 +36,7 @@ export function ItineraryGenerationPreview({
       </p>
 
       {preview.stops.length === 0 ? (
-        <div className="mt-4 rounded-xl border border-dashed border-border bg-surface/60 px-4 py-8 text-center text-sm text-text-secondary">
+        <div className="mt-4 rounded-mint-md border border-dashed border-border/60 bg-card px-4 py-8 text-center text-sm text-text-secondary shadow-mint-sm">
           Chưa tìm được lịch trình phù hợp với các điều kiện hiện tại.
         </div>
       ) : (
@@ -53,7 +53,7 @@ export function ItineraryGenerationPreview({
               <span className="z-10 grid size-9 place-items-center rounded-full bg-primary text-xs font-black text-primary-foreground">
                 {String(stop.sequenceNo).padStart(2, "0")}
               </span>
-              <div className="min-w-0 border-b border-border pb-3">
+              <div className="min-w-0 rounded-mint-md bg-card p-4 shadow-mint-sm ring-1 ring-foreground/5">
                 <strong className="block truncate text-[0.95rem] text-text-primary">
                   {stop.place.name}
                 </strong>

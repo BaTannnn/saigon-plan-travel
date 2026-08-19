@@ -29,16 +29,15 @@ export function PlaceCard({
     <Card asChild>
       <article
         className={cn(
-          "relative flex shrink-0 flex-row gap-3 overflow-visible rounded-mint-md border border-border bg-surface p-4 shadow-mint-sm ring-0 transition-[border-color,box-shadow] duration-150 hover:border-accent hover:shadow-[0_12px_30px_rgb(255_107_89_/_14%)] max-md:w-full max-md:p-3.5",
-          selected &&
-            "border-accent shadow-[0_12px_30px_rgb(255_107_89_/_14%)]",
+          "relative flex shrink-0 flex-row gap-3 overflow-visible rounded-mint-md border border-border/50 bg-card p-4 shadow-mint-sm ring-0 transition-[border-color,box-shadow] duration-150 hover:border-primary/35 max-md:w-full max-md:p-3.5",
+          selected && "border-primary/50",
         )}
         id={`place-card-${place.slug}`}
       >
         <div
           className={cn(
             "grid size-[34px] shrink-0 place-items-center rounded-[12px_12px_12px_4px] bg-primary text-[0.82rem] font-extrabold text-surface max-md:size-[30px]",
-            selected && "bg-accent",
+            selected && "bg-primary-strong",
           )}
           aria-hidden="true"
         >
@@ -60,8 +59,8 @@ export function PlaceCard({
             <Button
               type="button"
               className={cn(
-                "size-11 shrink-0 rounded-full border-0 bg-primary-soft text-primary",
-                selected && "bg-accent text-surface hover:bg-accent/90",
+                "size-10 shrink-0 rounded-full border-0 bg-primary-soft text-primary",
+                selected && "bg-primary text-primary-foreground hover:bg-primary-strong",
               )}
               onClick={() => onSelect(place.slug)}
               aria-pressed={selected}

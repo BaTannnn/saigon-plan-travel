@@ -169,7 +169,7 @@ export function ItineraryMap({
 
       {selectedItem ? (
         <div
-          className="absolute bottom-7 left-1/2 z-[500] grid min-w-[min(330px,calc(100%_-_100px))] -translate-x-1/2 rounded-mint-md border border-border bg-surface px-[18px] py-3.5 shadow-mint-md max-md:bottom-[90px] max-md:min-w-[calc(100%_-_32px)]"
+          className="absolute bottom-7 left-1/2 z-[500] grid min-w-[min(330px,calc(100%_-_100px))] -translate-x-1/2 rounded-mint-md border border-border/50 bg-card px-[18px] py-3.5 shadow-mint-sm max-md:bottom-[90px] max-md:min-w-[calc(100%_-_32px)]"
           aria-live="polite"
         >
           <strong>

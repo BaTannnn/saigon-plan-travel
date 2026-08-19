@@ -60,7 +60,7 @@ export function PlacesExplorer({
     <main className="grid h-[calc(100dvh_-_5rem)] min-h-[620px] grid-cols-[minmax(410px,37%)_1fr] overflow-hidden md:max-[1100px]:grid-cols-[minmax(370px,42%)_1fr] max-md:block max-md:h-auto max-md:min-h-[calc(100dvh_-_4rem)] max-md:overflow-visible">
       <section
         className={cn(
-          "relative z-[2] flex min-w-0 flex-col overflow-hidden border-r border-border bg-[linear-gradient(145deg,var(--surface),var(--background))] px-7 pt-7 pb-5 md:max-[1100px]:px-[18px] md:max-[1100px]:pt-[22px] md:max-[1100px]:pb-[18px] max-md:min-h-[calc(100dvh_-_4rem)] max-md:overflow-visible max-md:border-r-0 max-md:px-4 max-md:pt-5 max-md:pb-[92px]",
+          "relative z-[2] flex min-w-0 flex-col overflow-hidden border-r border-border/50 bg-background px-7 pt-7 pb-5 md:max-[1100px]:px-[18px] md:max-[1100px]:pt-[22px] md:max-[1100px]:pb-[18px] max-md:min-h-[calc(100dvh_-_4rem)] max-md:overflow-visible max-md:border-r-0 max-md:px-4 max-md:pt-5 max-md:pb-[92px]",
           mobileView === "map" && "max-md:hidden",
         )}
       >
@@ -110,7 +110,7 @@ export function PlacesExplorer({
               </Button>
             </SheetTrigger>
             <SheetContent
-              className="max-h-[calc(100dvh_-_48px)] overflow-y-auto rounded-t-mint-lg border-border bg-background p-2 shadow-mint-md"
+              className="max-h-[calc(100dvh_-_48px)] overflow-y-auto rounded-t-mint-md border-border/50 bg-card p-2 shadow-mint-sm"
               side="bottom"
             >
               <SheetHeader className="sr-only">
@@ -155,7 +155,7 @@ export function PlacesExplorer({
       </section>
 
       <div
-        className="fixed inset-x-4 bottom-4 z-[900] hidden grid-cols-2 gap-1 rounded-[15px] border border-border bg-surface p-1 shadow-mint-md max-md:grid"
+        className="fixed inset-x-4 bottom-4 z-[900] hidden grid-cols-2 gap-1 rounded-mint-md border border-border/50 bg-card p-1 shadow-mint-sm max-md:grid"
         aria-label="Chọn kiểu hiển thị"
       >
         <Button
