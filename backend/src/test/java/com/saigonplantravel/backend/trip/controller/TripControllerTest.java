@@ -1,10 +1,12 @@
 package com.saigonplantravel.backend.trip.controller;
 
 import static org.hamcrest.Matchers.aMapWithSize;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -159,6 +161,18 @@ class TripControllerTest {
     }
 
     @Test
+    void deletesTripUsingAuthenticatedUserIdAndReturnsNoContent() throws Exception {
+        UserPrincipal principal = userPrincipal();
+        UUID tripPublicId = UUID.fromString("7a674ef0-57c8-4d0e-b99b-dccfd342fc98");
+
+        mockMvc.perform(delete("/api/v1/trips/{publicId}", tripPublicId).with(authenticatedAs(principal)))
+                .andExpect(status().isNoContent())
+                .andExpect(content().string(""));
+
+        verify(tripService).deleteTrip(principal.id(), tripPublicId);
+    }
+
+    @Test
     void requiresAuthenticationForAllTripEndpoints() throws Exception {
 
         UUID tripPublicId = UUID.randomUUID();
@@ -180,6 +194,8 @@ class TripControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isUnauthorized());
+
+        mockMvc.perform(delete("/api/v1/trips/{publicId}", tripPublicId)).andExpect(status().isUnauthorized());
 
         verifyNoInteractions(tripService);
     }
@@ -246,6 +262,19 @@ class TripControllerTest {
                 .andExpect(jsonPath("$.title").value("Trip not found"))
                 .andExpect(jsonPath("$.code").value("TRIP_NOT_FOUND"))
                 .andExpect(jsonPath("$.instance").value("/api/v1/trips/" + tripPublicId));
+    }
+
+    @Test
+    void returnsTripNotFoundProblemDetailWhenDeleting() throws Exception {
+        UserPrincipal principal = userPrincipal();
+        UUID tripPublicId = UUID.randomUUID();
+
+        doThrow(new TripNotFoundException()).when(tripService).deleteTrip(principal.id(), tripPublicId);
+
+        mockMvc.perform(delete("/api/v1/trips/{publicId}", tripPublicId).with(authenticatedAs(principal)))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.code").value("TRIP_NOT_FOUND"));
     }
 
     private RequestPostProcessor authenticatedAs(UserPrincipal principal) {

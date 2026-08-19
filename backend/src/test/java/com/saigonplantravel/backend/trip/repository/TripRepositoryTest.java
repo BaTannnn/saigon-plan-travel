@@ -3,6 +3,7 @@ package com.saigonplantravel.backend.trip.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.saigonplantravel.backend.auth.entity.UserAccount;
+import com.saigonplantravel.backend.testsupport.database.DatabaseTestFixtures;
 import com.saigonplantravel.backend.trip.domain.EnvironmentPreference;
 import com.saigonplantravel.backend.trip.domain.TravelPace;
 import com.saigonplantravel.backend.trip.entity.Trip;
@@ -17,6 +18,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,6 +54,9 @@ class TripRepositoryTest {
 
     @Autowired
     private EntityManager entityManager;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @Test
     void persistsAndLoadsOwnedTrip() {
@@ -195,6 +200,45 @@ class TripRepositoryTest {
         assertThat(reloadedTrip.getTravelPace()).isEqualTo(TravelPace.RELAXED);
 
         assertThat(reloadedTrip.getEnvironmentPreference()).isEqualTo(EnvironmentPreference.INDOOR);
+    }
+
+    @Test
+    void deletesTripAndCascadesItineraryAndItems() {
+        Long ownerUserId = persistUser("delete-owner@example.com");
+        Trip savedTrip = tripRepository.saveAndFlush(
+                newTrip(ownerUserId, LocalDate.of(2026, 8, 22), LocalTime.of(8, 0), "Điểm xuất phát"));
+        DatabaseTestFixtures fixtures = new DatabaseTestFixtures(jdbcTemplate);
+        DatabaseTestFixtures.PlaceFixture place = fixtures.insertValidPlace("Delete place", "delete-place", false);
+        OffsetDateTime timestamp = OffsetDateTime.parse("2026-08-03T10:00:00+07:00");
+
+        Long itineraryId = jdbcTemplate.queryForObject(
+                "INSERT INTO itineraries (public_id, trip_id, created_at, updated_at) VALUES (?, ?, ?, ?) RETURNING id",
+                Long.class,
+                UUID.randomUUID(),
+                savedTrip.getId(),
+                timestamp,
+                timestamp);
+        jdbcTemplate.update(
+                "INSERT INTO itinerary_items (public_id, itinerary_id, place_id, sequence_no, created_at, updated_at) VALUES (?, ?, ?, 1, ?, ?)",
+                UUID.randomUUID(),
+                itineraryId,
+                place.placeId(),
+                timestamp,
+                timestamp);
+
+        UUID publicId = savedTrip.getPublicId();
+        tripRepository.delete(savedTrip);
+        tripRepository.flush();
+        entityManager.clear();
+
+        assertThat(tripRepository.findByPublicIdAndUserId(publicId, ownerUserId))
+                .isEmpty();
+        assertThat(jdbcTemplate.queryForObject(
+                        "SELECT COUNT(*) FROM itineraries WHERE id = ?", Long.class, itineraryId))
+                .isZero();
+        assertThat(jdbcTemplate.queryForObject(
+                        "SELECT COUNT(*) FROM itinerary_items WHERE itinerary_id = ?", Long.class, itineraryId))
+                .isZero();
     }
 
     private Long persistUser(String email) {

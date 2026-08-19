@@ -59,3 +59,11 @@ export function replaceTrip(
     },
   );
 }
+
+export function deleteTrip(publicId: string, token: string) {
+  return requestJson<void>(getTripUrl(`/${encodeURIComponent(publicId)}`), {
+    method: "DELETE",
+    token,
+    cache: "no-store",
+  });
+}

@@ -3,16 +3,36 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ClockIcon, PinIcon, WalletIcon } from "@/components/ui/icons";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/features/auth/auth-provider";
-import { getTripsLoadErrorMessage } from "@/features/trips/trip-errors";
+import {
+  getTripDeleteErrorMessage,
+  getTripsLoadErrorMessage,
+} from "@/features/trips/trip-errors";
 import { ApiError } from "@/lib/api/api-client";
-import { getTrips } from "@/lib/api/trip-api";
+import { deleteTrip, getTrips } from "@/lib/api/trip-api";
 import type { TripSummaryResponse } from "@/types/trip";
+import { MoreHorizontal, Trash2 } from "lucide-react";
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("vi-VN", {
@@ -41,43 +61,71 @@ function getTileDate(value: string) {
   };
 }
 
-function TripCalendarTile({ trip }: { trip: TripSummaryResponse }) {
+function TripCalendarTile({
+  trip,
+  onDelete,
+}: {
+  trip: TripSummaryResponse;
+  onDelete: (trip: TripSummaryResponse) => void;
+}) {
   const date = getTileDate(trip.tripDate);
 
   return (
-    <Link
-      href={`/trips/${trip.publicId}`}
-      className="group relative flex min-h-64 flex-col rounded-xl border border-border bg-surface p-5 text-foreground transition-colors hover:border-primary/55 hover:bg-primary-soft/25 focus-visible:border-primary max-sm:min-h-0"
-      aria-label={`Mở chuyến đi ${formatDate(trip.tripDate)}`}
-    >
-      <p className="m-0 text-xs font-extrabold tracking-[0.11em] text-text-secondary uppercase">
-        {date.weekday}
-      </p>
-      <div className="mt-4">
-        <time
-          dateTime={trip.tripDate}
-          className="block text-6xl leading-none font-bold tracking-[-0.07em] text-primary-strong"
-        >
-          {date.day}
-        </time>
-        <p className="mt-1 mb-0 text-sm font-bold capitalize">{date.month}</p>
-      </div>
+    <article className="relative">
+      <Link
+        href={`/trips/${trip.publicId}`}
+        className="group relative flex min-h-64 flex-col rounded-xl border border-border bg-surface p-5 text-foreground transition-colors hover:border-primary/55 hover:bg-primary-soft/25 focus-visible:border-primary max-sm:min-h-0"
+        aria-label={`Mở chuyến đi ${formatDate(trip.tripDate)}`}
+      >
+        <p className="m-0 pr-10 text-xs font-extrabold tracking-[0.11em] text-text-secondary uppercase">
+          {date.weekday}
+        </p>
+        <div className="mt-4">
+          <time
+            dateTime={trip.tripDate}
+            className="block text-6xl leading-none font-bold tracking-[-0.07em] text-primary-strong"
+          >
+            {date.day}
+          </time>
+          <p className="mt-1 mb-0 text-sm font-bold capitalize">{date.month}</p>
+        </div>
 
-      <div className="mt-auto grid gap-2.5 border-t border-border pt-4 text-sm">
-        <p className="m-0 flex items-center gap-2 font-semibold text-text-primary">
-          <ClockIcon className="size-4 text-primary" />
-          {trip.startTime} – {trip.endTime}
-        </p>
-        <p className="m-0 flex items-center gap-2 font-semibold text-text-primary">
-          <WalletIcon className="size-4 text-ochre" />
-          {formatMoney(trip.budget)}
-        </p>
-        <p className="m-0 flex min-w-0 items-center gap-2 text-xs text-text-secondary">
-          <PinIcon className="size-4 shrink-0 text-text-secondary" />
-          <span className="truncate">{trip.startLocationLabel}</span>
-        </p>
-      </div>
-    </Link>
+        <div className="mt-auto grid gap-2.5 border-t border-border pt-4 text-sm">
+          <p className="m-0 flex items-center gap-2 font-semibold text-text-primary">
+            <ClockIcon className="size-4 text-primary" />
+            {trip.startTime} – {trip.endTime}
+          </p>
+          <p className="m-0 flex items-center gap-2 font-semibold text-text-primary">
+            <WalletIcon className="size-4 text-ochre" />
+            {formatMoney(trip.budget)}
+          </p>
+          <p className="m-0 flex min-w-0 items-center gap-2 text-xs text-text-secondary">
+            <PinIcon className="size-4 shrink-0 text-text-secondary" />
+            <span className="truncate">{trip.startLocationLabel}</span>
+          </p>
+        </div>
+      </Link>
+
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            className="absolute top-2.5 right-2.5 z-10 size-9 bg-surface/90 text-text-secondary hover:bg-muted hover:text-text-primary"
+            aria-label={`Tùy chọn cho chuyến đi ${formatDate(trip.tripDate)}`}
+          >
+            <MoreHorizontal className="size-5" aria-hidden="true" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem destructive onSelect={() => onDelete(trip)}>
+            <Trash2 aria-hidden="true" />
+            Xóa chuyến đi
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </article>
   );
 }
 
@@ -86,6 +134,10 @@ export function TripsHubView() {
   const { status, runAuthenticated } = useAuth();
   const [trips, setTrips] = useState<TripSummaryResponse[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [tripPendingDelete, setTripPendingDelete] =
+    useState<TripSummaryResponse | null>(null);
+  const [deletingPublicId, setDeletingPublicId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     if (status === "guest") {
@@ -114,6 +166,34 @@ export function TripsHubView() {
       cancelled = true;
     };
   }, [router, runAuthenticated, status]);
+
+  const deleting = deletingPublicId !== null;
+
+  function handleDeleteDialogOpenChange(open: boolean) {
+    if (open || deleting) return;
+    setTripPendingDelete(null);
+    setDeleteError(null);
+  }
+
+  async function handleDeleteTrip() {
+    if (!tripPendingDelete || deleting) return;
+
+    const publicId = tripPendingDelete.publicId;
+    setDeletingPublicId(publicId);
+    setDeleteError(null);
+
+    try {
+      await runAuthenticated((token) => deleteTrip(publicId, token));
+      setTrips((current) =>
+        current?.filter((trip) => trip.publicId !== publicId) ?? current,
+      );
+      setTripPendingDelete(null);
+    } catch (error) {
+      setDeleteError(getTripDeleteErrorMessage(error));
+    } finally {
+      setDeletingPublicId(null);
+    }
+  }
 
   if (status !== "authenticated" || (!trips && !loadError)) {
     return (
@@ -147,6 +227,48 @@ export function TripsHubView() {
         </Button>
       </header>
 
+      <AlertDialog
+        open={tripPendingDelete !== null}
+        onOpenChange={handleDeleteDialogOpenChange}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xóa chuyến đi?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {tripPendingDelete
+                ? `Chuyến đi ngày ${formatDate(tripPendingDelete.tripDate)} và hành trình đã lưu bên trong sẽ bị xóa vĩnh viễn.`
+                : "Chuyến đi và hành trình đã lưu bên trong sẽ bị xóa vĩnh viễn."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {deleteError ? (
+            <Alert variant="destructive" role="alert">
+              <AlertTitle>Không thể xóa chuyến đi</AlertTitle>
+              <AlertDescription>{deleteError}</AlertDescription>
+            </Alert>
+          ) : null}
+          <AlertDialogFooter>
+            <AlertDialogCancel asChild>
+              <Button type="button" variant="outline" disabled={deleting}>
+                Hủy
+              </Button>
+            </AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Button
+                type="button"
+                variant="destructive"
+                disabled={deleting}
+                onClick={(event) => {
+                  event.preventDefault();
+                  void handleDeleteTrip();
+                }}
+              >
+                {deleting ? "Đang xóa..." : "Xóa chuyến đi"}
+              </Button>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {loadError ? (
         <Alert className="rounded-mint-lg border-border bg-surface p-6 shadow-mint-sm">
           <AlertTitle>Không thể tải chuyến đi</AlertTitle>
@@ -173,7 +295,14 @@ export function TripsHubView() {
           aria-label="Các chuyến đi đã lưu"
         >
           {trips?.map((trip) => (
-            <TripCalendarTile key={trip.publicId} trip={trip} />
+            <TripCalendarTile
+              key={trip.publicId}
+              trip={trip}
+              onDelete={(selectedTrip) => {
+                setDeleteError(null);
+                setTripPendingDelete(selectedTrip);
+              }}
+            />
           ))}
         </div>
       )}

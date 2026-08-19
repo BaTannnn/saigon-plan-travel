@@ -69,3 +69,16 @@ export function getTripsLoadErrorMessage(error: unknown) {
     "Không thể tải danh sách chuyến đi. Hãy thử lại."
   );
 }
+
+export function getTripDeleteErrorMessage(error: unknown) {
+  if (!(error instanceof ApiError)) {
+    return "Không thể xóa chuyến đi. Hãy thử lại.";
+  }
+  if (error.status === 0) {
+    return "Không thể kết nối đến backend. Hãy kiểm tra kết nối và thử lại.";
+  }
+  if (error.status === 404) {
+    return "Không tìm thấy chuyến đi này hoặc bạn không có quyền xóa.";
+  }
+  return error.problem?.detail ?? "Không thể xóa chuyến đi. Hãy thử lại.";
+}

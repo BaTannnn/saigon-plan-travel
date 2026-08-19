@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -55,5 +56,13 @@ public class TripController {
             @PathVariable UUID publicId,
             @Valid @RequestBody SaveTripRequest request) {
         return tripService.replaceTrip(principal.id(), publicId, request);
+    }
+
+    @DeleteMapping("/{publicId}")
+    public ResponseEntity<Void> deleteTrip(
+            @AuthenticationPrincipal UserPrincipal principal, @PathVariable UUID publicId) {
+        tripService.deleteTrip(principal.id(), publicId);
+
+        return ResponseEntity.noContent().build();
     }
 }

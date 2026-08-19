@@ -198,6 +198,44 @@ class TripServiceTest {
         verify(tripRepository, never()).save(any(Trip.class));
     }
 
+    @Test
+    void deletesOwnedTrip() {
+        Long userId = 99L;
+        Trip trip = createTrip(userId, OffsetDateTime.parse("2026-08-01T10:00:00+07:00"));
+        UUID publicId = trip.getPublicId();
+        when(tripRepository.findByPublicIdAndUserId(publicId, userId)).thenReturn(Optional.of(trip));
+
+        tripService.deleteTrip(userId, publicId);
+
+        verify(tripRepository).findByPublicIdAndUserId(publicId, userId);
+        verify(tripRepository).delete(trip);
+        verifyNoInteractions(tripPolicy, tripMapper);
+    }
+
+    @Test
+    void throwsTripNotFoundBeforeDeletingAnotherUsersTrip() {
+        Long requestingUserId = 99L;
+        UUID publicId = UUID.randomUUID();
+        when(tripRepository.findByPublicIdAndUserId(publicId, requestingUserId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> tripService.deleteTrip(requestingUserId, publicId))
+                .isInstanceOf(TripNotFoundException.class);
+
+        verify(tripRepository, never()).delete(any(Trip.class));
+        verifyNoInteractions(tripPolicy, tripMapper);
+    }
+
+    @Test
+    void throwsTripNotFoundBeforeDeletingNonexistentTrip() {
+        Long userId = 99L;
+        UUID publicId = UUID.randomUUID();
+        when(tripRepository.findByPublicIdAndUserId(publicId, userId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> tripService.deleteTrip(userId, publicId)).isInstanceOf(TripNotFoundException.class);
+
+        verify(tripRepository, never()).delete(any(Trip.class));
+    }
+
     private Trip createTrip(Long userId, OffsetDateTime timestamp) {
         return new Trip(
                 userId,

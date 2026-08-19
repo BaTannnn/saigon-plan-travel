@@ -90,4 +90,11 @@ public class TripService {
 
         return tripMapper.toResponse(trip);
     }
+
+    @Transactional
+    public void deleteTrip(Long userId, UUID publicId) {
+        Trip trip = tripRepository.findByPublicIdAndUserId(publicId, userId).orElseThrow(TripNotFoundException::new);
+
+        tripRepository.delete(trip);
+    }
 }
