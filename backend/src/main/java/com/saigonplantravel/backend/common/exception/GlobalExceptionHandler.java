@@ -3,6 +3,7 @@ package com.saigonplantravel.backend.common.exception;
 import com.saigonplantravel.backend.auth.exception.EmailAlreadyExistsException;
 import com.saigonplantravel.backend.auth.exception.InvalidCredentialsException;
 import com.saigonplantravel.backend.itinerary.exception.*;
+import com.saigonplantravel.backend.location.exception.GeocodingUnavailableException;
 import com.saigonplantravel.backend.place.exception.CategoryNotFoundException;
 import com.saigonplantravel.backend.place.exception.PlaceNotFoundException;
 import com.saigonplantravel.backend.trip.exception.InvalidTripException;
@@ -146,6 +147,18 @@ public class GlobalExceptionHandler {
         problem.setProperty(
                 "fieldErrors", List.of(new FieldValidationError(exception.getField(), exception.getMessage())));
 
+        return problem;
+    }
+
+    @ExceptionHandler(GeocodingUnavailableException.class)
+    public ProblemDetail handleGeocodingUnavailable(
+            GeocodingUnavailableException exception, HttpServletRequest request) {
+        ProblemDetail problem =
+                ProblemDetail.forStatusAndDetail(HttpStatus.BAD_GATEWAY, "Location search is temporarily unavailable");
+        problem.setType(ABOUT_BLANK);
+        problem.setTitle("Location search unavailable");
+        problem.setInstance(URI.create(request.getRequestURI()));
+        problem.setProperty("code", "GEOCODING_UNAVAILABLE");
         return problem;
     }
 

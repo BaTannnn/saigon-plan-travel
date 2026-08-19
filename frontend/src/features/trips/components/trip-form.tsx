@@ -1,10 +1,16 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, type KeyboardEvent } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CalendarIcon, ClockIcon, PinIcon, WalletIcon } from "@/components/ui/icons";
+import {
+  CalendarIcon,
+  ClockIcon,
+  PinIcon,
+  SearchIcon,
+  WalletIcon,
+} from "@/components/ui/icons";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -14,6 +20,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getTripFormFeedback } from "@/features/trips/trip-errors";
+import { ApiError } from "@/lib/api/api-client";
+import type { LocationSearchResult } from "@/types/location";
 import type {
   EnvironmentPreference,
   SaveTripRequest,
@@ -37,6 +45,7 @@ type TripFormProps = {
   initialTrip?: TripResponse;
   submitLabel: string;
   onSubmit: (request: SaveTripRequest) => Promise<void>;
+  onSearchLocations: (query: string) => Promise<LocationSearchResult[]>;
   onCancel?: () => void;
 };
 
@@ -80,7 +89,11 @@ function initialValues(initialTrip?: TripResponse): TripFormValues {
   };
 }
 
-function toRequest(values: TripFormValues): SaveTripRequest {
+function toRequest(
+  values: TripFormValues,
+  latitude: number,
+  longitude: number,
+): SaveTripRequest {
   return {
     tripDate: values.tripDate,
     startTime: values.startTime,
@@ -88,8 +101,8 @@ function toRequest(values: TripFormValues): SaveTripRequest {
     budget: Number(values.budget),
     startLocation: {
       label: values.originLabel,
-      latitude: Number(values.latitude),
-      longitude: Number(values.longitude),
+      latitude,
+      longitude,
     },
     travelPace: values.travelPace,
     environmentPreference: values.environmentPreference,
@@ -106,6 +119,7 @@ export function TripForm({
   initialTrip,
   submitLabel,
   onSubmit,
+  onSearchLocations,
   onCancel,
 }: TripFormProps) {
   const [values, setValues] = useState(() => initialValues(initialTrip));
@@ -116,6 +130,14 @@ export function TripForm({
     "idle" | "locating" | "success" | "error"
   >("idle");
   const [locationMessage, setLocationMessage] = useState<string | null>(null);
+  const [resolvedSource, setResolvedSource] = useState<
+    "initial" | "search" | "gps" | null
+  >(initialTrip ? "initial" : null);
+  const [searchState, setSearchState] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
+  const [searchResults, setSearchResults] = useState<LocationSearchResult[]>([]);
+  const [searchMessage, setSearchMessage] = useState<string | null>(null);
 
   function update<K extends keyof TripFormValues>(
     field: K,
@@ -143,9 +165,13 @@ export function TripForm({
     event.preventDefault();
     setMessage(null);
 
-    const latitude = Number(values.latitude);
-    const longitude = Number(values.longitude);
+    const hasCoordinates =
+      values.latitude.trim() !== "" && values.longitude.trim() !== "";
+    const latitude = hasCoordinates ? Number(values.latitude) : Number.NaN;
+    const longitude = hasCoordinates ? Number(values.longitude) : Number.NaN;
     if (
+      resolvedSource === null ||
+      !hasCoordinates ||
       !Number.isFinite(latitude) ||
       !Number.isFinite(longitude) ||
       latitude < -90 ||
@@ -155,7 +181,7 @@ export function TripForm({
     ) {
       setLocationState("error");
       setLocationMessage(
-        "Hãy dùng vị trí hiện tại trước khi lưu. Chức năng tìm tọa độ từ địa chỉ chưa được tích hợp.",
+        "Hãy tìm và chọn một địa điểm, hoặc dùng vị trí hiện tại trước khi lưu.",
       );
       return;
     }
@@ -164,7 +190,7 @@ export function TripForm({
     setFieldErrors({});
 
     try {
-      await onSubmit(toRequest(values));
+      await onSubmit(toRequest(values, latitude, longitude));
     } catch (error) {
       const feedback = getTripFormFeedback(error);
       setMessage(feedback.message);
@@ -176,6 +202,97 @@ export function TripForm({
 
   const inputClassName =
     "h-11 rounded-[10px] border-border bg-background px-3 text-text-primary";
+
+  function handleOriginChange(value: string) {
+    setValues((current) => ({
+      ...current,
+      originLabel: value,
+      latitude: "",
+      longitude: "",
+    }));
+    setResolvedSource(null);
+    setLocationState("idle");
+    setLocationMessage(null);
+    setSearchState("idle");
+    setSearchResults([]);
+    setSearchMessage(null);
+    setFieldErrors((current) => {
+      const next = { ...current };
+      delete next["startLocation.label"];
+      delete next["startLocation.latitude"];
+      delete next["startLocation.longitude"];
+      return next;
+    });
+  }
+
+  async function runLocationSearch() {
+    const query = values.originLabel.trim();
+    if (!query) {
+      setSearchState("error");
+      setSearchResults([]);
+      setSearchMessage("Nhập địa chỉ hoặc tên địa điểm để tìm.");
+      return;
+    }
+    if (query.length > 120) {
+      setSearchState("error");
+      setSearchResults([]);
+      setSearchMessage("Nội dung tìm kiếm không được dài quá 120 ký tự.");
+      return;
+    }
+
+    setSearchState("loading");
+    setSearchResults([]);
+    setSearchMessage(null);
+    setLocationMessage(null);
+
+    try {
+      const results = await onSearchLocations(query);
+      setSearchResults(results);
+      setSearchState("success");
+      setSearchMessage(
+        results.length === 0
+          ? "Không tìm thấy địa điểm phù hợp. Hãy thử tên hoặc địa chỉ cụ thể hơn."
+          : null,
+      );
+    } catch (error) {
+      setSearchState("error");
+      setSearchMessage(
+        error instanceof ApiError && error.status === 0
+          ? "Không thể kết nối đến máy chủ tìm kiếm. Hãy thử lại."
+          : "Chưa thể tìm địa điểm lúc này. Hãy thử lại sau.",
+      );
+    }
+  }
+
+  function handleOriginKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+    if (searchState !== "loading" && !pending) {
+      void runLocationSearch();
+    }
+  }
+
+  function selectLocation(result: LocationSearchResult) {
+    setValues((current) => ({
+      ...current,
+      originLabel: result.label,
+      latitude: String(result.latitude),
+      longitude: String(result.longitude),
+    }));
+    setResolvedSource("search");
+    setSearchResults([]);
+    setSearchState("idle");
+    setSearchMessage(null);
+    setLocationState("success");
+    setLocationMessage("Đã chọn điểm xuất phát.");
+    setFieldErrors((current) => {
+      const next = { ...current };
+      delete next["startLocation.label"];
+      delete next["startLocation.latitude"];
+      delete next["startLocation.longitude"];
+      return next;
+    });
+  }
 
   function useCurrentLocation() {
     if (!("geolocation" in navigator)) {
@@ -191,10 +308,14 @@ export function TripForm({
       (position) => {
         setValues((current) => ({
           ...current,
-          originLabel: current.originLabel.trim() || "Vị trí hiện tại",
+          originLabel: "Vị trí hiện tại",
           latitude: position.coords.latitude.toFixed(7),
           longitude: position.coords.longitude.toFixed(7),
         }));
+        setResolvedSource("gps");
+        setSearchState("idle");
+        setSearchResults([]);
+        setSearchMessage(null);
         setFieldErrors((current) => {
           const next = { ...current };
           delete next["startLocation.latitude"];
@@ -345,14 +466,98 @@ export function TripForm({
             id="origin-label"
             className={inputClassName}
             value={values.originLabel}
-            onChange={(event) => update("originLabel", event.target.value)}
+            onChange={(event) => handleOriginChange(event.target.value)}
+            onKeyDown={handleOriginKeyDown}
             aria-invalid={Boolean(fieldErrors["startLocation.label"])}
             maxLength={255}
             placeholder="Nhập địa chỉ hoặc tên địa điểm..."
             required
-            disabled={pending}
+            disabled={pending || searchState === "loading"}
           />
           <FieldError message={fieldErrors["startLocation.label"]} />
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => void runLocationSearch()}
+              disabled={pending || searchState === "loading"}
+            >
+              <SearchIcon />
+              {searchState === "loading" ? "Đang tìm…" : "Tìm"}
+            </Button>
+            {searchState === "loading" ? (
+              <p className="m-0 text-sm text-text-secondary" role="status">
+                Đang tìm tối đa 5 kết quả phù hợp…
+              </p>
+            ) : null}
+          </div>
+          {searchMessage ? (
+            <p
+              className={`m-0 text-sm ${searchState === "error" ? "text-destructive" : "text-text-secondary"}`}
+              role={searchState === "error" ? "alert" : "status"}
+            >
+              {searchMessage}
+            </p>
+          ) : null}
+          {searchResults.length > 0 ? (
+            <div className="grid gap-2" aria-label="Kết quả tìm điểm xuất phát">
+              <ul className="m-0 grid list-none gap-2 p-0">
+                {searchResults.map((result) => (
+                  <li
+                    key={`${result.latitude}-${result.longitude}-${result.label}`}
+                  >
+                    <button
+                      type="button"
+                      className="w-full min-w-0 rounded-[10px] border border-border bg-surface px-3 py-2.5 text-left text-sm leading-5 text-text-primary transition-colors hover:border-primary/50 hover:bg-primary-soft focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/35 disabled:opacity-60"
+                      onClick={() => selectLocation(result)}
+                      disabled={pending}
+                    >
+                      <span className="block break-words font-medium">
+                        {result.label}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <p className="m-0 text-xs text-text-secondary">
+                Dữ liệu ©{" "}
+                <a
+                  className="underline underline-offset-2"
+                  href="https://www.openstreetmap.org/copyright"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  OpenStreetMap contributors
+                </a>
+              </p>
+            </div>
+          ) : null}
+          {resolvedSource ? (
+            <div className="flex min-w-0 items-start gap-2 rounded-[10px] border border-primary/25 bg-primary-soft px-3 py-2.5 text-sm text-primary-strong">
+              <PinIcon className="mt-0.5 size-4 shrink-0" />
+              <p className="m-0 min-w-0 break-words">
+                <span className="font-semibold">Đã chọn:</span>{" "}
+                {values.originLabel}
+              </p>
+            </div>
+          ) : values.originLabel.trim() ? (
+            <p className="m-0 text-xs text-text-secondary">
+              Hãy tìm và chọn một kết quả để xác nhận điểm xuất phát.
+            </p>
+          ) : null}
+          {resolvedSource === "search" ? (
+            <p className="m-0 text-xs text-text-secondary">
+              Dữ liệu ©{" "}
+              <a
+                className="underline underline-offset-2"
+                href="https://www.openstreetmap.org/copyright"
+                target="_blank"
+                rel="noreferrer"
+              >
+                OpenStreetMap contributors
+              </a>
+            </p>
+          ) : null}
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
@@ -360,7 +565,9 @@ export function TripForm({
             type="button"
             variant="outline"
             onClick={useCurrentLocation}
-            disabled={pending || locationState === "locating"}
+            disabled={
+              pending || locationState === "locating" || searchState === "loading"
+            }
           >
             <PinIcon />
             {locationState === "locating" ? "Đang lấy vị trí…" : "Dùng vị trí của tôi"}
@@ -452,7 +659,14 @@ export function TripForm({
             Hủy chỉnh sửa
           </Button>
         ) : null}
-        <Button type="submit" variant="accent" size="lg" disabled={pending}>
+        <Button
+          type="submit"
+          variant="accent"
+          size="lg"
+          disabled={
+            pending || searchState === "loading" || resolvedSource === null
+          }
+        >
           {pending ? "Đang lưu…" : submitLabel}
         </Button>
       </footer>

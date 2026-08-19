@@ -18,6 +18,7 @@ import {
 import { getTripLoadErrorMessage } from "@/features/trips/trip-errors";
 import { TripOriginMapShell } from "@/features/trips/map/trip-origin-map-shell";
 import { ApiError } from "@/lib/api/api-client";
+import { searchLocations } from "@/lib/api/location-api";
 import {
   addItineraryItem,
   applyGeneratedItinerary,
@@ -129,6 +130,10 @@ export function TripDetailView({ publicId }: TripDetailViewProps) {
     );
     setTrip(updated);
     setEditing(false);
+  }
+
+  function handleLocationSearch(query: string) {
+    return runAuthenticated((token) => searchLocations(query, token));
   }
 
   async function handleAddPlace(place: PlaceSummary) {
@@ -298,6 +303,7 @@ export function TripDetailView({ publicId }: TripDetailViewProps) {
         initialTrip={trip}
         submitLabel="Lưu thay đổi"
         onSubmit={handleReplace}
+        onSearchLocations={handleLocationSearch}
         onCancel={() => setEditing(false)}
       />
     </>

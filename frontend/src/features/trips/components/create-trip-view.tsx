@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/features/auth/auth-provider";
 import { TripForm } from "@/features/trips/components/trip-form";
+import { searchLocations } from "@/lib/api/location-api";
 import { createTrip } from "@/lib/api/trip-api";
 import type { SaveTripRequest } from "@/types/trip";
 
@@ -32,6 +33,10 @@ export function CreateTripView() {
     router.push(`/trips/${trip.publicId}`);
   }
 
+  function handleLocationSearch(query: string) {
+    return runAuthenticated((token) => searchLocations(query, token));
+  }
+
   return (
     <main className="mx-auto w-[min(780px,calc(100%_-_32px))] py-9 pb-16 max-md:py-6">
       <header className="mb-7">
@@ -46,7 +51,11 @@ export function CreateTripView() {
         </p>
       </header>
 
-      <TripForm submitLabel="Lưu chuyến đi" onSubmit={handleCreate} />
+      <TripForm
+        submitLabel="Lưu chuyến đi"
+        onSubmit={handleCreate}
+        onSearchLocations={handleLocationSearch}
+      />
     </main>
   );
 }

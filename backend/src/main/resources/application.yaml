@@ -34,6 +34,10 @@ management:
 app:
   ai:
     base-url: ${AI_SERVICE_URL:http://localhost:8000}
+  geocoding:
+    base-url: ${NOMINATIM_BASE_URL:https://nominatim.openstreetmap.org}
+    user-agent: ${NOMINATIM_USER_AGENT:SaigonPlanTravel/1.0}
+    minimum-interval: ${NOMINATIM_MINIMUM_INTERVAL:1s}
   security:
     cors:
       allowed-origin: ${CORS_ALLOWED_ORIGIN:http://localhost:3000}
