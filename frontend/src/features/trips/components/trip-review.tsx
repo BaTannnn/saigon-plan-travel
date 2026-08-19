@@ -77,15 +77,15 @@ export function TripReview({
   return (
     <article>
       <header>
-        <p className="m-0 text-sm font-extrabold tracking-[0.14em] text-primary uppercase">
-          TP.HCM
+        <p className="m-0 text-xs font-extrabold tracking-[0.14em] text-primary uppercase">
+          Chuyến đi tại TP.HCM
         </p>
-        <h1 className="mt-2 mb-0 text-[clamp(2.2rem,5vw,3.7rem)] leading-[1.05] font-bold tracking-[-0.055em] capitalize">
+        <h1 className="mt-2 mb-0 text-[clamp(2rem,4vw,3.15rem)] leading-[1.06] font-bold tracking-[-0.05em] capitalize">
           {formatDate(trip.tripDate)}
         </h1>
 
         <div
-          className="mt-7 grid grid-cols-[auto_minmax(40px,1fr)_auto] items-center gap-4 text-lg font-bold text-primary-strong"
+          className="mt-6 grid grid-cols-[auto_minmax(40px,1fr)_auto] items-center gap-4 text-base font-bold text-primary-strong"
           aria-label={`Từ ${trip.startTime} đến ${trip.endTime}`}
         >
           <time dateTime={trip.startTime}>{trip.startTime}</time>
@@ -101,7 +101,7 @@ export function TripReview({
         </p>
       </header>
 
-      <section className="mt-10" aria-labelledby="trip-origin-heading">
+      <section className="mt-9" aria-labelledby="trip-origin-heading">
         <h2
           id="trip-origin-heading"
           className="m-0 text-xs font-extrabold tracking-[0.12em] text-text-secondary uppercase"
@@ -114,7 +114,7 @@ export function TripReview({
             aria-hidden="true"
           />
           <div>
-            <p className="m-0 text-xl font-bold">
+            <p className="m-0 text-lg font-bold">
               {trip.startLocation.label}
             </p>
             <p className="mt-1.5 mb-0 text-[0.72rem] tracking-[0.02em] text-text-secondary/70">
@@ -127,10 +127,10 @@ export function TripReview({
       </section>
 
       <section
-        className="mt-10 border-t border-border pt-8"
+        className="mt-9 border-t border-border pt-7"
         aria-label="Thông tin chuyến đi"
       >
-        <div className="grid grid-cols-2 gap-x-12 gap-y-8 max-sm:grid-cols-1">
+        <div className="grid grid-cols-2 gap-x-10 gap-y-7 max-sm:grid-cols-1">
           <OverviewStat label="Ngân sách" value={formatMoney(trip.budget)} />
           <OverviewStat
             label="Nhịp độ"
@@ -143,7 +143,7 @@ export function TripReview({
         </div>
       </section>
 
-      <footer className="mt-10 border-t border-border pt-8">
+      <footer className="mt-9 border-t border-border pt-7">
         <Button type="button" variant="outline" onClick={onEdit}>
           Chỉnh sửa
         </Button>

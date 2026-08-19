@@ -3,6 +3,13 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { Filter, MapPin, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -12,15 +19,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
 import { getCategories } from "@/lib/api/category-api";
-import { getPlaceCatalog, getPlaces } from "@/lib/api/place-api";
+import { getPlaces } from "@/lib/api/place-api";
 import type { Category } from "@/types/category";
 import type { PlaceSummary, PlacesSearchFilters } from "@/types/place";
 
@@ -35,12 +35,14 @@ type PlacePickerSheetProps = {
   onSelect: (place: PlaceSummary) => Promise<void>;
 };
 
-const ALL_VALUE = "__all__";
+type PickerFilters = Pick<
+  PlacesSearchFilters,
+  "keyword" | "category" | "indoor" | "maxCost"
+>;
 
-type CatalogLoadResult = [
-  Awaited<ReturnType<typeof getPlaceCatalog>>,
-  Awaited<ReturnType<typeof getCategories>>,
-];
+const ALL_VALUE = "__all__";
+const PAGE_SIZE = 10;
+const initialFilters: PickerFilters = {};
 
 export function PlacePickerSheet({
   open,
@@ -51,53 +53,102 @@ export function PlacePickerSheet({
   onSelect,
 }: PlacePickerSheetProps) {
   const [places, setPlaces] = useState<PlaceSummary[]>([]);
-  const [catalog, setCatalog] = useState<PlaceSummary[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState(ALL_VALUE);
   const [indoor, setIndoor] = useState(ALL_VALUE);
   const [maxCost, setMaxCost] = useState("");
-  const [catalogLoaded, setCatalogLoaded] = useState(false);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const [initialLoaded, setInitialLoaded] = useState(false);
   const [filterLoading, setFilterLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedPlaceId, setSelectedPlaceId] = useState<number | null>(null);
-  const catalogRequestRef = useRef<Promise<CatalogLoadResult> | null>(null);
-  const catalogLoading = open && !catalogLoaded && error === null;
-  const loading = catalogLoading || filterLoading;
+  const categoriesLoadedRef = useRef(false);
+
+  const currentFilters: PickerFilters = {
+    keyword: query.trim() || undefined,
+    category: category === ALL_VALUE ? undefined : category,
+    indoor: indoor === ALL_VALUE ? undefined : (indoor as "true" | "false"),
+    maxCost: maxCost.trim() || undefined,
+  };
+
+  const visiblePlaces = useMemo(() => {
+    const excluded = new Set(excludedPlaceSlugs);
+    return places.filter((place) => !excluded.has(place.slug));
+  }, [excludedPlaceSlugs, places]);
+  const initialLoading = !initialLoaded && error === null;
 
   useEffect(() => {
-    if (!open || catalogLoaded) return;
+    if (!open) return;
 
     let cancelled = false;
-    const request =
-      catalogRequestRef.current ??
-      Promise.all([getPlaceCatalog(), getCategories()]);
-    catalogRequestRef.current = request;
-
-    request
-      .then(([placeCatalog, categoryList]) => {
+    getPlaces({ ...initialFilters, page: 0, size: PAGE_SIZE })
+      .then((response) => {
         if (cancelled) return;
-
-        setCatalog(placeCatalog.content);
-        setPlaces(placeCatalog.content);
-        setCategories(categoryList);
-        setCatalogLoaded(true);
+        setPlaces(response.content);
+        setPage(response.page);
+        setHasMore(!response.last);
       })
       .catch(() => {
-        if (cancelled) return;
-
-        setError("Không thể tải dữ liệu địa điểm. Vui lòng thử lại.");
+        if (!cancelled) setError("Không thể tải địa điểm. Vui lòng thử lại.");
       })
       .finally(() => {
-        if (catalogRequestRef.current === request) {
-          catalogRequestRef.current = null;
-        }
+        if (!cancelled) setInitialLoaded(true);
       });
+
+    if (!categoriesLoadedRef.current) {
+      void getCategories()
+        .then((categoryList) => {
+          if (!cancelled) {
+            setCategories(categoryList);
+            categoriesLoadedRef.current = true;
+          }
+        })
+        .catch(() => {
+          if (!cancelled) {
+            setError("Không thể tải bộ lọc địa điểm. Vui lòng thử lại.");
+          }
+        });
+    }
 
     return () => {
       cancelled = true;
     };
-  }, [catalogLoaded, open]);
+  }, [open]);
+
+  function filtersForPage(nextPage: number, filters = currentFilters) {
+    return { ...filters, page: nextPage, size: PAGE_SIZE };
+  }
+
+  async function loadPage(
+    nextPage: number,
+    append: boolean,
+    filters = currentFilters,
+  ) {
+    if (append) setLoadingMore(true);
+    else setFilterLoading(true);
+    setError(null);
+
+    try {
+      const response = await getPlaces(filtersForPage(nextPage, filters));
+      setPlaces((current) =>
+        append ? [...current, ...response.content] : response.content,
+      );
+      setPage(response.page);
+      setHasMore(!response.last);
+    } catch {
+      setError(
+        append
+          ? "Không thể tải thêm địa điểm. Vui lòng thử lại."
+          : "Không thể tìm địa điểm. Vui lòng thử lại.",
+      );
+    } finally {
+      if (append) setLoadingMore(false);
+      else setFilterLoading(false);
+    }
+  }
 
   function handleOpenChange(nextOpen: boolean) {
     if (!nextOpen) {
@@ -105,42 +156,21 @@ export function PlacePickerSheet({
       setCategory(ALL_VALUE);
       setIndoor(ALL_VALUE);
       setMaxCost("");
-      setPlaces(catalog);
-      setSelectedPlaceId(null);
+      setPlaces([]);
+      setPage(0);
+      setHasMore(false);
       setError(null);
+      setSelectedPlaceId(null);
+      setInitialLoaded(false);
+      setFilterLoading(false);
     }
 
     onOpenChange(nextOpen);
   }
 
-  const visiblePlaces = useMemo(() => {
-    const excluded = new Set(excludedPlaceSlugs);
-    return places.filter((place) => !excluded.has(place.slug));
-  }, [excludedPlaceSlugs, places]);
-
-  async function applyFilters(event?: FormEvent<HTMLFormElement>) {
+  function applyFilters(event?: FormEvent<HTMLFormElement>) {
     event?.preventDefault();
-    setFilterLoading(true);
-    setError(null);
-
-    const filters: PlacesSearchFilters = {
-      keyword: query.trim() || undefined,
-      category: category === ALL_VALUE ? undefined : category,
-      indoor:
-        indoor === ALL_VALUE ? undefined : (indoor as "true" | "false"),
-      maxCost: maxCost.trim() || undefined,
-      page: 0,
-      size: 100,
-    };
-
-    try {
-      const response = await getPlaces(filters);
-      setPlaces(response.content);
-    } catch {
-      setError("Không thể áp dụng bộ lọc. Vui lòng thử lại.");
-    } finally {
-      setFilterLoading(false);
-    }
+    void loadPage(0, false);
   }
 
   function resetFilters() {
@@ -148,8 +178,7 @@ export function PlacePickerSheet({
     setCategory(ALL_VALUE);
     setIndoor(ALL_VALUE);
     setMaxCost("");
-    setPlaces(catalog);
-    setError(null);
+    void loadPage(0, false, initialFilters);
   }
 
   async function handleSelect(place: PlaceSummary) {
@@ -171,18 +200,18 @@ export function PlacePickerSheet({
   }
 
   return (
-    <Sheet open={open} onOpenChange={handleOpenChange}>
-      <SheetContent className="w-[min(94vw,520px)] sm:max-w-[520px]">
-        <SheetHeader className="border-b border-border px-5 py-5 pr-14">
-          <SheetTitle className="text-lg font-bold">
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="w-[min(calc(100vw_-_2rem),560px)]">
+        <DialogHeader className="border-b border-border pb-5">
+          <DialogTitle>
             {mode === "add" ? "Thêm địa điểm" : "Thay địa điểm"}
-          </SheetTitle>
-          <SheetDescription>
-            Tìm kiếm và lọc địa điểm ngay trong quá trình xây dựng hành trình.
-          </SheetDescription>
-        </SheetHeader>
+          </DialogTitle>
+          <DialogDescription>
+            Tìm địa điểm phù hợp ngay trong hành trình của bạn.
+          </DialogDescription>
+        </DialogHeader>
 
-        <form className="grid gap-3 px-5" onSubmit={applyFilters}>
+        <form className="px-5 pt-5" onSubmit={applyFilters}>
           <div className="relative">
             <Search
               className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-text-secondary"
@@ -191,19 +220,18 @@ export function PlacePickerSheet({
             <Input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              className="pl-9"
-              placeholder="Tìm theo tên hoặc mô tả..."
+              className="h-11 pl-9"
+              placeholder="Tìm tên địa điểm..."
               aria-label="Tìm địa điểm"
             />
           </div>
 
-          <div className="rounded-xl border border-border bg-background p-3">
-            <div className="mb-3 flex items-center gap-2 text-sm font-bold text-text-primary">
+          <details className="mt-3 border-b border-border pb-3">
+            <summary className="flex cursor-pointer list-none items-center gap-2 text-sm font-semibold text-text-secondary hover:text-text-primary">
               <Filter className="size-4 text-primary" aria-hidden="true" />
               Bộ lọc
-            </div>
-
-            <div className="grid grid-cols-1 gap-3">
+            </summary>
+            <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="grid gap-1.5">
                 <Label className="text-xs text-text-secondary">Danh mục</Label>
                 <Select value={category} onValueChange={setCategory}>
@@ -237,11 +265,8 @@ export function PlacePickerSheet({
                 </Select>
               </div>
 
-              <div className="grid gap-1.5">
-                <Label
-                  className="text-xs text-text-secondary"
-                  htmlFor="picker-max-cost"
-                >
+              <div className="grid gap-1.5 sm:col-span-2">
+                <Label className="text-xs text-text-secondary" htmlFor="picker-max-cost">
                   Chi phí tối đa (VND)
                 </Label>
                 <Input
@@ -256,109 +281,86 @@ export function PlacePickerSheet({
                 />
               </div>
             </div>
-
-            <div className="mt-3 flex gap-2">
-              <Button type="submit" size="sm" disabled={loading}>
-                {loading ? "Đang lọc..." : "Áp dụng"}
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={resetFilters}
-                disabled={loading}
-              >
+            <div className="mt-3 flex justify-end gap-2">
+              <Button type="button" size="sm" variant="ghost" onClick={resetFilters}>
                 Đặt lại
               </Button>
+              <Button type="submit" size="sm" disabled={initialLoading || filterLoading}>
+                Áp dụng
+              </Button>
             </div>
-          </div>
+          </details>
         </form>
 
-        {error ? (
-          <p className="mx-5 rounded-lg bg-destructive/10 px-3 py-2 text-sm font-semibold text-destructive">
-            {error}
-          </p>
-        ) : null}
-
         <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-5">
-          <div className="mb-2 flex items-center justify-between text-xs text-text-secondary">
-            <span>
-              {loading ? "Đang tải..." : `${visiblePlaces.length} địa điểm`}
-            </span>
+          <div className="flex min-h-9 items-center justify-between text-xs text-text-secondary">
+            <span>{initialLoading || filterLoading ? "Đang tải..." : `${visiblePlaces.length} địa điểm`}</span>
           </div>
 
-          {loading ? (
-            <div className="grid gap-3 py-2" aria-label="Đang tải địa điểm">
+          {error ? (
+            <div className="mb-3 flex items-center justify-between gap-3 border-l-2 border-destructive bg-destructive/8 px-3 py-2 text-sm text-destructive" role="alert">
+              <span>{error}</span>
+              <Button type="button" size="xs" variant="ghost" onClick={() => applyFilters()}>
+                Thử lại
+              </Button>
+            </div>
+          ) : null}
+
+          {initialLoading && places.length === 0 ? (
+            <div className="grid gap-0" aria-label="Đang tải địa điểm">
               {[1, 2, 3, 4].map((item) => (
-                <div
-                  key={item}
-                  className="h-20 animate-pulse rounded-xl bg-muted/70"
-                />
+                <div key={item} className="h-18 animate-pulse border-b border-border bg-muted/45" />
               ))}
             </div>
           ) : visiblePlaces.length === 0 ? (
-            <div className="grid min-h-44 place-items-center text-center">
+            <div className="grid min-h-40 place-items-center text-center">
               <div>
-                <p className="font-bold text-text-primary">
-                  Không tìm thấy địa điểm phù hợp
-                </p>
+                <p className="font-bold text-text-primary">Không tìm thấy địa điểm phù hợp</p>
                 <p className="mt-1 text-sm text-text-secondary">
-                  Hãy thử thay đổi từ khóa hoặc bộ lọc.
+                  Không có địa điểm nào trong SaigonPlanTravel khớp với tìm kiếm này.
                 </p>
               </div>
             </div>
           ) : (
-            <div className="grid gap-2 py-2">
+            <div className="border-y border-border">
               {visiblePlaces.map((place) => {
                 const selecting = selectedPlaceId === place.id || busy;
 
                 return (
-                  <div
-                    key={place.id}
-                    className="grid grid-cols-[1fr_auto] items-center gap-3 rounded-xl border border-border bg-surface p-3"
-                  >
-                    <div className="min-w-0">
-                      <div className="flex items-start gap-2">
-                        <MapPin
-                          className="mt-0.5 size-4 shrink-0 text-primary"
-                          aria-hidden="true"
-                        />
-                        <div className="min-w-0">
-                          <p className="m-0 truncate font-bold text-text-primary">
-                            {place.name}
+                  <div key={place.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-border py-3 last:border-b-0">
+                    <div className="flex min-w-0 items-start gap-2">
+                      <MapPin className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" />
+                      <div className="min-w-0">
+                        <p className="m-0 truncate text-sm font-bold text-text-primary">{place.name}</p>
+                        <p className="mt-0.5 mb-0 text-xs text-text-secondary">
+                          {place.indoor ? "Trong nhà" : "Ngoài trời"}
+                        </p>
+                        {place.shortDescription ? (
+                          <p className="mt-1 mb-0 line-clamp-1 text-xs leading-5 text-text-secondary">
+                            {place.shortDescription}
                           </p>
-                          <p className="mt-1 mb-0 truncate text-xs text-text-secondary">
-                            {place.indoor ? "Trong nhà" : "Ngoài trời"}
-                          </p>
-                          {place.shortDescription ? (
-                            <p className="mt-1.5 mb-0 line-clamp-2 text-xs leading-5 text-text-secondary">
-                              {place.shortDescription}
-                            </p>
-                          ) : null}
-                        </div>
+                        ) : null}
                       </div>
                     </div>
 
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      disabled={selecting}
-                      onClick={() => handleSelect(place)}
-                    >
-                      {selectedPlaceId === place.id
-                        ? "Đang lưu..."
-                        : mode === "add"
-                          ? "Thêm"
-                          : "Chọn"}
+                    <Button type="button" size="sm" variant="outline" disabled={selecting} onClick={() => handleSelect(place)}>
+                      {selectedPlaceId === place.id ? "Đang lưu..." : mode === "add" ? "Thêm" : "Chọn"}
                     </Button>
                   </div>
                 );
               })}
             </div>
           )}
+
+          {hasMore && !initialLoading ? (
+            <div className="pt-4 text-center">
+              <Button type="button" size="sm" variant="outline" onClick={() => void loadPage(page + 1, true)} disabled={loadingMore || busy}>
+                {loadingMore ? "Đang tải thêm..." : "Xem thêm"}
+              </Button>
+            </div>
+          ) : null}
         </div>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }

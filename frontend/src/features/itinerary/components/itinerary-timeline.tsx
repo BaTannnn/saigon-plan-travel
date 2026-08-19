@@ -58,31 +58,31 @@ function ItineraryItemCard({
     <li
       className={`relative ${
         index < itemCount - 1
-          ? "after:absolute after:top-full after:left-8 after:h-3 after:w-px after:bg-primary/30 after:content-['']"
+          ? "after:absolute after:top-10 after:bottom-[-12px] after:left-[18px] after:w-px after:bg-primary/25 after:content-['']"
           : ""
       }`}
     >
       <div
-        className={`grid grid-cols-[minmax(0,1fr)_40px] items-stretch rounded-xl border p-1 transition ${
+        className={`grid grid-cols-[minmax(0,1fr)_40px] items-stretch border-b py-1 transition ${
           selected
-            ? "border-primary/55 bg-primary-soft/35 shadow-mint-sm"
-            : "border-border bg-surface hover:border-primary/35"
+            ? "border-primary/55 bg-primary-soft/40"
+            : "border-border hover:border-primary/35 hover:bg-muted/35"
         }`}
       >
         <button
           type="button"
-          className="grid min-w-0 grid-cols-[42px_1fr] items-start gap-3 rounded-lg p-2 text-left"
+          className="grid min-w-0 grid-cols-[36px_1fr] items-start gap-3 py-3 pl-0 text-left"
           onClick={onSelect}
         >
-          <span className="grid size-10 place-items-center rounded-full bg-primary text-sm font-black text-primary-foreground">
-            {item.sequenceNo}
+          <span className="z-10 grid size-9 place-items-center rounded-full bg-primary text-xs font-black text-primary-foreground">
+            {String(item.sequenceNo).padStart(2, "0")}
           </span>
 
           <span className="min-w-0">
-            <strong className="block truncate text-base text-text-primary">
+            <strong className="block truncate text-[0.95rem] text-text-primary">
               {item.place.name}
             </strong>
-            <span className="mt-1.5 flex items-center gap-1 text-[0.8rem] leading-5 font-semibold text-text-primary tabular-nums">
+            <span className="mt-1 flex items-center gap-1 text-[0.8rem] leading-5 font-semibold text-text-primary tabular-nums">
               <Clock3
                 className="size-3.5 text-primary"
                 aria-hidden="true"
@@ -112,7 +112,7 @@ function ItineraryItemCard({
 
         <button
           type="button"
-          className="m-auto grid size-9 place-items-center rounded-lg text-text-secondary transition hover:bg-muted hover:text-text-primary"
+          className="m-auto grid size-8 place-items-center rounded-md text-text-secondary transition hover:bg-muted hover:text-text-primary"
           aria-label={`Tùy chọn cho ${item.place.name}`}
           aria-expanded={menuOpen}
           disabled={mutating}
@@ -123,7 +123,7 @@ function ItineraryItemCard({
       </div>
 
       {menuOpen ? (
-        <div className="absolute top-12 right-3 z-20 min-w-48 rounded-xl border border-border bg-popover p-1.5 shadow-mint-md">
+        <div className="absolute top-11 right-1 z-20 min-w-48 rounded-lg border border-border bg-popover p-1.5 shadow-mint-md">
           <button
             type="button"
             className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-semibold hover:bg-muted disabled:cursor-not-allowed disabled:opacity-45"

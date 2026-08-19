@@ -310,13 +310,13 @@ export function TripDetailView({ publicId }: TripDetailViewProps) {
   );
 
   return (
-    <main className="grid min-h-[calc(100dvh_-_4rem)] grid-cols-1 bg-background md:min-h-[calc(100dvh_-_5rem)] xl:h-[calc(100dvh_-_5rem)] xl:min-h-[680px] xl:grid-cols-[210px_minmax(0,calc(53%_-_210px))_minmax(0,47%)] xl:overflow-hidden">
+    <main className="grid min-h-[calc(100dvh_-_4rem)] grid-cols-1 bg-background md:min-h-[calc(100dvh_-_5rem)] xl:h-[calc(100dvh_-_5rem)] xl:min-h-[680px] xl:grid-cols-[196px_minmax(0,calc(53%_-_196px))_minmax(0,47%)] xl:overflow-hidden">
       <TripWorkspaceSidebar
         section={section}
         onSectionChange={handleSectionChange}
       />
 
-      <section className="min-w-0 px-5 py-8 sm:px-8 md:px-10 xl:min-h-0 xl:overflow-y-auto xl:px-9 xl:py-10">
+      <section className="min-w-0 px-5 py-7 sm:px-8 md:px-10 xl:min-h-0 xl:overflow-y-auto xl:px-10 xl:py-9">
         {section === "overview" ? (
           overviewContent
         ) : (
@@ -340,7 +340,7 @@ export function TripDetailView({ publicId }: TripDetailViewProps) {
       </section>
 
       <section
-        className="h-[360px] min-w-0 border-t border-border md:h-[440px] xl:h-auto xl:min-h-0 xl:border-t-0 xl:border-l"
+        className="h-[360px] min-w-0 border-t border-border bg-muted/20 md:h-[440px] xl:h-auto xl:min-h-0 xl:border-t-0 xl:border-l"
         aria-label={
           section === "overview"
             ? "Bản đồ điểm xuất phát"

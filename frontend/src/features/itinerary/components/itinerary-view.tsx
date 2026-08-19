@@ -137,17 +137,17 @@ export function ItineraryView({
   return (
     <article>
       <header>
-        <p className="m-0 text-sm font-extrabold tracking-[0.14em] text-primary uppercase">
+        <p className="m-0 text-xs font-extrabold tracking-[0.14em] text-primary uppercase">
           Hành trình
         </p>
-        <h1 className="mt-2 mb-0 text-[clamp(2rem,4vw,3rem)] leading-[1.08] font-bold tracking-[-0.05em] capitalize">
+        <h1 className="mt-2 mb-0 text-[clamp(1.85rem,3.4vw,2.7rem)] leading-[1.08] font-bold tracking-[-0.045em] capitalize">
           {formatDate(trip.tripDate)}
         </h1>
         <p className="mt-3 mb-0 text-sm leading-6 text-text-secondary">
           Quản lý thứ tự ghé thăm và xem lịch trình được cập nhật sau mỗi thay
           đổi.
         </p>
-        <div className="mt-4">
+        <div className="mt-5">
           <ItineraryGenerationSheet
             onGenerate={onGeneratePreview}
             onApply={onApplyPreview}
@@ -155,16 +155,16 @@ export function ItineraryView({
         </div>
       </header>
 
-      <section className="mt-8" aria-label="Điểm xuất phát">
-        <div className="grid grid-cols-[36px_1fr] items-start gap-3 rounded-xl border border-border bg-surface p-4">
-          <span className="grid size-9 place-items-center rounded-full bg-primary-soft text-primary">
+      <section className="mt-7" aria-label="Điểm xuất phát">
+        <div className="grid grid-cols-[28px_1fr] items-start gap-3 border-b border-border pb-5">
+          <span className="grid size-7 place-items-center rounded-full bg-primary-soft text-primary">
             <MapPin className="size-4" aria-hidden="true" />
           </span>
           <div>
             <p className="m-0 text-xs font-extrabold tracking-[0.1em] text-text-secondary uppercase">
               Điểm xuất phát
             </p>
-            <p className="mt-1 mb-0 font-bold text-text-primary">
+            <p className="mt-0.5 mb-0 text-sm font-bold text-text-primary">
               {trip.startLocation.label}
             </p>
           </div>
@@ -172,7 +172,7 @@ export function ItineraryView({
       </section>
 
       {error ? (
-        <section className="mt-5 rounded-xl border border-destructive/25 bg-destructive/8 p-4">
+        <section className="mt-5 border-l-2 border-destructive bg-destructive/8 px-4 py-3">
           <p className="m-0 text-sm font-semibold text-destructive">{error}</p>
           <Button
             type="button"
@@ -200,8 +200,8 @@ export function ItineraryView({
             headingId="itinerary-issues-heading"
           />
 
-          <section className="mt-6" aria-labelledby="itinerary-items-heading">
-            <div className="mb-3 flex items-center justify-between gap-3">
+          <section className="mt-7" aria-labelledby="itinerary-items-heading">
+            <div className="mb-4 flex items-center justify-between gap-3">
               <div>
                 <h2
                   id="itinerary-items-heading"
@@ -229,7 +229,7 @@ export function ItineraryView({
             </div>
 
             {items.length === 0 ? (
-              <div className="grid min-h-48 place-items-center rounded-mint-md border border-dashed border-border bg-surface/60 p-6 text-center">
+              <div className="grid min-h-48 place-items-center border border-dashed border-border bg-surface/45 p-6 text-center">
                 <div className="max-w-xs">
                   <span className="mx-auto grid size-12 place-items-center rounded-full bg-primary-soft text-primary">
                     <MapPin className="size-5" aria-hidden="true" />

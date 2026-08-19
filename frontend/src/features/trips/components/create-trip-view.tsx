@@ -33,16 +33,16 @@ export function CreateTripView() {
   }
 
   return (
-    <main className="mx-auto w-[min(900px,calc(100%_-_32px))] py-9 pb-16 max-md:py-6">
+    <main className="mx-auto w-[min(780px,calc(100%_-_32px))] py-9 pb-16 max-md:py-6">
       <header className="mb-7">
         <p className="m-0 text-xs font-extrabold tracking-[0.12em] text-primary uppercase">
-          FE-F02 · Chuyến đi một ngày
+          Chuyến đi một ngày
         </p>
-        <h1 className="mt-1.5 mb-2 text-[clamp(2rem,5vw,3.4rem)] leading-[1.08] font-bold tracking-[-0.05em]">
+        <h1 className="mt-1.5 mb-2 text-3xl leading-tight font-bold tracking-[-0.04em] max-md:text-2xl">
           Tạo chuyến đi
         </h1>
         <p className="m-0 max-w-2xl leading-7 text-text-secondary">
-          Chọn thời gian, ngân sách, điểm xuất phát và sở thích. Backend sẽ kiểm tra toàn bộ quy tắc trước khi lưu.
+          Chọn thời gian, ngân sách, điểm xuất phát và sở thích cho một ngày khám phá của bạn.
         </p>
       </header>
 

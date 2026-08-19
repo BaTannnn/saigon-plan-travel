@@ -31,10 +31,10 @@ export function TripWorkspaceSidebar({
   onSectionChange,
 }: TripWorkspaceSidebarProps) {
   return (
-    <aside className="border-b border-border bg-surface px-4 py-4 xl:min-h-0 xl:border-r xl:border-b-0 xl:px-4 xl:py-6">
+    <aside className="border-b border-border bg-surface/80 px-4 py-4 xl:min-h-0 xl:border-r xl:border-b-0 xl:px-3 xl:py-6">
       <Link
         href="/trips"
-        className="inline-flex items-center rounded-md px-2 py-1 text-sm font-semibold text-text-secondary transition-colors hover:bg-primary-soft hover:text-primary-strong"
+        className="inline-flex items-center rounded-md px-2 py-1 text-[0.8rem] font-semibold text-text-secondary transition-colors hover:bg-primary-soft hover:text-primary-strong"
       >
         ← Chuyến đi của tôi
       </Link>
@@ -55,8 +55,8 @@ export function TripWorkspaceSidebar({
                 className={cn(
                   "flex min-h-11 flex-1 items-center gap-3 rounded-lg border px-3 py-2.5 text-left text-sm font-bold transition-colors xl:flex-none",
                   active
-                    ? "border-primary bg-primary text-primary-foreground shadow-mint-sm"
-                    : "border-transparent text-text-secondary hover:border-border hover:bg-muted/70 hover:text-text-primary",
+                    ? "border-primary/25 bg-primary-soft text-primary-strong"
+                    : "border-transparent text-text-secondary hover:bg-muted/70 hover:text-text-primary",
                 )}
                 aria-current={active ? "page" : undefined}
                 onClick={() => onSectionChange(value)}

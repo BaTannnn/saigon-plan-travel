@@ -3,15 +3,15 @@
 import { FormEvent, useState } from "react";
 import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { ItineraryGenerationPreview } from "@/features/itinerary/components/itinerary-generation-preview";
 import { ApiError } from "@/lib/api/api-client";
 import type { ItineraryGenerationPreviewResponse } from "@/types/itinerary";
@@ -105,30 +105,40 @@ export function ItineraryGenerationSheet({
   }
 
   return (
-    <Sheet open={open} onOpenChange={handleOpenChange}>
-      <SheetTrigger asChild>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogTrigger asChild>
         <Button type="button" variant="outline" size="sm">
           <Sparkles className="size-4 text-primary" aria-hidden="true" />
           Tạo hành trình tự động
         </Button>
-      </SheetTrigger>
+      </DialogTrigger>
 
-      <SheetContent className="w-[min(96vw,640px)] sm:max-w-[640px]">
-        <SheetHeader className="border-b border-border px-5 py-5 pr-14">
-          <SheetTitle className="text-lg font-bold">
+      <DialogContent
+        className={
+          generationPreview
+            ? "w-[min(calc(100vw_-_2rem),680px)]"
+            : "w-[min(calc(100vw_-_2rem),460px)]"
+        }
+      >
+        <DialogHeader className="border-b border-border pb-5">
+          <DialogTitle>
             Tạo hành trình tự động
-          </SheetTitle>
-          <SheetDescription>
-            Hệ thống sẽ đề xuất một lịch trình dựa trên sở thích của bạn và các
-            điều kiện hiện có của chuyến đi.
-          </SheetDescription>
-        </SheetHeader>
+          </DialogTitle>
+          <DialogDescription>
+            {generationPreview
+              ? "Đây là bản đề xuất, chưa thay đổi hành trình hiện tại."
+              : "Mô tả kiểu chuyến đi bạn muốn."}
+          </DialogDescription>
+        </DialogHeader>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-5">
-          <form className="grid gap-3" onSubmit={handleGenerate}>
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-6">
+          <form className="grid gap-3 pt-5" onSubmit={handleGenerate}>
             <div className="grid gap-1.5">
-              <Label htmlFor="itinerary-generation-preference">
-                Sở thích cho chuyến đi
+              <Label
+                className="text-xs font-extrabold tracking-[0.1em] text-text-secondary uppercase"
+                htmlFor="itinerary-generation-preference"
+              >
+                Chuyến đi mong muốn
               </Label>
               <textarea
                 id="itinerary-generation-preference"
@@ -136,14 +146,14 @@ export function ItineraryGenerationSheet({
                 onChange={(event) =>
                   setPreferenceDescription(event.target.value)
                 }
-                placeholder="Tôi thích lịch sử, kiến trúc, bảo tàng và muốn lịch trình nhẹ nhàng..."
-                rows={4}
+                placeholder="Ví dụ: Tôi muốn tham quan nhẹ nhàng, thích lịch sử, kiến trúc và quán cà phê..."
+                rows={generationPreview ? 4 : 5}
                 disabled={generationLoading || applyLoading}
                 className="min-h-28 w-full resize-y rounded-lg border border-input bg-surface px-3 py-2 text-sm text-text-primary outline-none transition placeholder:text-text-secondary/70 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/25 disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
 
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap items-center justify-end gap-2">
               <Button
                 type="submit"
                 variant={generationPreview ? "outline" : "accent"}
@@ -156,14 +166,16 @@ export function ItineraryGenerationSheet({
                     ? "Tạo lại"
                     : "Tạo gợi ý"}
               </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setOpen(false)}
-                disabled={applyLoading}
-              >
-                Hủy
-              </Button>
+              {!generationPreview ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setOpen(false)}
+                  disabled={applyLoading}
+                >
+                  Hủy
+                </Button>
+              ) : null}
             </div>
           </form>
 
@@ -186,7 +198,7 @@ export function ItineraryGenerationSheet({
             />
           ) : null}
         </div>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }

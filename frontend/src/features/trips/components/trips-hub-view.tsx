@@ -6,28 +6,13 @@ import { useRouter } from "next/navigation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { ClockIcon, PinIcon, WalletIcon } from "@/components/ui/icons";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/features/auth/auth-provider";
 import { getTripsLoadErrorMessage } from "@/features/trips/trip-errors";
 import { ApiError } from "@/lib/api/api-client";
 import { getTrips } from "@/lib/api/trip-api";
-import type {
-  EnvironmentPreference,
-  TravelPace,
-  TripSummaryResponse,
-} from "@/types/trip";
-
-const paceLabels: Record<TravelPace, string> = {
-  RELAXED: "Thư thả",
-  BALANCED: "Cân bằng",
-  FAST: "Nhanh",
-};
-
-const environmentLabels: Record<EnvironmentPreference, string> = {
-  INDOOR: "Trong nhà",
-  OUTDOOR: "Ngoài trời",
-  MIXED: "Kết hợp",
-};
+import type { TripSummaryResponse } from "@/types/trip";
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("vi-VN", {
@@ -46,40 +31,53 @@ function formatMoney(value: number) {
   }).format(value);
 }
 
-function TripCard({ trip }: { trip: TripSummaryResponse }) {
+function getTileDate(value: string) {
+  const date = new Date(`${value}T00:00:00`);
+
+  return {
+    day: new Intl.DateTimeFormat("vi-VN", { day: "numeric" }).format(date),
+    weekday: new Intl.DateTimeFormat("vi-VN", { weekday: "long" }).format(date),
+    month: new Intl.DateTimeFormat("vi-VN", { month: "long" }).format(date),
+  };
+}
+
+function TripCalendarTile({ trip }: { trip: TripSummaryResponse }) {
+  const date = getTileDate(trip.tripDate);
+
   return (
-    <Card
-      asChild
-      className="rounded-mint-lg border-border bg-surface p-5 shadow-mint-sm ring-0 transition-transform hover:-translate-y-0.5 hover:shadow-mint-md"
+    <Link
+      href={`/trips/${trip.publicId}`}
+      className="group relative flex min-h-64 flex-col rounded-xl border border-border bg-surface p-5 text-foreground transition-colors hover:border-primary/55 hover:bg-primary-soft/25 focus-visible:border-primary max-sm:min-h-0"
+      aria-label={`Mở chuyến đi ${formatDate(trip.tripDate)}`}
     >
-      <Link href={`/trips/${trip.publicId}`}>
-        <div className="flex items-start justify-between gap-4 max-sm:flex-col">
-          <div>
-            <p className="m-0 text-xs font-extrabold tracking-[0.12em] text-primary uppercase">
-              Chuyến đi đã lưu
-            </p>
-            <h2 className="mt-1.5 mb-1 text-xl font-bold tracking-[-0.025em] capitalize">
-              {formatDate(trip.tripDate)}
-            </h2>
-            <p className="m-0 font-bold text-primary-strong">
-              {trip.startTime} – {trip.endTime}
-            </p>
-          </div>
-          <p className="m-0 text-lg font-bold whitespace-nowrap">
-            {formatMoney(trip.budget)}
-          </p>
-        </div>
+      <p className="m-0 text-xs font-extrabold tracking-[0.11em] text-text-secondary uppercase">
+        {date.weekday}
+      </p>
+      <div className="mt-4">
+        <time
+          dateTime={trip.tripDate}
+          className="block text-6xl leading-none font-bold tracking-[-0.07em] text-primary-strong"
+        >
+          {date.day}
+        </time>
+        <p className="mt-1 mb-0 text-sm font-bold capitalize">{date.month}</p>
+      </div>
 
-        <p className="mt-4 mb-0 text-sm text-text-secondary">
-          Xuất phát: {trip.startLocationLabel}
+      <div className="mt-auto grid gap-2.5 border-t border-border pt-4 text-sm">
+        <p className="m-0 flex items-center gap-2 font-semibold text-text-primary">
+          <ClockIcon className="size-4 text-primary" />
+          {trip.startTime} – {trip.endTime}
         </p>
-        <p className="mt-1 mb-0 text-sm text-text-secondary">
-          {paceLabels[trip.travelPace]} ·{" "}
-          {environmentLabels[trip.environmentPreference]}
+        <p className="m-0 flex items-center gap-2 font-semibold text-text-primary">
+          <WalletIcon className="size-4 text-ochre" />
+          {formatMoney(trip.budget)}
         </p>
-
-      </Link>
-    </Card>
+        <p className="m-0 flex min-w-0 items-center gap-2 text-xs text-text-secondary">
+          <PinIcon className="size-4 shrink-0 text-text-secondary" />
+          <span className="truncate">{trip.startLocationLabel}</span>
+        </p>
+      </div>
+    </Link>
   );
 }
 
@@ -131,20 +129,20 @@ export function TripsHubView() {
   }
 
   return (
-    <main className="mx-auto w-[min(900px,calc(100%_-_32px))] py-9 pb-16 max-md:py-6">
+    <main className="mx-auto w-[min(1120px,calc(100%_-_32px))] py-9 pb-16 max-md:py-6">
       <header className="mb-7 flex items-end justify-between gap-5 max-sm:items-start max-sm:flex-col">
         <div>
           <p className="m-0 text-xs font-extrabold tracking-[0.12em] text-primary uppercase">
-            FE-F02.5 · Trip Hub
+            Chuyến đi
           </p>
-          <h1 className="mt-1.5 mb-2 text-[clamp(2rem,5vw,3.4rem)] leading-[1.08] font-bold tracking-[-0.05em]">
+          <h1 className="mt-1.5 mb-2 text-3xl leading-tight font-bold tracking-[-0.04em] max-md:text-2xl">
             Chuyến đi của tôi
           </h1>
           <p className="m-0 max-w-2xl leading-7 text-text-secondary">
-            Mở lại một chuyến đi đã lưu để xem hoặc chỉnh sửa sở thích.
+            Những ngày bạn đã lên kế hoạch.
           </p>
         </div>
-        <Button asChild className="max-sm:w-full">
+        <Button asChild variant="accent" className="max-sm:w-full">
           <Link href="/trips/new">Tạo chuyến đi</Link>
         </Button>
       </header>
@@ -155,7 +153,7 @@ export function TripsHubView() {
           <AlertDescription>{loadError}</AlertDescription>
         </Alert>
       ) : trips?.length === 0 ? (
-        <Card className="items-start rounded-mint-lg border-border bg-[linear-gradient(145deg,var(--surface),var(--primary-soft))] p-7 shadow-mint-sm ring-0">
+        <Card className="items-start rounded-xl border border-border bg-surface p-7 shadow-none ring-0">
           <p className="m-0 text-xs font-extrabold tracking-[0.12em] text-primary uppercase">
             Chưa có chuyến đi
           </p>
@@ -170,9 +168,12 @@ export function TripsHubView() {
           </Button>
         </Card>
       ) : (
-        <div className="grid gap-4" aria-label="Các chuyến đi đã lưu">
+        <div
+          className="grid grid-cols-4 gap-4 max-xl:grid-cols-3 max-md:grid-cols-2 max-sm:grid-cols-1"
+          aria-label="Các chuyến đi đã lưu"
+        >
           {trips?.map((trip) => (
-            <TripCard key={trip.publicId} trip={trip} />
+            <TripCalendarTile key={trip.publicId} trip={trip} />
           ))}
         </div>
       )}

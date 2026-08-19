@@ -28,7 +28,10 @@ export function ItineraryGenerationPreview({
 }: ItineraryGenerationPreviewProps) {
   return (
     <section className="mt-7 border-t border-border pt-6">
-      <h2 className="m-0 text-base font-bold text-text-primary">
+      <p className="m-0 text-xs font-extrabold tracking-[0.12em] text-primary uppercase">
+        Bản đề xuất
+      </p>
+      <h2 className="mt-1 mb-0 text-lg font-bold text-text-primary">
         Gợi ý hành trình
       </h2>
       <p className="mt-1 mb-0 text-sm text-text-secondary">
@@ -50,11 +53,11 @@ export function ItineraryGenerationPreview({
                   : ""
               }`}
             >
-              <span className="z-10 grid size-10 place-items-center rounded-full bg-primary text-sm font-black text-primary-foreground">
-                {stop.sequenceNo}
+              <span className="z-10 grid size-9 place-items-center rounded-full bg-primary text-xs font-black text-primary-foreground">
+                {String(stop.sequenceNo).padStart(2, "0")}
               </span>
-              <div className="min-w-0 rounded-xl border border-border bg-surface p-3">
-                <strong className="block truncate text-base text-text-primary">
+              <div className="min-w-0 border-b border-border pb-3">
+                <strong className="block truncate text-[0.95rem] text-text-primary">
                   {stop.place.name}
                 </strong>
                 <span className="mt-1.5 flex items-center gap-1 text-[0.8rem] leading-5 font-semibold text-text-primary tabular-nums">
@@ -96,7 +99,7 @@ export function ItineraryGenerationPreview({
       />
 
       {preview.stops.length > 0 ? (
-        <div className="mt-6 border-t border-border pt-5">
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-5">
           {applyError ? (
             <p
               className="mb-3 rounded-lg bg-destructive/10 px-3 py-2 text-sm font-semibold text-destructive"

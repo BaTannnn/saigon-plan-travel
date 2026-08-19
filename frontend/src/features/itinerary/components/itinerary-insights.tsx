@@ -42,26 +42,26 @@ export function ItinerarySummary({
       >
         Tổng quan lịch trình
       </h2>
-      <dl className="mt-3 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-4">
-        <div className="bg-surface p-2.5">
+      <dl className="mt-3 grid grid-cols-2 border-y border-border sm:grid-cols-4">
+        <div className="py-2.5 pr-3 sm:px-3 sm:first:pl-0">
           <dt className="text-xs text-text-secondary">Chi phí</dt>
           <dd className="mt-1 text-sm font-bold text-text-primary tabular-nums">
             {formatCurrency(summary.totalEstimatedCost)}
           </dd>
         </div>
-        <div className="bg-surface p-2.5">
+        <div className="py-2.5 pl-3 sm:border-l sm:px-3">
           <dt className="text-xs text-text-secondary">Di chuyển</dt>
           <dd className="mt-1 text-sm font-bold text-text-primary tabular-nums">
             {formatDuration(summary.totalTravelMinutes)}
           </dd>
         </div>
-        <div className="bg-surface p-2.5">
+        <div className="py-2.5 pr-3 sm:border-l sm:px-3">
           <dt className="text-xs text-text-secondary">Tham quan</dt>
           <dd className="mt-1 text-sm font-bold text-text-primary tabular-nums">
             {formatDuration(summary.totalVisitMinutes)}
           </dd>
         </div>
-        <div className="bg-surface p-2.5">
+        <div className="py-2.5 pl-3 sm:border-l sm:pl-3 sm:pr-0">
           <dt className="text-xs text-text-secondary">Quãng đường</dt>
           <dd className="mt-1 text-sm font-bold text-text-primary tabular-nums">
             {formatDistance(summary.totalDistanceKm)}
@@ -84,7 +84,7 @@ export function ItineraryIssues({
       <h2 id={headingId} className="sr-only">
         Lưu ý lịch trình
       </h2>
-      <ul className="divide-y divide-ochre/20 overflow-hidden rounded-xl border border-ochre/30 bg-ochre-soft">
+      <ul className="divide-y divide-ochre/20 border-y border-ochre/30 bg-ochre-soft/75">
         {issues.map((issue, index) => {
           const placeName = issue.placeSlug
             ? places.find((place) => place.slug === issue.placeSlug)?.name
@@ -93,7 +93,7 @@ export function ItineraryIssues({
           return (
             <li
               key={`${issue.type}-${issue.placeSlug ?? "trip"}-${index}`}
-              className="flex items-start gap-2 px-3 py-2.5 text-sm text-ochre-foreground"
+              className="flex items-start gap-2 px-3 py-2 text-sm text-ochre-foreground"
             >
               <TriangleAlert
                 className="mt-0.5 size-4 shrink-0 text-ochre"

@@ -3,8 +3,8 @@
 import { useState, type FormEvent } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { CalendarIcon, ClockIcon, PinIcon, WalletIcon } from "@/components/ui/icons";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -112,6 +112,10 @@ export function TripForm({
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [locationState, setLocationState] = useState<
+    "idle" | "locating" | "success" | "error"
+  >("idle");
+  const [locationMessage, setLocationMessage] = useState<string | null>(null);
 
   function update<K extends keyof TripFormValues>(
     field: K,
@@ -139,6 +143,23 @@ export function TripForm({
     event.preventDefault();
     setMessage(null);
 
+    const latitude = Number(values.latitude);
+    const longitude = Number(values.longitude);
+    if (
+      !Number.isFinite(latitude) ||
+      !Number.isFinite(longitude) ||
+      latitude < -90 ||
+      latitude > 90 ||
+      longitude < -180 ||
+      longitude > 180
+    ) {
+      setLocationState("error");
+      setLocationMessage(
+        "Hãy dùng vị trí hiện tại trước khi lưu. Chức năng tìm tọa độ từ địa chỉ chưa được tích hợp.",
+      );
+      return;
+    }
+
     setPending(true);
     setFieldErrors({});
 
@@ -156,8 +177,47 @@ export function TripForm({
   const inputClassName =
     "h-11 rounded-[10px] border-border bg-background px-3 text-text-primary";
 
+  function useCurrentLocation() {
+    if (!("geolocation" in navigator)) {
+      setLocationState("error");
+      setLocationMessage("Trình duyệt này không hỗ trợ lấy vị trí hiện tại.");
+      return;
+    }
+
+    setLocationState("locating");
+    setLocationMessage(null);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setValues((current) => ({
+          ...current,
+          originLabel: current.originLabel.trim() || "Vị trí hiện tại",
+          latitude: position.coords.latitude.toFixed(7),
+          longitude: position.coords.longitude.toFixed(7),
+        }));
+        setFieldErrors((current) => {
+          const next = { ...current };
+          delete next["startLocation.latitude"];
+          delete next["startLocation.longitude"];
+          return next;
+        });
+        setLocationState("success");
+        setLocationMessage("Đã dùng vị trí hiện tại cho điểm xuất phát.");
+      },
+      (error) => {
+        setLocationState("error");
+        setLocationMessage(
+          error.code === error.PERMISSION_DENIED
+            ? "Bạn chưa cho phép truy cập vị trí. Hãy cấp quyền rồi thử lại."
+            : "Không thể lấy vị trí hiện tại. Hãy thử lại sau.",
+        );
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 },
+    );
+  }
+
   return (
-    <form className="grid gap-5" onSubmit={handleSubmit}>
+    <form className="grid gap-0" onSubmit={handleSubmit}>
       {message ? (
         <Alert variant="destructive" role="alert">
           <AlertTitle>Chưa thể lưu chuyến đi</AlertTitle>
@@ -165,17 +225,25 @@ export function TripForm({
         </Alert>
       ) : null}
 
-      <Card className="grid gap-5 rounded-mint-md border-border bg-surface p-5 ring-0 max-md:p-4">
+      <section className="grid gap-5 border-b border-border py-6 first:pt-0">
         <div>
           <p className="m-0 text-xs font-extrabold tracking-[0.12em] text-primary uppercase">
-            Thời gian và ngân sách
+            Thời gian
           </p>
           <h2 className="mt-1 text-xl font-bold">Khung chuyến đi</h2>
+          <p className="mt-1 mb-0 text-sm text-text-secondary">
+            Chọn ngày, khoảng thời gian và ngân sách dự kiến.
+          </p>
         </div>
 
         <div className="grid grid-cols-3 gap-4 max-md:grid-cols-1">
           <div className="grid gap-2">
-            <Label htmlFor="trip-date">Ngày đi</Label>
+            <Label htmlFor="trip-date" className="flex items-center gap-2">
+              <span className="grid size-6 place-items-center rounded-md bg-primary-soft text-primary">
+                <CalendarIcon className="size-3.5" />
+              </span>
+              Ngày đi
+            </Label>
             <Input
               id="trip-date"
               className={inputClassName}
@@ -190,7 +258,12 @@ export function TripForm({
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="start-time">Bắt đầu</Label>
+            <Label htmlFor="start-time" className="flex items-center gap-2">
+              <span className="grid size-6 place-items-center rounded-md bg-primary-soft text-primary">
+                <ClockIcon className="size-3.5" />
+              </span>
+              Bắt đầu
+            </Label>
             <Input
               id="start-time"
               className={inputClassName}
@@ -205,7 +278,12 @@ export function TripForm({
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="end-time">Kết thúc</Label>
+            <Label htmlFor="end-time" className="flex items-center gap-2">
+              <span className="grid size-6 place-items-center rounded-md bg-primary-soft text-primary">
+                <ClockIcon className="size-3.5" />
+              </span>
+              Kết thúc
+            </Label>
             <Input
               id="end-time"
               className={inputClassName}
@@ -221,7 +299,10 @@ export function TripForm({
         </div>
 
         <div className="grid gap-2">
-          <Label htmlFor="trip-budget">
+          <Label htmlFor="trip-budget" className="flex items-center gap-2">
+            <span className="grid size-6 place-items-center rounded-md bg-ochre-soft text-ochre-foreground">
+              <WalletIcon className="size-3.5" />
+            </span>
             Ngân sách dự kiến cho một người (VND)
           </Label>
           <Input
@@ -240,22 +321,26 @@ export function TripForm({
           />
           <FieldError message={fieldErrors.budget} />
         </div>
-      </Card>
+      </section>
 
-      <Card className="grid gap-5 rounded-mint-md border-border bg-surface p-5 ring-0 max-md:p-4">
+      <section className="grid gap-5 border-b border-border py-6">
         <div>
           <p className="m-0 text-xs font-extrabold tracking-[0.12em] text-primary uppercase">
             Điểm xuất phát
           </p>
-          <h2 className="mt-1 text-xl font-bold">Vị trí bắt đầu</h2>
+          <h2 className="mt-1 text-xl font-bold">Bạn bắt đầu từ đâu?</h2>
           <p className="mt-1 mb-0 text-sm text-text-secondary">
-            Nhập nhãn dễ nhớ và tọa độ. Tìm kiếm địa chỉ hoặc GPS sẽ
-            thuộc một lát cắt sau.
+            Nhập địa chỉ hoặc tên địa điểm. Bạn cũng có thể dùng vị trí hiện tại.
           </p>
         </div>
 
         <div className="grid gap-2">
-          <Label htmlFor="origin-label">Tên điểm xuất phát</Label>
+          <Label htmlFor="origin-label" className="flex items-center gap-2">
+            <span className="grid size-6 place-items-center rounded-md bg-primary-soft text-primary">
+              <PinIcon className="size-3.5" />
+            </span>
+            Điểm xuất phát
+          </Label>
           <Input
             id="origin-label"
             className={inputClassName}
@@ -263,55 +348,35 @@ export function TripForm({
             onChange={(event) => update("originLabel", event.target.value)}
             aria-invalid={Boolean(fieldErrors["startLocation.label"])}
             maxLength={255}
-            placeholder="Ví dụ: Chợ Bến Thành"
+            placeholder="Nhập địa chỉ hoặc tên địa điểm..."
             required
             disabled={pending}
           />
           <FieldError message={fieldErrors["startLocation.label"]} />
         </div>
 
-        <div className="grid grid-cols-2 gap-4 max-md:grid-cols-1">
-          <div className="grid gap-2">
-            <Label htmlFor="origin-latitude">Vĩ độ</Label>
-            <Input
-              id="origin-latitude"
-              className={inputClassName}
-              type="number"
-              min="-90"
-              max="90"
-              step="0.0000001"
-              value={values.latitude}
-              onChange={(event) => update("latitude", event.target.value)}
-              aria-invalid={Boolean(fieldErrors["startLocation.latitude"])}
-              placeholder="10.7726400"
-              required
-              disabled={pending}
-            />
-            <FieldError message={fieldErrors["startLocation.latitude"]} />
-          </div>
-
-          <div className="grid gap-2">
-            <Label htmlFor="origin-longitude">Kinh độ</Label>
-            <Input
-              id="origin-longitude"
-              className={inputClassName}
-              type="number"
-              min="-180"
-              max="180"
-              step="0.0000001"
-              value={values.longitude}
-              onChange={(event) => update("longitude", event.target.value)}
-              aria-invalid={Boolean(fieldErrors["startLocation.longitude"])}
-              placeholder="106.6980500"
-              required
-              disabled={pending}
-            />
-            <FieldError message={fieldErrors["startLocation.longitude"]} />
-          </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={useCurrentLocation}
+            disabled={pending || locationState === "locating"}
+          >
+            <PinIcon />
+            {locationState === "locating" ? "Đang lấy vị trí…" : "Dùng vị trí của tôi"}
+          </Button>
+          {locationMessage ? (
+            <p
+              className={`m-0 text-sm ${locationState === "error" ? "text-destructive" : "text-primary-strong"}`}
+              role={locationState === "error" ? "alert" : "status"}
+            >
+              {locationMessage}
+            </p>
+          ) : null}
         </div>
-      </Card>
+      </section>
 
-      <Card className="grid gap-5 rounded-mint-md border-border bg-surface p-5 ring-0 max-md:p-4">
+      <section className="grid gap-5 border-b border-border py-6">
         <div>
           <p className="m-0 text-xs font-extrabold tracking-[0.12em] text-primary uppercase">
             Phong cách
@@ -373,9 +438,9 @@ export function TripForm({
           </div>
         </div>
 
-      </Card>
+      </section>
 
-      <div className="flex justify-end gap-3 max-md:flex-col-reverse">
+      <footer className="flex justify-end gap-3 py-6 max-md:flex-col-reverse">
         {onCancel ? (
           <Button
             type="button"
@@ -387,10 +452,10 @@ export function TripForm({
             Hủy chỉnh sửa
           </Button>
         ) : null}
-        <Button type="submit" size="lg" disabled={pending}>
+        <Button type="submit" variant="accent" size="lg" disabled={pending}>
           {pending ? "Đang lưu…" : submitLabel}
         </Button>
-      </div>
+      </footer>
     </form>
   );
 }
