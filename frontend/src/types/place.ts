@@ -11,6 +11,7 @@ export type PlaceSummary = {
   minCost: number;
   maxCost: number;
   indoor: boolean;
+  primaryImageUrl: string | null;
 };
 
 export type PlacePage = {

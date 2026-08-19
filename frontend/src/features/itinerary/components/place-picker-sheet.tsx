@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import { Filter, MapPin, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -328,8 +329,19 @@ export function PlacePickerSheet({
 
                 return (
                   <div key={place.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-border py-3 last:border-b-0">
-                    <div className="flex min-w-0 items-start gap-2">
-                      <MapPin className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" />
+                    <div className="flex min-w-0 items-start gap-3">
+                      {place.primaryImageUrl ? (
+                        <Image
+                          className="size-18 shrink-0 rounded-lg object-cover"
+                          src={place.primaryImageUrl}
+                          alt=""
+                          width={72}
+                          height={72}
+                          loading="lazy"
+                        />
+                      ) : (
+                        <MapPin className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" />
+                      )}
                       <div className="min-w-0">
                         <p className="m-0 truncate text-sm font-bold text-text-primary">{place.name}</p>
                         <p className="mt-0.5 mb-0 text-xs text-text-secondary">

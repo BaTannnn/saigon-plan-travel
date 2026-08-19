@@ -1,4 +1,5 @@
 import { Clock3, Route, WalletCards } from "lucide-react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
   ItineraryIssues,
@@ -53,32 +54,44 @@ export function ItineraryGenerationPreview({
               <span className="z-10 grid size-9 place-items-center rounded-full bg-primary text-xs font-black text-primary-foreground">
                 {String(stop.sequenceNo).padStart(2, "0")}
               </span>
-              <div className="min-w-0 rounded-mint-md bg-card p-4 shadow-mint-sm ring-1 ring-foreground/5">
-                <strong className="block truncate text-[0.95rem] text-text-primary">
-                  {stop.place.name}
-                </strong>
-                <span className="mt-1.5 flex items-center gap-1 text-[0.8rem] leading-5 font-semibold text-text-primary tabular-nums">
-                  <Clock3
-                    className="size-3.5 text-primary"
-                    aria-hidden="true"
-                  />
-                  {formatTime(stop.schedule.visitStartTime)} –{" "}
-                  {formatTime(stop.schedule.visitEndTime)}
-                </span>
-                <span className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-xs leading-5 text-text-secondary">
-                  <span className="inline-flex items-center gap-1 tabular-nums">
-                    <Route className="size-3.5" aria-hidden="true" />
-                    {stop.schedule.travelMinutes} phút ·{" "}
-                    {formatDistance(stop.schedule.travelDistanceKm)}
-                  </span>
-                  <span className="inline-flex items-center gap-1 text-ochre-foreground tabular-nums">
-                    <WalletCards
-                      className="size-3.5 text-ochre"
+              <div className="flex min-w-0 gap-3 rounded-mint-md bg-card p-4 shadow-mint-sm ring-1 ring-foreground/5">
+                <div className="min-w-0 flex-1">
+                  <strong className="block truncate text-[0.95rem] text-text-primary">
+                    {stop.place.name}
+                  </strong>
+                  <span className="mt-1.5 flex items-center gap-1 text-[0.8rem] leading-5 font-semibold text-text-primary tabular-nums">
+                    <Clock3
+                      className="size-3.5 text-primary"
                       aria-hidden="true"
                     />
-                    {formatCurrency(stop.schedule.estimatedCost)}
+                    {formatTime(stop.schedule.visitStartTime)} –{" "}
+                    {formatTime(stop.schedule.visitEndTime)}
                   </span>
-                </span>
+                  <span className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-xs leading-5 text-text-secondary">
+                    <span className="inline-flex items-center gap-1 tabular-nums">
+                      <Route className="size-3.5" aria-hidden="true" />
+                      {stop.schedule.travelMinutes} phút ·{" "}
+                      {formatDistance(stop.schedule.travelDistanceKm)}
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-ochre-foreground tabular-nums">
+                      <WalletCards
+                        className="size-3.5 text-ochre"
+                        aria-hidden="true"
+                      />
+                      {formatCurrency(stop.schedule.estimatedCost)}
+                    </span>
+                  </span>
+                </div>
+                {stop.place.primaryImageUrl ? (
+                  <Image
+                    className="size-20 shrink-0 rounded-lg object-cover"
+                    src={stop.place.primaryImageUrl}
+                    alt=""
+                    width={80}
+                    height={80}
+                    loading="lazy"
+                  />
+                ) : null}
               </div>
             </li>
           ))}

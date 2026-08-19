@@ -3,6 +3,7 @@ export type ItineraryPlaceResponse = {
   name: string;
   latitude: number;
   longitude: number;
+  primaryImageUrl: string | null;
 };
 
 export type ItineraryScheduleResponse = {

@@ -8,6 +8,7 @@ import {
   Trash2,
   WalletCards,
 } from "lucide-react";
+import Image from "next/image";
 import {
   formatCurrency,
   formatDistance,
@@ -71,7 +72,7 @@ function ItineraryItemCard({
       >
         <button
           type="button"
-          className="grid min-w-0 grid-cols-[36px_1fr] items-start gap-3 py-3 pl-0 text-left"
+          className="grid min-w-0 grid-cols-[36px_minmax(0,1fr)_auto] items-start gap-3 py-3 pl-0 text-left"
           onClick={onSelect}
         >
           <span className="z-10 grid size-9 place-items-center rounded-full bg-primary text-xs font-black text-primary-foreground">
@@ -108,6 +109,17 @@ function ItineraryItemCard({
               </span>
             </span>
           </span>
+
+          {item.place.primaryImageUrl ? (
+            <Image
+              className="size-20 shrink-0 rounded-lg object-cover"
+              src={item.place.primaryImageUrl}
+              alt=""
+              width={80}
+              height={80}
+              loading="lazy"
+            />
+          ) : null}
         </button>
 
         <button
