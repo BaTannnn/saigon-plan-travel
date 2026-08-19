@@ -1,13 +1,8 @@
-import Link from "next/link";
+import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import {
-  ArrowLeftIcon,
-  ClockIcon,
-  PinIcon,
-  WalletIcon,
-} from "@/components/ui/icons";
+import { ClockIcon, PinIcon, WalletIcon } from "@/components/ui/icons";
+import { PlaceDetailBackButton } from "@/features/places/components/place-detail-back-button";
 import {
   dayNames,
   formatCost,
@@ -34,28 +29,35 @@ export function PlaceDetailView({ place }: PlaceDetailViewProps) {
 
   return (
     <main className="mx-auto w-[min(1180px,calc(100%_-_40px))] pt-7 pb-16 max-md:w-[min(calc(100%_-_28px),1180px)] max-md:pt-[18px]">
-      <Button
-        asChild
-        className="mb-[18px] min-h-11 p-0 font-extrabold"
-        variant="link"
-      >
-        <Link href="/places">
-          <ArrowLeftIcon /> Quay lại khám phá
-        </Link>
-      </Button>
+      <PlaceDetailBackButton />
 
       <Card asChild>
         <section className="grid grid-cols-[minmax(280px,0.85fr)_1.25fr] items-center gap-[clamp(28px,6vw,72px)] rounded-mint-md border border-border/50 bg-card p-[clamp(24px,5vw,56px)] shadow-mint-sm ring-0 max-md:grid-cols-1 max-md:gap-6 max-md:p-4">
           <div
-            className="relative grid min-h-[310px] place-items-center overflow-hidden rounded-mint-md bg-primary-soft text-primary-strong max-md:min-h-[220px]"
-            aria-hidden="true"
+            className="relative grid aspect-[4/3] place-items-center overflow-hidden rounded-mint-md bg-primary-soft text-primary-strong"
           >
-            <span className="relative z-2 grid size-28 place-items-center rounded-mint-md border border-white bg-card text-[3.2rem] font-black shadow-mint-sm">
-              {place.categories[0]?.name.slice(0, 1) ?? "S"}
-            </span>
-            <p className="absolute inset-x-5 bottom-4 m-0 text-center font-extrabold">
-              {place.categories[0]?.name ?? "Khám phá"}
-            </p>
+            {place.primaryImageUrl ? (
+              <Image
+                src={place.primaryImageUrl}
+                alt={place.name}
+                fill
+                priority
+                sizes="(max-width: 768px) calc(100vw - 60px), 40vw"
+                className="object-cover"
+              />
+            ) : (
+              <div
+                className="absolute inset-0 grid place-items-center"
+                aria-hidden="true"
+              >
+                <span className="relative z-2 grid size-28 place-items-center rounded-mint-md border border-white bg-card text-[3.2rem] font-black shadow-mint-sm">
+                  {place.categories[0]?.name.slice(0, 1) ?? "S"}
+                </span>
+                <p className="absolute inset-x-5 bottom-4 m-0 text-center font-extrabold">
+                  {place.categories[0]?.name ?? "Khám phá"}
+                </p>
+              </div>
+            )}
           </div>
           <div className="max-md:px-1.5 max-md:pt-0.5 max-md:pb-3">
             <div className="mb-[18px] flex flex-wrap items-center gap-[7px]">

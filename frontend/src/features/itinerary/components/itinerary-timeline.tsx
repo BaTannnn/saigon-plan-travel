@@ -55,6 +55,8 @@ function ItineraryItemCard({
   onReplace,
   onDelete,
 }: ItineraryItemCardProps) {
+  const hasImage = Boolean(item.place.primaryImageUrl);
+
   return (
     <li
       className={`relative ${
@@ -72,7 +74,11 @@ function ItineraryItemCard({
       >
         <button
           type="button"
-          className="grid min-w-0 grid-cols-[36px_minmax(0,1fr)_auto] items-start gap-3 py-3 pl-0 text-left"
+          className={`grid min-w-0 items-start gap-3 py-2.5 pl-0 text-left ${
+            hasImage
+              ? "grid-cols-[36px_minmax(0,1fr)_clamp(5.5rem,23vw,8.5rem)]"
+              : "grid-cols-[36px_minmax(0,1fr)]"
+          }`}
           onClick={onSelect}
         >
           <span className="z-10 grid size-9 place-items-center rounded-full bg-primary text-xs font-black text-primary-foreground">
@@ -112,11 +118,11 @@ function ItineraryItemCard({
 
           {item.place.primaryImageUrl ? (
             <Image
-              className="size-20 shrink-0 rounded-lg object-cover"
+              className="h-[clamp(5rem,18vw,6rem)] w-[clamp(5.5rem,23vw,8.5rem)] shrink-0 rounded-lg object-cover"
               src={item.place.primaryImageUrl}
               alt=""
-              width={80}
-              height={80}
+              width={136}
+              height={96}
               loading="lazy"
             />
           ) : null}
@@ -124,7 +130,7 @@ function ItineraryItemCard({
 
         <button
           type="button"
-          className="m-auto grid size-8 place-items-center rounded-md text-text-secondary transition hover:bg-muted hover:text-text-primary"
+          className="mt-3 mr-1 grid size-8 place-items-center rounded-md text-text-secondary transition hover:bg-muted hover:text-text-primary"
           aria-label={`Tùy chọn cho ${item.place.name}`}
           aria-expanded={menuOpen}
           disabled={mutating}
