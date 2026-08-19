@@ -172,6 +172,21 @@ class PlaceRepositoryTest {
     }
 
     @Test
+    void loadsSchedulingPlacesAndTheirOpeningHoursInOneQuery() {
+        Statistics statistics =
+                entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
+        statistics.clear();
+
+        List<Place> places =
+                placeRepository.findAllActiveBySlugsForScheduling(List.of("demo-art-space", "demo-city-garden"));
+
+        assertThat(places).hasSize(2);
+        assertThat(places)
+                .allSatisfy(place -> assertThat(place.getOpeningHours()).isNotEmpty());
+        assertThat(statistics.getPrepareStatementCount()).isEqualTo(1);
+    }
+
+    @Test
     @Transactional
     void administrationCanListAndOpenInactivePlaceWhilePublicQueriesStillHideIt() {
         PlaceSearchRequest request = searchRequest(null, null, null, null, 0, 100);

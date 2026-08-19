@@ -41,7 +41,7 @@ public class PlaceRecommendationService {
         List<String> slugs =
                 aiCandidates.stream().map(AiPlaceCandidateResponse::placeSlug).toList();
 
-        Map<String, Place> placesBySlug = placeRepository.findAllBySlugInAndActiveTrue(slugs).stream()
+        Map<String, Place> placesBySlug = placeRepository.findAllActiveBySlugsForScheduling(slugs).stream()
                 .collect(Collectors.toMap(Place::getSlug, Function.identity()));
 
         return aiCandidates.stream()

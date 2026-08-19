@@ -25,6 +25,7 @@ import java.util.Set;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Table(name = "places")
@@ -86,6 +87,7 @@ public class Place {
     private Set<Category> categories = new HashSet<>();
 
     @OneToMany(mappedBy = "place", fetch = LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 20)
     private List<OpeningHour> openingHours = new ArrayList<>();
 
     @OneToOne(mappedBy = "place", fetch = LAZY, cascade = CascadeType.ALL, orphanRemoval = true)

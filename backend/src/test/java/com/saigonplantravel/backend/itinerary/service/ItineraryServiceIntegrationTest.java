@@ -11,9 +11,12 @@ import com.saigonplantravel.backend.testsupport.database.DatabaseTestFixtures.Pl
 import com.saigonplantravel.backend.testsupport.database.DatabaseTestFixtures.TripFixture;
 import com.saigonplantravel.backend.trip.exception.TripNotFoundException;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
+import org.hibernate.SessionFactory;
+import org.hibernate.stat.Statistics;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +52,8 @@ class ItineraryServiceIntegrationTest {
 
         registry.add("spring.jpa.open-in-view", () -> "false");
 
+        registry.add("spring.jpa.properties.hibernate.generate_statistics", () -> "true");
+
         registry.add("app.security.jwt.secret", () -> "MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=");
     }
 
@@ -60,6 +65,9 @@ class ItineraryServiceIntegrationTest {
 
     @Autowired
     private EntityManager entityManager;
+
+    @Autowired
+    private EntityManagerFactory entityManagerFactory;
 
     private DatabaseTestFixtures fixtures;
 
@@ -97,6 +105,28 @@ class ItineraryServiceIntegrationTest {
         assertThat(response.issues()).isEmpty();
 
         assertThat(countRows("itineraries", "trip_id", trip.tripId())).isZero();
+    }
+
+    @Test
+    void batchesOpeningHoursWhenRecalculatingAnExistingItinerary() {
+        Long userId = fixtures.insertUser("batched-opening-hours-owner");
+        TripFixture trip = fixtures.insertValidTrip(userId);
+        PlaceFixture first = place("Batch first", "batch-first");
+        PlaceFixture second = place("Batch second", "batch-second");
+
+        itineraryService.addItem(userId, trip.tripPublicId(), first.placeId());
+        itineraryService.addItem(userId, trip.tripPublicId(), second.placeId());
+        entityManager.flush();
+        entityManager.clear();
+
+        Statistics statistics =
+                entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
+        statistics.clear();
+
+        ItineraryDetailResponse response = itineraryService.getItinerary(userId, trip.tripPublicId());
+
+        assertThat(response.items()).hasSize(2);
+        assertThat(statistics.getPrepareStatementCount()).isEqualTo(3);
     }
 
     @Test

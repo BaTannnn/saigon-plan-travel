@@ -231,7 +231,7 @@ public class ItineraryService {
             throw new InvalidGeneratedItineraryException();
         }
 
-        List<Place> places = placeRepository.findAllBySlugInAndActiveTrue(placeSlugs);
+        List<Place> places = placeRepository.findAllActiveBySlugsForScheduling(placeSlugs);
 
         if (places.size() != placeSlugs.size()) {
 

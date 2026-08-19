@@ -10,6 +10,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 
 public interface PlaceRepository extends JpaRepository<Place, Long>, JpaSpecificationExecutor<Place> {
     boolean existsBySlug(String slug);
@@ -23,8 +24,9 @@ public interface PlaceRepository extends JpaRepository<Place, Long>, JpaSpecific
     @EntityGraph(attributePaths = "coverImage")
     Optional<Place> findBySlugAndActiveTrue(String slug);
 
-    @EntityGraph(attributePaths = "coverImage")
-    List<Place> findAllBySlugInAndActiveTrue(Collection<String> slugs);
+    @EntityGraph(attributePaths = {"coverImage", "openingHours"})
+    @Query("select distinct place from Place place where place.slug in :slugs and place.active = true")
+    List<Place> findAllActiveBySlugsForScheduling(Collection<String> slugs);
 
     @Override
     @EntityGraph(attributePaths = "coverImage")
