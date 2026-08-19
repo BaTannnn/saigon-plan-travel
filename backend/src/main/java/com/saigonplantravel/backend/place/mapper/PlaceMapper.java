@@ -33,7 +33,8 @@ public class PlaceMapper {
                 place.getEstimatedVisitMinutes(),
                 place.getMinCost(),
                 place.getMaxCost(),
-                place.getIndoor());
+                place.getIndoor(),
+                place.getPrimaryImageUrl());
     }
 
     public PlaceDetailResponse toDetailResponse(Place place) {
@@ -61,7 +62,8 @@ public class PlaceMapper {
                 place.getMaxCost(),
                 place.getIndoor(),
                 categories,
-                openingHours);
+                openingHours,
+                place.getPrimaryImageUrl());
     }
 
     public AdminPlaceSummaryResponse toAdminSummaryResponse(Place place) {
@@ -97,7 +99,8 @@ public class PlaceMapper {
                 detail.indoor(),
                 detail.categories(),
                 detail.openingHours(),
-                place.getActive());
+                place.getActive(),
+                detail.primaryImageUrl());
     }
 
     public CategoryResponse toCategoryResponse(Category category) {

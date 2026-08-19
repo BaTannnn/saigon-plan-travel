@@ -52,7 +52,8 @@ public class ItineraryDetailMapper {
                 item.getPlace().getSlug(),
                 item.getPlace().getName(),
                 item.getPlace().getLatitude(),
-                item.getPlace().getLongitude());
+                item.getPlace().getLongitude(),
+                item.getPlace().getPrimaryImageUrl());
 
         ItineraryScheduleResponse schedule = new ItineraryScheduleResponse(
                 stop.arrivalTime(),

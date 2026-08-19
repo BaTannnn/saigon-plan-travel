@@ -124,6 +124,7 @@ class ItineraryGenerationControllerTest {
                 .andExpect(jsonPath("$.stops[0].place.name").value("Dinh Độc Lập"))
                 .andExpect(jsonPath("$.stops[0].place.latitude").value(10.7769))
                 .andExpect(jsonPath("$.stops[0].place.longitude").value(106.6953))
+                .andExpect(jsonPath("$.stops[0].place.primaryImageUrl").value(org.hamcrest.Matchers.nullValue()))
                 .andExpect(jsonPath("$.stops[0].schedule.arrivalTime").value("08:15:00"))
                 .andExpect(jsonPath("$.stops[0].schedule.travelMinutes").value(15))
                 .andExpect(jsonPath("$.summary.totalEstimatedCost").value(40000))

@@ -25,7 +25,11 @@ public class ItineraryGenerationPreviewMapper {
                     return new GeneratedItineraryStopResponse(
                             index + 1,
                             new ItineraryPlaceResponse(
-                                    place.getSlug(), place.getName(), place.getLatitude(), place.getLongitude()),
+                                    place.getSlug(),
+                                    place.getName(),
+                                    place.getLatitude(),
+                                    place.getLongitude(),
+                                    place.getPrimaryImageUrl()),
                             new ItineraryScheduleResponse(
                                     stop.arrivalTime(),
                                     stop.visitStartTime(),

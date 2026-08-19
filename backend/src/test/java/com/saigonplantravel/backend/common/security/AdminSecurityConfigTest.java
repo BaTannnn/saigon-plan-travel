@@ -30,6 +30,7 @@ import com.saigonplantravel.backend.common.security.jwt.AccessTokenClaims;
 import com.saigonplantravel.backend.common.security.jwt.JwtService;
 import com.saigonplantravel.backend.place.dto.PageResponse;
 import com.saigonplantravel.backend.place.service.CategoryService;
+import com.saigonplantravel.backend.place.service.PlaceImageService;
 import com.saigonplantravel.backend.place.service.PlaceService;
 import java.util.List;
 import java.util.Optional;
@@ -87,6 +88,9 @@ class AdminSecurityConfigTest {
 
     @MockitoBean
     private PlaceService placeService;
+
+    @MockitoBean
+    private PlaceImageService placeImageService;
 
     @MockitoBean
     private CategoryService categoryService;

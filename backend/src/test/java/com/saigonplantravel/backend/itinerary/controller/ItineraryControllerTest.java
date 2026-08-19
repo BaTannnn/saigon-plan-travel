@@ -133,6 +133,7 @@ class ItineraryControllerTest {
                 .andExpect(jsonPath("$.items[0].place.name").value(PLACE_NAME))
                 .andExpect(jsonPath("$.items[0].place.latitude").value(PLACE_LATITUDE.doubleValue()))
                 .andExpect(jsonPath("$.items[0].place.longitude").value(PLACE_LONGITUDE.doubleValue()))
+                .andExpect(jsonPath("$.items[0].place.primaryImageUrl").value(org.hamcrest.Matchers.nullValue()))
 
                 /*
                  * Internal database Place.id

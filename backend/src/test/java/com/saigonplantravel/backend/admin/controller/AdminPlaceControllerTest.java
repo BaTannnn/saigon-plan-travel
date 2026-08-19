@@ -5,6 +5,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
@@ -19,6 +20,7 @@ import com.saigonplantravel.backend.place.dto.admin.AdminPlaceSummaryResponse;
 import com.saigonplantravel.backend.place.dto.admin.PlaceCreateRequest;
 import com.saigonplantravel.backend.place.dto.admin.PlaceUpdateRequest;
 import com.saigonplantravel.backend.place.exception.PlaceSlugAlreadyExistsException;
+import com.saigonplantravel.backend.place.service.PlaceImageService;
 import com.saigonplantravel.backend.place.service.PlaceService;
 import java.math.BigDecimal;
 import java.util.List;
@@ -26,6 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -38,6 +41,9 @@ class AdminPlaceControllerTest {
 
     @MockitoBean
     private PlaceService placeService;
+
+    @MockitoBean
+    private PlaceImageService placeImageService;
 
     @Test
     void rendersPlaceListFromExistingPlaceService() throws Exception {
@@ -105,6 +111,26 @@ class AdminPlaceControllerTest {
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Activate Place")))
                 .andExpect(content()
                         .string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("Deactivate Place"))));
+    }
+
+    @Test
+    void uploadsPlaceCoverAndRedirectsToDetail() throws Exception {
+        MockMultipartFile image = new MockMultipartFile("image", "cover.jpg", "image/jpeg", new byte[] {1, 2, 3});
+
+        mockMvc.perform(multipart("/admin/places/demo-art-space/cover-image").file(image))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/places/demo-art-space"));
+
+        verify(placeImageService).uploadCover("demo-art-space", image);
+    }
+
+    @Test
+    void removesPlaceCoverAndRedirectsToDetail() throws Exception {
+        mockMvc.perform(post("/admin/places/demo-art-space/cover-image/remove"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/places/demo-art-space"));
+
+        verify(placeImageService).removeCover("demo-art-space");
     }
 
     @Test

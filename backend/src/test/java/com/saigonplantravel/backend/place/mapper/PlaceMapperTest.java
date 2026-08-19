@@ -51,7 +51,8 @@ class PlaceMapperTest {
                         60,
                         BigDecimal.ZERO,
                         new BigDecimal("100000.00"),
-                        true));
+                        true,
+                        null));
         assertThat(adminResponse.active()).isFalse();
         assertThat(adminResponse.slug()).isEqualTo(response.slug());
     }
@@ -98,6 +99,27 @@ class PlaceMapperTest {
         assertThat(adminResponse.active()).isFalse();
         assertThat(adminResponse.categories()).isEqualTo(response.categories());
         assertThat(adminResponse.openingHours()).isEqualTo(response.openingHours());
+        assertThat(response.primaryImageUrl()).isNull();
+    }
+
+    @Test
+    void mapsPrimaryImageUrlWhenPresent() {
+        Place place = new Place(
+                "Demo Place",
+                "demo-place",
+                "Address",
+                new BigDecimal("10.0000000"),
+                new BigDecimal("106.0000000"),
+                60,
+                BigDecimal.ZERO,
+                BigDecimal.ZERO,
+                true);
+        place.replaceCoverImage(new com.saigonplantravel.backend.place.entity.PlaceImage(
+                place, "places/demo/cover", "https://cdn.example/cover.jpg", "Demo Place"));
+
+        PlaceSummaryResponse response = new PlaceMapper().toSummaryResponse(place);
+
+        assertThat(response.primaryImageUrl()).isEqualTo("https://cdn.example/cover.jpg");
     }
 
     private Category category(Long id, String name, String slug) {
