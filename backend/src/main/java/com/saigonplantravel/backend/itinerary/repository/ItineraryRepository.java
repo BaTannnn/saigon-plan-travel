@@ -7,6 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ItineraryRepository extends JpaRepository<Itinerary, Long> {
 
-    @EntityGraph(attributePaths = {"items", "items.place"})
+    @EntityGraph(attributePaths = {"items", "items.place", "items.place.coverImage"})
     Optional<Itinerary> findByTripId(Long tripId);
 }

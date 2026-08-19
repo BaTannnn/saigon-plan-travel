@@ -2,6 +2,8 @@ package com.saigonplantravel.backend.integration.database;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.saigonplantravel.backend.media.StoredMedia;
+import com.saigonplantravel.backend.place.service.PlaceImageMetadataService;
 import java.util.List;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.output.MigrateResult;
@@ -38,6 +40,9 @@ class FlywayMigrationTest {
     @Autowired
     private Flyway flyway;
 
+    @Autowired
+    private PlaceImageMetadataService placeImageMetadataService;
+
     @Test
     void contextLoadsWithFlywayAndHibernateValidation() {}
 
@@ -46,7 +51,7 @@ class FlywayMigrationTest {
         List<String> versions = jdbcTemplate.queryForList(
                 "SELECT version FROM flyway_schema_history WHERE success ORDER BY installed_rank", String.class);
 
-        assertThat(versions).containsExactly("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13");
+        assertThat(versions).containsExactly("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14");
         assertThat(jdbcTemplate.queryForObject(
                         "SELECT count(*) FROM flyway_schema_history WHERE version = '6' AND success", Integer.class))
                 .isEqualTo(1);
@@ -132,6 +137,78 @@ class FlywayMigrationTest {
         assertThat(jdbcTemplate.queryForObject(
                         "SELECT count(*) FROM flyway_schema_history WHERE version = '13' AND success", Integer.class))
                 .isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject(
+                        "SELECT count(*) FROM flyway_schema_history WHERE version = '14' AND success", Integer.class))
+                .isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM place_images", Integer.class))
+                .isZero();
+    }
+
+    @Test
+    void enforcesOneCoverAndCascadesMetadataWhenPlaceIsDeleted() {
+        Long placeId = jdbcTemplate.queryForObject(
+                """
+                INSERT INTO places (
+                    name, slug, address, latitude, longitude,
+                    estimated_visit_minutes, min_cost, max_cost, indoor
+                )
+                VALUES ('Image test', 'image-test', 'Address', 10.77, 106.70, 60, 0, 0, FALSE)
+                RETURNING id
+                """,
+                Long.class);
+        jdbcTemplate.update(
+                """
+                INSERT INTO place_images (place_id, storage_key, url)
+                VALUES (?, 'places/image-test/cover', 'https://cdn.example/cover.jpg')
+                """,
+                placeId);
+
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> jdbcTemplate.update(
+                        """
+                        INSERT INTO place_images (place_id, storage_key, url)
+                        VALUES (?, 'places/image-test/second', 'https://cdn.example/second.jpg')
+                        """,
+                        placeId))
+                .isInstanceOf(org.springframework.dao.DataIntegrityViolationException.class);
+
+        jdbcTemplate.update("DELETE FROM places WHERE id = ?", placeId);
+
+        assertThat(jdbcTemplate.queryForObject(
+                        "SELECT count(*) FROM place_images WHERE place_id = ?", Integer.class, placeId))
+                .isZero();
+    }
+
+    @Test
+    void persistsReplacesAndRemovesCoverMetadata() {
+        Long placeId = jdbcTemplate.queryForObject(
+                """
+                INSERT INTO places (
+                    name, slug, address, latitude, longitude,
+                    estimated_visit_minutes, min_cost, max_cost, indoor
+                )
+                VALUES ('Metadata test', 'metadata-test', 'Address', 10.77, 106.70, 60, 0, 0, FALSE)
+                RETURNING id
+                """,
+                Long.class);
+
+        String firstOldKey = placeImageMetadataService.replaceCover(
+                "metadata-test", new StoredMedia("places/metadata/first", "https://cdn.example/first.jpg"));
+        String replacedKey = placeImageMetadataService.replaceCover(
+                "metadata-test", new StoredMedia("places/metadata/second", "https://cdn.example/second.jpg"));
+
+        assertThat(firstOldKey).isNull();
+        assertThat(replacedKey).isEqualTo("places/metadata/first");
+        assertThat(jdbcTemplate.queryForList(
+                        "SELECT storage_key FROM place_images WHERE place_id = ?", String.class, placeId))
+                .containsExactly("places/metadata/second");
+
+        String removedKey = placeImageMetadataService.removeCover("metadata-test");
+
+        assertThat(removedKey).isEqualTo("places/metadata/second");
+        assertThat(jdbcTemplate.queryForObject(
+                        "SELECT count(*) FROM place_images WHERE place_id = ?", Integer.class, placeId))
+                .isZero();
+        jdbcTemplate.update("DELETE FROM places WHERE id = ?", placeId);
     }
 
     @Test
