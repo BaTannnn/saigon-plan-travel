@@ -38,7 +38,7 @@ export function PlacesErrorState({
         <AlertDescription className="leading-[1.65] text-text-secondary">
           <p>
             {connectionFailure
-              ? "Hãy kiểm tra Spring Boot đang chạy và BACKEND_API_BASE_URL trỏ đúng địa chỉ. Dữ liệu giả sẽ không được dùng thay thế."
+              ? "Không thể kết nối đến backend. Hãy kiểm tra Spring Boot đang chạy."
               : (detail ?? "Hãy xóa bộ lọc và thử lại.")}
           </p>
         </AlertDescription>

@@ -7,20 +7,12 @@ import type {
   RegisterResponse,
 } from "@/types/auth";
 
-const DEFAULT_BROWSER_BACKEND_URL = "http://localhost:8080";
-
-function getBrowserBackendBaseUrl() {
-  return (
-    process.env.NEXT_PUBLIC_BACKEND_API_BASE_URL ?? DEFAULT_BROWSER_BACKEND_URL
-  ).replace(/\/$/, "");
-}
-
-function getAuthUrl(path: string) {
-  return `${getBrowserBackendBaseUrl()}/api/v1/auth${path}`;
+function getAuthPath(path: string) {
+  return `/api/v1/auth${path}`;
 }
 
 export function register(request: RegisterRequest) {
-  return requestJson<RegisterResponse>(getAuthUrl("/register"), {
+  return requestJson<RegisterResponse>(getAuthPath("/register"), {
     method: "POST",
     body: request,
     cache: "no-store",
@@ -28,7 +20,7 @@ export function register(request: RegisterRequest) {
 }
 
 export function login(request: LoginRequest) {
-  return requestJson<LoginResponse>(getAuthUrl("/login"), {
+  return requestJson<LoginResponse>(getAuthPath("/login"), {
     method: "POST",
     body: request,
     cache: "no-store",
@@ -36,7 +28,8 @@ export function login(request: LoginRequest) {
 }
 
 export function getCurrentUser(token: string) {
-  return requestJson<CurrentUserResponse>(getAuthUrl("/me"), {
+  return requestJson<CurrentUserResponse>(getAuthPath("/me"), {
+    method: "GET",
     token,
     cache: "no-store",
   });

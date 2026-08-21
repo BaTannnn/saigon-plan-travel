@@ -1,5 +1,7 @@
 import type { ApiProblem } from "@/types/api";
 
+const DEFAULT_BACKEND_API_BASE_URL = "http://localhost:8080";
+
 export type RequestJsonOptions = {
   method?: string;
   body?: unknown;
@@ -17,8 +19,21 @@ export class ApiError extends Error {
   }
 }
 
+function getBackendBaseUrl() {
+  return (
+    process.env.NEXT_PUBLIC_BACKEND_API_BASE_URL ??
+    DEFAULT_BACKEND_API_BASE_URL
+  ).replace(/\/+$/, "");
+}
+
+function getBackendUrl(apiPath: string) {
+  const normalizedPath = apiPath.replace(/^\/+/, "");
+
+  return `${getBackendBaseUrl()}/${normalizedPath}`;
+}
+
 export async function requestJson<T>(
-  url: string,
+  apiPath: string,
   options: RequestJsonOptions = {},
 ): Promise<T> {
   const hasBody = options.body !== undefined;
@@ -38,7 +53,7 @@ export async function requestJson<T>(
   let response: Response;
 
   try {
-    response = await fetch(url, {
+    response = await fetch(getBackendUrl(apiPath), {
       method: options.method,
       cache: options.cache,
       headers,

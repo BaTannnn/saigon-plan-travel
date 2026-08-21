@@ -5,22 +5,6 @@ import type {
   PlacesSearchFilters,
 } from "@/types/place";
 
-const DEFAULT_BACKEND_URL = "http://localhost:8080";
-
-function getBackendBaseUrl() {
-  return (
-    process.env.NEXT_PUBLIC_BACKEND_API_BASE_URL ??
-    process.env.BACKEND_API_BASE_URL ??
-    DEFAULT_BACKEND_URL
-  ).replace(/\/$/, "");
-}
-
-function requestPlaceJson<T>(path: string) {
-  return requestJson<T>(`${getBackendBaseUrl()}${path}`, {
-    cache: "no-store",
-  });
-}
-
 function appendIfPresent(
   params: URLSearchParams,
   key: string,
@@ -42,15 +26,18 @@ export async function getPlaces(filters: PlacesSearchFilters) {
   appendIfPresent(params, "page", filters.page);
   appendIfPresent(params, "size", filters.size);
 
-  return requestPlaceJson<PlacePage>(`/api/v1/places?${params.toString()}`);
-}
-
-export async function getPlaceCatalog() {
-  return requestPlaceJson<PlacePage>("/api/v1/places?page=0&size=100");
+  return requestJson<PlacePage>(`/api/v1/places?${params.toString()}`, {
+    method: "GET",
+    cache: "no-store",
+  });
 }
 
 export async function getPlaceDetail(slug: string) {
-  return requestPlaceJson<PlaceDetail>(
+  return requestJson<PlaceDetail>(
     `/api/v1/places/${encodeURIComponent(slug)}`,
+    {
+      method: "GET",
+      cache: "no-store",
+    },
   );
 }
