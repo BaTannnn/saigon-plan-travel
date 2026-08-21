@@ -12,6 +12,7 @@ public class TripPolicy {
 
     private static final long MIN_DURATION_MINUTES = 60;
     private static final long MAX_DURATION_MINUTES = 18 * 60;
+    private static final int MAX_TRIPS_PER_DAY = 5;
 
     private final Clock clock;
 
@@ -22,6 +23,13 @@ public class TripPolicy {
     public void validate(LocalDate tripDate, LocalTime startTime, LocalTime endTime) {
         validateTripDate(tripDate);
         validateTimeWindow(startTime, endTime);
+    }
+
+    public void validateDailyTripLimit(long existingTripCount) {
+        if (existingTripCount >= MAX_TRIPS_PER_DAY) {
+            throw new InvalidTripException(
+                    "TRIP_DAILY_LIMIT_EXCEEDED", "tripDate", "You can create at most 5 trips on the same day");
+        }
     }
 
     private void validateTripDate(LocalDate tripDate) {

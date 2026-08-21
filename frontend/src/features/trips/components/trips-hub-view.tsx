@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,18 +14,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { ClockIcon, PinIcon, WalletIcon } from "@/components/ui/icons";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/features/auth/auth-provider";
+import { TripMonthBoard } from "@/features/trips/components/trip-month-board";
+import { TripMonthToolbar } from "@/features/trips/components/trip-month-toolbar";
 import {
   getTripDeleteErrorMessage,
   getTripsLoadErrorMessage,
@@ -32,107 +26,34 @@ import {
 import { ApiError } from "@/lib/api/api-client";
 import { deleteTrip, getTrips } from "@/lib/api/trip-api";
 import type { TripSummaryResponse } from "@/types/trip";
-import { MoreHorizontal, Trash2 } from "lucide-react";
+
+function getCurrentMonth() {
+  const today = new Date();
+  return { year: today.getFullYear(), month: today.getMonth() + 1 };
+}
 
 function formatDate(value: string) {
+  const [year, month, day] = value.split("-").map(Number);
+
   return new Intl.DateTimeFormat("vi-VN", {
     weekday: "long",
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
-  }).format(new Date(`${value}T00:00:00`));
-}
-
-function formatMoney(value: number) {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-    maximumFractionDigits: 2,
-  }).format(value);
-}
-
-function getTileDate(value: string) {
-  const date = new Date(`${value}T00:00:00`);
-
-  return {
-    day: new Intl.DateTimeFormat("vi-VN", { day: "numeric" }).format(date),
-    weekday: new Intl.DateTimeFormat("vi-VN", { weekday: "long" }).format(date),
-    month: new Intl.DateTimeFormat("vi-VN", { month: "long" }).format(date),
-  };
-}
-
-function TripCalendarTile({
-  trip,
-  onDelete,
-}: {
-  trip: TripSummaryResponse;
-  onDelete: (trip: TripSummaryResponse) => void;
-}) {
-  const date = getTileDate(trip.tripDate);
-
-  return (
-    <article className="relative">
-      <Link
-        href={`/trips/${trip.publicId}`}
-        className="group relative flex min-h-64 flex-col rounded-mint-md border border-border/50 bg-card p-5 text-foreground shadow-mint-sm transition-[border-color,box-shadow] hover:border-primary/35 focus-visible:border-primary max-sm:min-h-0"
-        aria-label={`Mở chuyến đi ${formatDate(trip.tripDate)}`}
-      >
-        <p className="m-0 pr-10 text-xs font-extrabold tracking-[0.11em] text-text-secondary uppercase">
-          {date.weekday}
-        </p>
-        <div className="mt-4">
-          <time
-            dateTime={trip.tripDate}
-            className="block text-6xl leading-none font-bold tracking-[-0.07em] text-primary-strong"
-          >
-            {date.day}
-          </time>
-          <p className="mt-1 mb-0 text-sm font-bold capitalize">{date.month}</p>
-        </div>
-
-        <div className="mt-auto grid gap-2.5 border-t border-border pt-4 text-sm">
-          <p className="m-0 flex items-center gap-2 font-semibold text-text-primary">
-            <ClockIcon className="size-4 text-primary" />
-            {trip.startTime} – {trip.endTime}
-          </p>
-          <p className="m-0 flex items-center gap-2 font-semibold text-text-primary">
-            <WalletIcon className="size-4 text-ochre" />
-            {formatMoney(trip.budget)}
-          </p>
-          <p className="m-0 flex min-w-0 items-center gap-2 text-xs text-text-secondary">
-            <PinIcon className="size-4 shrink-0 text-text-secondary" />
-            <span className="truncate">{trip.startLocationLabel}</span>
-          </p>
-        </div>
-      </Link>
-
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            className="absolute top-2.5 right-2.5 z-10 size-9 bg-card text-text-secondary hover:bg-muted hover:text-text-primary"
-            aria-label={`Tùy chọn cho chuyến đi ${formatDate(trip.tripDate)}`}
-          >
-            <MoreHorizontal className="size-5" aria-hidden="true" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem destructive onSelect={() => onDelete(trip)}>
-            <Trash2 aria-hidden="true" />
-            Xóa chuyến đi
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </article>
-  );
+  }).format(new Date(year, month - 1, day));
 }
 
 export function TripsHubView() {
   const router = useRouter();
   const { status, runAuthenticated } = useAuth();
-  const [trips, setTrips] = useState<TripSummaryResponse[] | null>(null);
+  const [initialMonth] = useState(getCurrentMonth);
+  const [selectedYear, setSelectedYear] = useState(initialMonth.year);
+  const [selectedMonth, setSelectedMonth] = useState(initialMonth.month);
+  const [years] = useState(() =>
+    Array.from({ length: 7 }, (_, index) => initialMonth.year - 1 + index),
+  );
+  const [trips, setTrips] = useState<TripSummaryResponse[]>([]);
+  const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [tripPendingDelete, setTripPendingDelete] =
     useState<TripSummaryResponse | null>(null);
@@ -148,7 +69,9 @@ export function TripsHubView() {
 
     let cancelled = false;
 
-    runAuthenticated((token) => getTrips(token))
+    runAuthenticated((token) =>
+      getTrips({ year: selectedYear, month: selectedMonth }, token),
+    )
       .then((response) => {
         if (cancelled) return;
         setTrips(response);
@@ -160,14 +83,44 @@ export function TripsHubView() {
           return;
         }
         setLoadError(getTripsLoadErrorMessage(error));
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
       });
 
     return () => {
       cancelled = true;
     };
-  }, [router, runAuthenticated, status]);
+  }, [router, runAuthenticated, selectedMonth, selectedYear, status]);
 
   const deleting = deletingPublicId !== null;
+  const firstYear = years[0];
+  const lastYear = years[years.length - 1];
+  const previousDisabled = selectedYear === firstYear && selectedMonth === 1;
+  const nextDisabled = selectedYear === lastYear && selectedMonth === 12;
+
+  function moveMonth(offset: number) {
+    const nextDate = new Date(selectedYear, selectedMonth - 1 + offset, 1);
+    setLoading(true);
+    setLoadError(null);
+    setTrips([]);
+    setSelectedYear(nextDate.getFullYear());
+    setSelectedMonth(nextDate.getMonth() + 1);
+  }
+
+  function selectMonth(month: number) {
+    setLoading(true);
+    setLoadError(null);
+    setTrips([]);
+    setSelectedMonth(month);
+  }
+
+  function selectYear(year: number) {
+    setLoading(true);
+    setLoadError(null);
+    setTrips([]);
+    setSelectedYear(year);
+  }
 
   function handleDeleteDialogOpenChange(open: boolean) {
     if (open || deleting) return;
@@ -185,7 +138,7 @@ export function TripsHubView() {
     try {
       await runAuthenticated((token) => deleteTrip(publicId, token));
       setTrips((current) =>
-        current?.filter((trip) => trip.publicId !== publicId) ?? current,
+        current.filter((trip) => trip.publicId !== publicId),
       );
       setTripPendingDelete(null);
     } catch (error) {
@@ -195,30 +148,45 @@ export function TripsHubView() {
     }
   }
 
-  if (status !== "authenticated" || (!trips && !loadError)) {
+  if (status !== "authenticated") {
     return (
       <main
-        className="mx-auto grid w-[min(900px,calc(100%_-_32px))] gap-4 py-10"
+        className="mx-auto grid w-[min(1120px,calc(100%_-_32px))] gap-4 py-10"
         aria-label="Đang tải danh sách chuyến đi"
       >
-        <Skeleton className="h-32 rounded-mint-lg" />
-        <Skeleton className="h-48 rounded-mint-md" />
-        <Skeleton className="h-48 rounded-mint-md" />
+        <Skeleton className="h-24 rounded-mint-lg" />
+        <div className="grid grid-cols-4 gap-3 max-md:grid-cols-2 max-sm:grid-cols-1">
+          {Array.from({ length: 8 }, (_, index) => (
+            <Skeleton key={index} className="aspect-square rounded-mint-md" />
+          ))}
+        </div>
       </main>
     );
   }
 
   return (
-    <main className="mx-auto w-[min(1120px,calc(100%_-_32px))] py-9 pb-16 max-md:py-6">
-      <header className="mb-7 flex items-end justify-between gap-5 max-sm:items-start max-sm:flex-col">
-        <div>
+    <main className="mx-auto w-[min(1440px,calc(100%_-_32px))] py-8 pb-16 max-md:py-6">
+      <header className="mb-6 grid gap-4">
+        <div className="flex items-center justify-between gap-5 max-sm:items-start">
           <h1 className="m-0 text-3xl leading-tight font-bold tracking-[-0.04em] max-md:text-2xl">
             Chuyến đi của tôi
           </h1>
+          <Button asChild variant="accent" className="shrink-0">
+            <Link href="/trips/new">Tạo chuyến đi</Link>
+          </Button>
         </div>
-        <Button asChild variant="accent" className="max-sm:w-full">
-          <Link href="/trips/new">Tạo chuyến đi</Link>
-        </Button>
+
+        <TripMonthToolbar
+          month={selectedMonth}
+          year={selectedYear}
+          years={years}
+          previousDisabled={previousDisabled}
+          nextDisabled={nextDisabled}
+          onMonthChange={selectMonth}
+          onYearChange={selectYear}
+          onPreviousMonth={() => moveMonth(-1)}
+          onNextMonth={() => moveMonth(1)}
+        />
       </header>
 
       <AlertDialog
@@ -264,42 +232,24 @@ export function TripsHubView() {
       </AlertDialog>
 
       {loadError ? (
-        <Alert className="rounded-mint-lg border-border bg-surface p-6 shadow-mint-sm">
+        <Alert className="mb-4 rounded-mint-md border-border bg-surface shadow-mint-sm">
           <AlertTitle>Không thể tải chuyến đi</AlertTitle>
           <AlertDescription>{loadError}</AlertDescription>
         </Alert>
-      ) : trips?.length === 0 ? (
-        <Card className="items-start border border-border/50 bg-card p-7">
-          <p className="m-0 text-xs font-extrabold tracking-[0.12em] text-primary uppercase">
-            Chưa có chuyến đi
-          </p>
-          <h2 className="m-0 text-2xl font-bold tracking-[-0.03em]">
-            Bắt đầu với kế hoạch đầu tiên của bạn
-          </h2>
-          <p className="m-0 max-w-xl leading-7 text-text-secondary">
-            Lưu ngày đi, khung giờ, ngân sách, điểm xuất phát và sở thích của chuyến đi.
-          </p>
-          <Button asChild variant="accent">
-            <Link href="/trips/new">Tạo chuyến đi</Link>
-          </Button>
-        </Card>
-      ) : (
-        <div
-          className="grid grid-cols-4 gap-4 max-xl:grid-cols-3 max-md:grid-cols-2 max-sm:grid-cols-1"
-          aria-label="Các chuyến đi đã lưu"
-        >
-          {trips?.map((trip) => (
-            <TripCalendarTile
-              key={trip.publicId}
-              trip={trip}
-              onDelete={(selectedTrip) => {
-                setDeleteError(null);
-                setTripPendingDelete(selectedTrip);
-              }}
-            />
-          ))}
-        </div>
-      )}
+      ) : null}
+
+      {!loadError ? (
+        <TripMonthBoard
+          year={selectedYear}
+          month={selectedMonth}
+          trips={trips}
+          loading={loading}
+          onDelete={(selectedTrip) => {
+            setDeleteError(null);
+            setTripPendingDelete(selectedTrip);
+          }}
+        />
+      ) : null}
     </main>
   );
 }

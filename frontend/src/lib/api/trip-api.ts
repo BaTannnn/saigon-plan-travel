@@ -18,6 +18,11 @@ function getTripUrl(path = "") {
   return `${getBrowserBackendBaseUrl()}/api/v1/trips${path}`;
 }
 
+export type TripListFilter = {
+  year: number;
+  month: number;
+};
+
 export function createTrip(request: SaveTripRequest, token: string) {
   return requestJson<TripResponse>(getTripUrl(), {
     method: "POST",
@@ -27,8 +32,13 @@ export function createTrip(request: SaveTripRequest, token: string) {
   });
 }
 
-export function getTrips(token: string) {
-  return requestJson<TripSummaryResponse[]>(getTripUrl(), {
+export function getTrips(filter: TripListFilter, token: string) {
+  const searchParams = new URLSearchParams({
+    year: String(filter.year),
+    month: String(filter.month),
+  });
+
+  return requestJson<TripSummaryResponse[]>(getTripUrl(`?${searchParams}`), {
     token,
     cache: "no-store",
   });

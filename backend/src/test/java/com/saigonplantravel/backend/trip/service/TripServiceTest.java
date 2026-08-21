@@ -3,6 +3,7 @@ package com.saigonplantravel.backend.trip.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -17,6 +18,7 @@ import com.saigonplantravel.backend.trip.dto.StartLocationResponse;
 import com.saigonplantravel.backend.trip.dto.TripResponse;
 import com.saigonplantravel.backend.trip.dto.TripSummaryResponse;
 import com.saigonplantravel.backend.trip.entity.Trip;
+import com.saigonplantravel.backend.trip.exception.InvalidTripException;
 import com.saigonplantravel.backend.trip.exception.TripNotFoundException;
 import com.saigonplantravel.backend.trip.mapper.TripMapper;
 import com.saigonplantravel.backend.trip.repository.TripRepository;
@@ -63,6 +65,7 @@ class TripServiceTest {
         OffsetDateTime now = OffsetDateTime.parse("2026-08-01T10:00:00+07:00");
         TripResponse expectedResponse = responseFor(UUID.randomUUID(), request, now, now);
 
+        when(tripRepository.countByUserIdAndTripDate(99L, request.tripDate())).thenReturn(4L);
         when(tripRepository.save(any(Trip.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(tripMapper.toResponse(any(Trip.class))).thenReturn(expectedResponse);
 
@@ -70,6 +73,8 @@ class TripServiceTest {
 
         assertThat(response).isSameAs(expectedResponse);
         verify(tripPolicy).validate(request.tripDate(), request.startTime(), request.endTime());
+        verify(tripRepository).countByUserIdAndTripDate(99L, request.tripDate());
+        verify(tripPolicy).validateDailyTripLimit(4);
 
         ArgumentCaptor<Trip> tripCaptor = ArgumentCaptor.forClass(Trip.class);
         verify(tripRepository).save(tripCaptor.capture());
@@ -84,6 +89,28 @@ class TripServiceTest {
         assertThat(savedTrip.getCreatedAt()).isEqualTo(now);
         assertThat(savedTrip.getUpdatedAt()).isEqualTo(now);
         verify(tripMapper).toResponse(savedTrip);
+    }
+
+    @Test
+    void rejectsCreateWhenDayAlreadyHasFiveTrips() {
+        Long userId = 99L;
+        SaveTripRequest request = createValidRequest();
+        when(tripRepository.countByUserIdAndTripDate(userId, request.tripDate())).thenReturn(5L);
+        doThrow(new InvalidTripException(
+                        "TRIP_DAILY_LIMIT_EXCEEDED",
+                        "tripDate",
+                        "You can create at most 5 trips on the same day"))
+                .when(tripPolicy)
+                .validateDailyTripLimit(5);
+
+        assertThatThrownBy(() -> tripService.createTrip(userId, request))
+                .isInstanceOf(InvalidTripException.class)
+                .hasMessage("You can create at most 5 trips on the same day");
+
+        verify(tripPolicy).validate(request.tripDate(), request.startTime(), request.endTime());
+        verify(tripRepository).countByUserIdAndTripDate(userId, request.tripDate());
+        verify(tripRepository, never()).save(any(Trip.class));
+        verifyNoInteractions(tripMapper);
     }
 
     @Test
@@ -128,6 +155,36 @@ class TripServiceTest {
         when(tripMapper.toSummaryResponse(secondTrip)).thenReturn(secondSummary);
 
         assertThat(tripService.listTrips(userId)).containsExactly(firstSummary, secondSummary);
+    }
+
+    @Test
+    void listsOwnedTripsInsideSelectedMonth() {
+        Long userId = 42L;
+        OffsetDateTime timestamp = OffsetDateTime.parse("2026-08-01T10:00:00+07:00");
+        Trip firstTrip = createTrip(userId, timestamp);
+        Trip secondTrip = new Trip(
+                userId,
+                LocalDate.of(2026, 8, 21),
+                LocalTime.of(9, 0),
+                LocalTime.of(17, 0),
+                new BigDecimal("700000.00"),
+                "Bưu điện Thành phố",
+                new BigDecimal("10.7798000"),
+                new BigDecimal("106.6990000"),
+                TravelPace.RELAXED,
+                EnvironmentPreference.INDOOR,
+                timestamp);
+        TripSummaryResponse firstSummary = summaryFor(firstTrip);
+        TripSummaryResponse secondSummary = summaryFor(secondTrip);
+
+        when(tripRepository
+                        .findAllByUserIdAndTripDateGreaterThanEqualAndTripDateLessThanOrderByTripDateAscStartTimeAscPublicIdAsc(
+                                userId, LocalDate.of(2026, 8, 1), LocalDate.of(2026, 9, 1)))
+                .thenReturn(List.of(firstTrip, secondTrip));
+        when(tripMapper.toSummaryResponse(firstTrip)).thenReturn(firstSummary);
+        when(tripMapper.toSummaryResponse(secondTrip)).thenReturn(secondSummary);
+
+        assertThat(tripService.listTrips(userId, 2026, 8)).containsExactly(firstSummary, secondSummary);
     }
 
     @Test
@@ -180,8 +237,55 @@ class TripServiceTest {
         assertThat(trip.getTravelPace()).isEqualTo(TravelPace.RELAXED);
         assertThat(trip.getEnvironmentPreference()).isEqualTo(EnvironmentPreference.INDOOR);
         verify(tripPolicy).validate(request.tripDate(), request.startTime(), request.endTime());
+        verify(tripRepository, never()).countByUserIdAndTripDate(any(), any());
         verify(tripRepository, never()).save(any(Trip.class));
         verify(tripMapper).toResponse(trip);
+    }
+
+    @Test
+    void replacesTripOnNewDateWhenFourTripsAlreadyExistThere() {
+        Long userId = 99L;
+        OffsetDateTime createdAt = OffsetDateTime.parse("2026-07-31T09:00:00+07:00");
+        Trip trip = createTrip(userId, createdAt);
+        UUID publicId = trip.getPublicId();
+        SaveTripRequest request = requestForDate(LocalDate.of(2026, 8, 21));
+        TripResponse expectedResponse =
+                responseFor(publicId, request, createdAt, OffsetDateTime.parse("2026-08-01T10:00:00+07:00"));
+
+        when(tripRepository.findByPublicIdAndUserId(publicId, userId)).thenReturn(Optional.of(trip));
+        when(tripRepository.countByUserIdAndTripDate(userId, request.tripDate())).thenReturn(4L);
+        when(tripMapper.toResponse(trip)).thenReturn(expectedResponse);
+
+        assertThat(tripService.replaceTrip(userId, publicId, request)).isSameAs(expectedResponse);
+
+        assertThat(trip.getTripDate()).isEqualTo(request.tripDate());
+        verify(tripRepository).countByUserIdAndTripDate(userId, request.tripDate());
+        verify(tripPolicy).validateDailyTripLimit(4);
+    }
+
+    @Test
+    void rejectsMovingTripToDateThatAlreadyHasFiveTrips() {
+        Long userId = 99L;
+        Trip trip = createTrip(userId, OffsetDateTime.parse("2026-07-31T09:00:00+07:00"));
+        UUID publicId = trip.getPublicId();
+        SaveTripRequest request = requestForDate(LocalDate.of(2026, 8, 21));
+
+        when(tripRepository.findByPublicIdAndUserId(publicId, userId)).thenReturn(Optional.of(trip));
+        when(tripRepository.countByUserIdAndTripDate(userId, request.tripDate())).thenReturn(5L);
+        doThrow(new InvalidTripException(
+                        "TRIP_DAILY_LIMIT_EXCEEDED",
+                        "tripDate",
+                        "You can create at most 5 trips on the same day"))
+                .when(tripPolicy)
+                .validateDailyTripLimit(5);
+
+        assertThatThrownBy(() -> tripService.replaceTrip(userId, publicId, request))
+                .isInstanceOf(InvalidTripException.class);
+
+        assertThat(trip.getTripDate()).isEqualTo(LocalDate.of(2026, 8, 20));
+        verify(tripRepository).countByUserIdAndTripDate(userId, request.tripDate());
+        verify(tripRepository, never()).save(any(Trip.class));
+        verifyNoInteractions(tripMapper);
     }
 
     @Test
@@ -252,8 +356,12 @@ class TripServiceTest {
     }
 
     private SaveTripRequest createValidRequest() {
+        return requestForDate(LocalDate.of(2026, 8, 20));
+    }
+
+    private SaveTripRequest requestForDate(LocalDate tripDate) {
         return new SaveTripRequest(
-                LocalDate.of(2026, 8, 20),
+                tripDate,
                 LocalTime.of(8, 0),
                 LocalTime.of(18, 0),
                 new BigDecimal("500000.00"),

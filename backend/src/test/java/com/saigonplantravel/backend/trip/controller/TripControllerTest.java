@@ -140,6 +140,53 @@ class TripControllerTest {
     }
 
     @Test
+    void listsTripsForSelectedMonth() throws Exception {
+        UserPrincipal principal = userPrincipal();
+        UUID tripPublicId = UUID.fromString("7a674ef0-57c8-4d0e-b99b-dccfd342fc98");
+
+        when(tripService.listTrips(principal.id(), 2026, 8)).thenReturn(List.of(tripSummaryResponse(tripPublicId)));
+
+        mockMvc.perform(get("/api/v1/trips")
+                        .queryParam("year", "2026")
+                        .queryParam("month", "8")
+                        .with(authenticatedAs(principal)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].publicId").value(tripPublicId.toString()));
+
+        verify(tripService).listTrips(principal.id(), 2026, 8);
+    }
+
+    @Test
+    void rejectsInvalidMonthWithoutCallingService() throws Exception {
+        UserPrincipal principal = userPrincipal();
+
+        mockMvc.perform(get("/api/v1/trips")
+                        .queryParam("year", "2026")
+                        .queryParam("month", "13")
+                        .with(authenticatedAs(principal)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST"))
+                .andExpect(jsonPath("$.fieldErrors[0].field").value("month"));
+
+        verifyNoInteractions(tripService);
+    }
+
+    @Test
+    void rejectsYearOrMonthWhenSuppliedAloneWithoutCallingService() throws Exception {
+        UserPrincipal principal = userPrincipal();
+
+        mockMvc.perform(get("/api/v1/trips").queryParam("year", "2026").with(authenticatedAs(principal)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.fieldErrors[0].field").value("month"));
+
+        mockMvc.perform(get("/api/v1/trips").queryParam("month", "8").with(authenticatedAs(principal)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.fieldErrors[0].field").value("year"));
+
+        verifyNoInteractions(tripService);
+    }
+
+    @Test
     void replacesTripUsingAuthenticatedUserId() throws Exception {
 
         UserPrincipal principal = userPrincipal();

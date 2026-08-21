@@ -129,6 +129,61 @@ class TripRepositoryTest {
     }
 
     @Test
+    void listsOnlyOwnedTripsInsideMonthInDeterministicOrder() {
+        Long ownerUserId = persistUser("month-owner@example.com");
+        Long anotherUserId = persistUser("month-another@example.com");
+        Trip julyTrip = newTrip(ownerUserId, LocalDate.of(2026, 7, 31), LocalTime.of(10, 0), "Tháng 7");
+        Trip laterAugustTrip = newTrip(ownerUserId, LocalDate.of(2026, 8, 21), LocalTime.of(9, 0), "Tháng 8 sau");
+        Trip tiedAugustTripOne = newTrip(ownerUserId, LocalDate.of(2026, 8, 20), LocalTime.of(8, 0), "Tháng 8 A");
+        Trip tiedAugustTripTwo = newTrip(ownerUserId, LocalDate.of(2026, 8, 20), LocalTime.of(8, 0), "Tháng 8 B");
+        Trip septemberTrip = newTrip(ownerUserId, LocalDate.of(2026, 9, 1), LocalTime.of(7, 0), "Tháng 9");
+        Trip anotherUsersTrip =
+                newTrip(anotherUserId, LocalDate.of(2026, 8, 19), LocalTime.of(7, 0), "Khác chủ sở hữu");
+
+        tripRepository.saveAllAndFlush(List.of(
+                julyTrip, laterAugustTrip, tiedAugustTripOne, tiedAugustTripTwo, septemberTrip, anotherUsersTrip));
+
+        List<UUID> expectedPublicIds = List.of(laterAugustTrip, tiedAugustTripOne, tiedAugustTripTwo).stream()
+                .sorted(Comparator.comparing(Trip::getTripDate)
+                        .thenComparing(Trip::getStartTime)
+                        .thenComparing(trip -> trip.getPublicId().toString()))
+                .map(Trip::getPublicId)
+                .toList();
+
+        entityManager.clear();
+
+        List<Trip> augustTrips =
+                tripRepository
+                        .findAllByUserIdAndTripDateGreaterThanEqualAndTripDateLessThanOrderByTripDateAscStartTimeAscPublicIdAsc(
+                                ownerUserId, LocalDate.of(2026, 8, 1), LocalDate.of(2026, 9, 1));
+
+        assertThat(augustTrips)
+                .extracting(Trip::getPublicId)
+                .containsExactlyElementsOf(expectedPublicIds)
+                .doesNotContain(julyTrip.getPublicId(), septemberTrip.getPublicId(), anotherUsersTrip.getPublicId());
+        assertThat(augustTrips).allMatch(trip -> trip.getUserId().equals(ownerUserId));
+    }
+
+    @Test
+    void countsTripsOnlyForRequestedUserAndDate() {
+        Long ownerUserId = persistUser("count-owner@example.com");
+        Long anotherUserId = persistUser("count-another@example.com");
+        LocalDate requestedDate = LocalDate.of(2026, 8, 21);
+
+        tripRepository.saveAllAndFlush(List.of(
+                newTrip(ownerUserId, requestedDate, LocalTime.of(7, 0), "Chuyến 1"),
+                newTrip(ownerUserId, requestedDate, LocalTime.of(8, 0), "Chuyến 2"),
+                newTrip(ownerUserId, requestedDate, LocalTime.of(9, 0), "Chuyến 3"),
+                newTrip(ownerUserId, requestedDate.plusDays(1), LocalTime.of(8, 0), "Ngày khác"),
+                newTrip(anotherUserId, requestedDate, LocalTime.of(8, 0), "Người dùng khác")));
+
+        entityManager.clear();
+
+        assertThat(tripRepository.countByUserIdAndTripDate(ownerUserId, requestedDate)).isEqualTo(3);
+        assertThat(tripRepository.countByUserIdAndTripDate(anotherUserId, requestedDate)).isEqualTo(1);
+    }
+
+    @Test
     void replacesTripDetailsThroughDirtyChecking() {
         Long ownerUserId = persistUser("replace-owner@example.com");
 

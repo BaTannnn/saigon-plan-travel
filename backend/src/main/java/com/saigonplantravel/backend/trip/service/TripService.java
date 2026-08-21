@@ -10,6 +10,7 @@ import com.saigonplantravel.backend.trip.mapper.TripMapper;
 import com.saigonplantravel.backend.trip.repository.TripRepository;
 import java.time.Clock;
 import java.time.OffsetDateTime;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,8 @@ public class TripService {
     @Transactional
     public TripResponse createTrip(Long userId, SaveTripRequest request) {
         tripPolicy.validate(request.tripDate(), request.startTime(), request.endTime());
+        long existingTripCount = tripRepository.countByUserIdAndTripDate(userId, request.tripDate());
+        tripPolicy.validateDailyTripLimit(existingTripCount);
 
         OffsetDateTime now = OffsetDateTime.now(clock);
 
@@ -68,11 +71,28 @@ public class TripService {
         return trips.stream().map(tripMapper::toSummaryResponse).toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<TripSummaryResponse> listTrips(Long userId, int year, int month) {
+        YearMonth selectedMonth = YearMonth.of(year, month);
+        List<Trip> trips =
+                tripRepository
+                        .findAllByUserIdAndTripDateGreaterThanEqualAndTripDateLessThanOrderByTripDateAscStartTimeAscPublicIdAsc(
+                                userId,
+                                selectedMonth.atDay(1),
+                                selectedMonth.plusMonths(1).atDay(1));
+
+        return trips.stream().map(tripMapper::toSummaryResponse).toList();
+    }
+
     @Transactional
     public TripResponse replaceTrip(Long userId, UUID publicId, SaveTripRequest request) {
         Trip trip = tripRepository.findByPublicIdAndUserId(publicId, userId).orElseThrow(TripNotFoundException::new);
 
         tripPolicy.validate(request.tripDate(), request.startTime(), request.endTime());
+        if (!trip.getTripDate().equals(request.tripDate())) {
+            long existingTripCount = tripRepository.countByUserIdAndTripDate(userId, request.tripDate());
+            tripPolicy.validateDailyTripLimit(existingTripCount);
+        }
 
         OffsetDateTime now = OffsetDateTime.now(clock);
 
