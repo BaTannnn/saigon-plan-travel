@@ -142,7 +142,9 @@ function TripDayPopover({
             {trips.length}
           </Button>
         </PopoverTrigger>
-        <PopoverContent aria-label={`Chuyến đi ngày ${day} tháng ${month} năm ${year}`}>
+        <PopoverContent
+          aria-label={`Chuyến đi ngày ${day} tháng ${month} năm ${year}`}
+        >
           <div className="flex items-start justify-between gap-4 border-b border-border pb-3">
             <div>
               <h2 className="m-0 text-base font-bold tracking-[-0.02em]">

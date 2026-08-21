@@ -5,7 +5,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { PlaceSummary } from "@/types/place";
 
 const PlaceMap = dynamic(
-  () => import("@/features/places/map/place-map").then((module) => module.PlaceMap),
+  () =>
+    import("@/features/places/map/place-map").then((module) => module.PlaceMap),
   {
     ssr: false,
     loading: () => (

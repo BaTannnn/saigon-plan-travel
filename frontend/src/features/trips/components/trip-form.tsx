@@ -136,7 +136,9 @@ export function TripForm({
   const [searchState, setSearchState] = useState<
     "idle" | "loading" | "success" | "error"
   >("idle");
-  const [searchResults, setSearchResults] = useState<LocationSearchResult[]>([]);
+  const [searchResults, setSearchResults] = useState<LocationSearchResult[]>(
+    [],
+  );
   const [searchMessage, setSearchMessage] = useState<string | null>(null);
 
   function update<K extends keyof TripFormValues>(
@@ -442,7 +444,8 @@ export function TripForm({
         <div>
           <h2 className="m-0 text-xl font-bold">Bạn bắt đầu từ đâu?</h2>
           <p className="mt-1 mb-0 text-sm text-text-secondary">
-            Nhập địa chỉ hoặc tên địa điểm. Bạn cũng có thể dùng vị trí hiện tại.
+            Nhập địa chỉ hoặc tên địa điểm. Bạn cũng có thể dùng vị trí hiện
+            tại.
           </p>
         </div>
 
@@ -573,7 +576,6 @@ export function TripForm({
             </p>
           ) : null}
         </div>
-
       </section>
 
       <section className="grid gap-5 border-b border-border py-6">
@@ -634,7 +636,6 @@ export function TripForm({
             <FieldError message={fieldErrors.environmentPreference} />
           </div>
         </div>
-
       </section>
 
       <footer className="flex justify-end gap-3 py-6 max-md:flex-col-reverse">

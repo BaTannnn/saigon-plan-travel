@@ -20,7 +20,8 @@ export function getTripFormFeedback(error: unknown): TripFormFeedback {
 
   if (error.status === 0) {
     return {
-      message: "Không thể kết nối đến backend. Hãy kiểm tra kết nối và thử lại.",
+      message:
+        "Không thể kết nối đến backend. Hãy kiểm tra kết nối và thử lại.",
       fieldErrors: {},
     };
   }
@@ -65,8 +66,7 @@ export function getTripsLoadErrorMessage(error: unknown) {
     return "Không thể kết nối đến backend. Hãy kiểm tra kết nối và thử lại.";
   }
   return (
-    error.problem?.detail ??
-    "Không thể tải danh sách chuyến đi. Hãy thử lại."
+    error.problem?.detail ?? "Không thể tải danh sách chuyến đi. Hãy thử lại."
   );
 }
 

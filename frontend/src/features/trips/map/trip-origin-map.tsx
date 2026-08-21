@@ -27,7 +27,10 @@ const originIcon = L.divIcon({
   tooltipAnchor: [0, -44],
 });
 
-function OriginViewport({ latitude, longitude }: Omit<TripOriginMapProps, "label">) {
+function OriginViewport({
+  latitude,
+  longitude,
+}: Omit<TripOriginMapProps, "label">) {
   const map = useMap();
 
   useEffect(() => {

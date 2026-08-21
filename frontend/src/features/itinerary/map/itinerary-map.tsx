@@ -107,10 +107,7 @@ export function ItineraryMap({
   selectedItemPublicId,
   onSelectItem,
 }: ItineraryMapProps) {
-  const validItems = useMemo(
-    () => items.filter(hasValidCoordinates),
-    [items],
-  );
+  const validItems = useMemo(() => items.filter(hasValidCoordinates), [items]);
   const selectedItem = useMemo(
     () =>
       validItems.find((item) => item.publicId === selectedItemPublicId) ?? null,

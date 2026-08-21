@@ -21,7 +21,10 @@ export function CreateTripView() {
 
   if (status !== "authenticated") {
     return (
-      <main className="mx-auto grid w-[min(900px,calc(100%_-_32px))] gap-4 py-10" aria-label="Đang kiểm tra đăng nhập">
+      <main
+        className="mx-auto grid w-[min(900px,calc(100%_-_32px))] gap-4 py-10"
+        aria-label="Đang kiểm tra đăng nhập"
+      >
         <Skeleton className="h-24 rounded-mint-md" />
         <Skeleton className="h-80 rounded-mint-md" />
       </main>

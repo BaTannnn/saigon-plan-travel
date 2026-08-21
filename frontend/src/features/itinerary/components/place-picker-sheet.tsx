@@ -251,7 +251,9 @@ export function PlacePickerSheet({
               </div>
 
               <div className="grid gap-1.5">
-                <Label className="text-xs text-text-secondary">Không gian</Label>
+                <Label className="text-xs text-text-secondary">
+                  Không gian
+                </Label>
                 <Select value={indoor} onValueChange={setIndoor}>
                   <SelectTrigger className="h-10 w-full bg-surface">
                     <SelectValue />
@@ -267,7 +269,10 @@ export function PlacePickerSheet({
               </div>
 
               <div className="grid gap-1.5 sm:col-span-2">
-                <Label className="text-xs text-text-secondary" htmlFor="picker-max-cost">
+                <Label
+                  className="text-xs text-text-secondary"
+                  htmlFor="picker-max-cost"
+                >
                   Chi phí tối đa (VND)
                 </Label>
                 <Input
@@ -283,10 +288,19 @@ export function PlacePickerSheet({
               </div>
             </div>
             <div className="mt-3 flex justify-end gap-2">
-              <Button type="button" size="sm" variant="ghost" onClick={resetFilters}>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={resetFilters}
+              >
                 Đặt lại
               </Button>
-              <Button type="submit" size="sm" disabled={initialLoading || filterLoading}>
+              <Button
+                type="submit"
+                size="sm"
+                disabled={initialLoading || filterLoading}
+              >
                 Áp dụng
               </Button>
             </div>
@@ -295,13 +309,25 @@ export function PlacePickerSheet({
 
         <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-5">
           <div className="flex min-h-9 items-center justify-between text-xs text-text-secondary">
-            <span>{initialLoading || filterLoading ? "Đang tải..." : `${visiblePlaces.length} địa điểm`}</span>
+            <span>
+              {initialLoading || filterLoading
+                ? "Đang tải..."
+                : `${visiblePlaces.length} địa điểm`}
+            </span>
           </div>
 
           {error ? (
-            <div className="mb-3 flex items-center justify-between gap-3 border-l-2 border-destructive bg-destructive/8 px-3 py-2 text-sm text-destructive" role="alert">
+            <div
+              className="mb-3 flex items-center justify-between gap-3 border-l-2 border-destructive bg-destructive/8 px-3 py-2 text-sm text-destructive"
+              role="alert"
+            >
               <span>{error}</span>
-              <Button type="button" size="xs" variant="ghost" onClick={() => applyFilters()}>
+              <Button
+                type="button"
+                size="xs"
+                variant="ghost"
+                onClick={() => applyFilters()}
+              >
                 Thử lại
               </Button>
             </div>
@@ -310,15 +336,21 @@ export function PlacePickerSheet({
           {initialLoading && places.length === 0 ? (
             <div className="grid gap-0" aria-label="Đang tải địa điểm">
               {[1, 2, 3, 4].map((item) => (
-                <div key={item} className="h-18 animate-pulse border-b border-border bg-muted/45" />
+                <div
+                  key={item}
+                  className="h-18 animate-pulse border-b border-border bg-muted/45"
+                />
               ))}
             </div>
           ) : visiblePlaces.length === 0 ? (
             <div className="grid min-h-40 place-items-center text-center">
               <div>
-                <p className="font-bold text-text-primary">Không tìm thấy địa điểm phù hợp</p>
+                <p className="font-bold text-text-primary">
+                  Không tìm thấy địa điểm phù hợp
+                </p>
                 <p className="mt-1 text-sm text-text-secondary">
-                  Không có địa điểm nào trong SaigonPlanTravel khớp với tìm kiếm này.
+                  Không có địa điểm nào trong SaigonPlanTravel khớp với tìm kiếm
+                  này.
                 </p>
               </div>
             </div>
@@ -328,7 +360,10 @@ export function PlacePickerSheet({
                 const selecting = selectedPlaceId === place.id || busy;
 
                 return (
-                  <div key={place.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-border py-3 last:border-b-0">
+                  <div
+                    key={place.id}
+                    className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-border py-3 last:border-b-0"
+                  >
                     <div className="flex min-w-0 items-start gap-3">
                       {place.primaryImageUrl ? (
                         <Image
@@ -340,10 +375,15 @@ export function PlacePickerSheet({
                           loading="lazy"
                         />
                       ) : (
-                        <MapPin className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" />
+                        <MapPin
+                          className="mt-0.5 size-4 shrink-0 text-primary"
+                          aria-hidden="true"
+                        />
                       )}
                       <div className="min-w-0">
-                        <p className="m-0 truncate text-sm font-bold text-text-primary">{place.name}</p>
+                        <p className="m-0 truncate text-sm font-bold text-text-primary">
+                          {place.name}
+                        </p>
                         <p className="mt-0.5 mb-0 text-xs text-text-secondary">
                           {place.indoor ? "Trong nhà" : "Ngoài trời"}
                         </p>
@@ -355,8 +395,18 @@ export function PlacePickerSheet({
                       </div>
                     </div>
 
-                    <Button type="button" size="sm" variant="outline" disabled={selecting} onClick={() => handleSelect(place)}>
-                      {selectedPlaceId === place.id ? "Đang lưu..." : mode === "add" ? "Thêm" : "Chọn"}
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      disabled={selecting}
+                      onClick={() => handleSelect(place)}
+                    >
+                      {selectedPlaceId === place.id
+                        ? "Đang lưu..."
+                        : mode === "add"
+                          ? "Thêm"
+                          : "Chọn"}
                     </Button>
                   </div>
                 );
@@ -366,7 +416,13 @@ export function PlacePickerSheet({
 
           {hasMore && !initialLoading ? (
             <div className="pt-4 text-center">
-              <Button type="button" size="sm" variant="outline" onClick={() => void loadPage(page + 1, true)} disabled={loadingMore || busy}>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => void loadPage(page + 1, true)}
+                disabled={loadingMore || busy}
+              >
                 {loadingMore ? "Đang tải thêm..." : "Xem thêm"}
               </Button>
             </div>

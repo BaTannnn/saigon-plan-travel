@@ -177,10 +177,7 @@ export function TripDetailView({ publicId }: TripDetailViewProps) {
     }
   }
 
-  async function handleReplacePlace(
-    itemPublicId: string,
-    place: PlaceSummary,
-  ) {
+  async function handleReplacePlace(itemPublicId: string, place: PlaceSummary) {
     setItineraryMutating(true);
     setItineraryError(null);
 
@@ -224,11 +221,7 @@ export function TripDetailView({ publicId }: TripDetailViewProps) {
     preferenceDescription: string,
   ): Promise<ItineraryGenerationPreviewResponse> {
     return runAuthenticated((token) =>
-      generateItineraryPreview(
-        publicId,
-        { preferenceDescription },
-        token,
-      ),
+      generateItineraryPreview(publicId, { preferenceDescription }, token),
     );
   }
 
@@ -345,9 +338,7 @@ export function TripDetailView({ publicId }: TripDetailViewProps) {
       <section
         className="h-[360px] min-w-0 border-t border-border bg-muted/20 md:h-[440px] xl:h-auto xl:min-h-0 xl:border-t-0 xl:border-l"
         aria-label={
-          section === "overview"
-            ? "Bản đồ điểm xuất phát"
-            : "Bản đồ hành trình"
+          section === "overview" ? "Bản đồ điểm xuất phát" : "Bản đồ hành trình"
         }
       >
         {section === "overview" ? (

@@ -33,9 +33,7 @@ export function PlaceDetailView({ place }: PlaceDetailViewProps) {
 
       <Card asChild>
         <section className="grid grid-cols-[minmax(280px,0.85fr)_1.25fr] items-center gap-[clamp(28px,6vw,72px)] rounded-mint-md border border-border/50 bg-card p-[clamp(24px,5vw,56px)] shadow-mint-sm ring-0 max-md:grid-cols-1 max-md:gap-6 max-md:p-4">
-          <div
-            className="relative grid aspect-[4/3] place-items-center overflow-hidden rounded-mint-md bg-primary-soft text-primary-strong"
-          >
+          <div className="relative grid aspect-[4/3] place-items-center overflow-hidden rounded-mint-md bg-primary-soft text-primary-strong">
             {place.primaryImageUrl ? (
               <Image
                 src={place.primaryImageUrl}
@@ -95,9 +93,7 @@ export function PlaceDetailView({ place }: PlaceDetailViewProps) {
         <div className="grid gap-6">
           <Card asChild>
             <section className={detailCardClassName}>
-              <h2 className="mt-0 mb-3.5 text-2xl font-bold">
-                Về địa điểm
-              </h2>
+              <h2 className="mt-0 mb-3.5 text-2xl font-bold">Về địa điểm</h2>
               <p className="m-0 leading-[1.8] text-text-secondary">
                 {place.fullDescription ??
                   place.shortDescription ??

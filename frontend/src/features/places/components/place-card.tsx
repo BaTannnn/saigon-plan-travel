@@ -60,7 +60,8 @@ export function PlaceCard({
               type="button"
               className={cn(
                 "size-10 shrink-0 rounded-full border-0 bg-primary-soft text-primary",
-                selected && "bg-primary text-primary-foreground hover:bg-primary-strong",
+                selected &&
+                  "bg-primary text-primary-foreground hover:bg-primary-strong",
               )}
               onClick={() => onSelect(place.slug)}
               aria-pressed={selected}

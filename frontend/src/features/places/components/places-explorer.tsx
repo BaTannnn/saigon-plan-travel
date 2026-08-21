@@ -68,12 +68,7 @@ export function PlacesExplorer({
           <h1 className="m-0 mb-[18px] max-w-[520px] text-[clamp(1.65rem,2.2vw,2.35rem)] leading-[1.16] font-bold tracking-[-0.045em] max-md:mb-3.5 max-md:text-[1.65rem]">
             Hôm nay bạn muốn khám phá đâu?
           </h1>
-          <Button
-            asChild
-            className="w-full gap-2.5"
-            variant="accent"
-            size="lg"
-          >
+          <Button asChild className="w-full gap-2.5" variant="accent" size="lg">
             <Link href="/trips/new">
               <CalendarIcon />
               Tạo chuyến đi

@@ -1,11 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import {
-  ArrowRight,
-  CalendarDays,
-  Map,
-  Plus,
-} from "lucide-react";
+import { ArrowRight, CalendarDays, Map, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const steps = [
@@ -123,17 +118,26 @@ export function ExploreLanding() {
           <nav aria-label="Điều hướng chân trang">
             <ul className="m-0 flex list-none flex-wrap gap-x-6 gap-y-3 p-0 text-sm font-semibold">
               <li>
-                <Link className="text-text-secondary transition-colors hover:text-primary" href="/places">
+                <Link
+                  className="text-text-secondary transition-colors hover:text-primary"
+                  href="/places"
+                >
                   Khám phá
                 </Link>
               </li>
               <li>
-                <Link className="text-text-secondary transition-colors hover:text-primary" href="/trips">
+                <Link
+                  className="text-text-secondary transition-colors hover:text-primary"
+                  href="/trips"
+                >
                   Chuyến đi
                 </Link>
               </li>
               <li>
-                <Link className="text-text-secondary transition-colors hover:text-primary" href="/trips/new">
+                <Link
+                  className="text-text-secondary transition-colors hover:text-primary"
+                  href="/trips/new"
+                >
                   Tạo chuyến đi
                 </Link>
               </li>

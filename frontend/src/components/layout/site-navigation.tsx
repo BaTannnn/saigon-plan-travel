@@ -15,8 +15,7 @@ const navigationItems = [
     href: "/trips",
     label: "Chuyến đi",
     active: (pathname: string) =>
-      pathname === "/trips" ||
-      pathname.startsWith("/trips/"),
+      pathname === "/trips" || pathname.startsWith("/trips/"),
   },
 ];
 

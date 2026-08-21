@@ -9,11 +9,7 @@ import {
   WalletCards,
 } from "lucide-react";
 import Image from "next/image";
-import {
-  formatCurrency,
-  formatDistance,
-  formatTime,
-} from "@/lib/formatters";
+import { formatCurrency, formatDistance, formatTime } from "@/lib/formatters";
 import type { ItineraryItemResponse } from "@/types/itinerary";
 
 type ItineraryTimelineProps = {
@@ -90,10 +86,7 @@ function ItineraryItemCard({
               {item.place.name}
             </strong>
             <span className="mt-1 flex items-center gap-1 text-[0.8rem] leading-5 font-semibold text-text-primary tabular-nums">
-              <Clock3
-                className="size-3.5 text-primary"
-                aria-hidden="true"
-              />
+              <Clock3 className="size-3.5 text-primary" aria-hidden="true" />
               {formatTime(item.schedule.visitStartTime)} –{" "}
               {formatTime(item.schedule.visitEndTime)}
             </span>

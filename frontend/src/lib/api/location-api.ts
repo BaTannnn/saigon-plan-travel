@@ -5,8 +5,7 @@ const DEFAULT_BROWSER_BACKEND_URL = "http://localhost:8080";
 
 function getBrowserBackendBaseUrl() {
   return (
-    process.env.NEXT_PUBLIC_BACKEND_API_BASE_URL ??
-    DEFAULT_BROWSER_BACKEND_URL
+    process.env.NEXT_PUBLIC_BACKEND_API_BASE_URL ?? DEFAULT_BROWSER_BACKEND_URL
   ).replace(/\/$/, "");
 }
 

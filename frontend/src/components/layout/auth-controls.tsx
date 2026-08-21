@@ -37,7 +37,8 @@ export function AuthControls() {
     );
   }
 
-  const initial = user.displayName.trim().charAt(0).toLocaleUpperCase("vi") || "U";
+  const initial =
+    user.displayName.trim().charAt(0).toLocaleUpperCase("vi") || "U";
 
   function handleLogout() {
     logout();
@@ -59,7 +60,9 @@ export function AuthControls() {
           {initial}
         </AvatarFallback>
       </Avatar>
-      <span className="max-w-32 truncate max-md:hidden">{user.displayName}</span>
+      <span className="max-w-32 truncate max-md:hidden">
+        {user.displayName}
+      </span>
       <Button
         className="px-2.5 text-xs max-md:px-2"
         type="button"

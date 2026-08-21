@@ -42,9 +42,7 @@ function formatDuration(startTime: string, endTime: string) {
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
 
-  return minutes === 0
-    ? `${hours} giờ`
-    : `${hours} giờ ${minutes} phút`;
+  return minutes === 0 ? `${hours} giờ` : `${hours} giờ ${minutes} phút`;
 }
 
 function OverviewStat({
@@ -105,7 +103,10 @@ export function TripReview({
               {trip.endTime}
             </time>
           </div>
-          <div className="mt-4 h-2.5 w-full rounded-full bg-primary" aria-hidden="true" />
+          <div
+            className="mt-4 h-2.5 w-full rounded-full bg-primary"
+            aria-hidden="true"
+          />
         </div>
       </header>
 
@@ -127,7 +128,10 @@ export function TripReview({
         </div>
       </section>
 
-      <section className="grid grid-cols-1 border-b border-border sm:grid-cols-3" aria-label="Thông tin chuyến đi">
+      <section
+        className="grid grid-cols-1 border-b border-border sm:grid-cols-3"
+        aria-label="Thông tin chuyến đi"
+      >
         <OverviewStat
           className="py-6 sm:pr-6"
           label="Ngân sách"

@@ -79,9 +79,7 @@ export function ItineraryView({
 
   async function handleDelete(itemPublicId: string, placeName: string) {
     setOpenMenuId(null);
-    const confirmed = window.confirm(
-      `Xóa “${placeName}” khỏi hành trình?`,
-    );
+    const confirmed = window.confirm(`Xóa “${placeName}” khỏi hành trình?`);
     if (!confirmed) return;
 
     try {
@@ -231,7 +229,8 @@ export function ItineraryView({
                     Hành trình đang trống
                   </h3>
                   <p className="mt-2 mb-0 text-sm leading-6 text-text-secondary">
-                    Thêm địa điểm đầu tiên để bắt đầu xây dựng chuyến đi của bạn.
+                    Thêm địa điểm đầu tiên để bắt đầu xây dựng chuyến đi của
+                    bạn.
                   </p>
                   <Button
                     type="button"

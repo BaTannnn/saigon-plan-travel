@@ -57,9 +57,6 @@ export function createPlacesHref(
 
 export function hasActiveFilters(filters: PlacesSearchFilters) {
   return Boolean(
-    filters.keyword ||
-      filters.category ||
-      filters.indoor ||
-      filters.maxCost,
+    filters.keyword || filters.category || filters.indoor || filters.maxCost,
   );
 }

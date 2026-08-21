@@ -5,11 +5,7 @@ import {
   ItineraryIssues,
   ItinerarySummary,
 } from "@/features/itinerary/components/itinerary-insights";
-import {
-  formatCurrency,
-  formatDistance,
-  formatTime,
-} from "@/lib/formatters";
+import { formatCurrency, formatDistance, formatTime } from "@/lib/formatters";
 import type { ItineraryGenerationPreviewResponse } from "@/types/itinerary";
 
 type ItineraryGenerationPreviewProps = {

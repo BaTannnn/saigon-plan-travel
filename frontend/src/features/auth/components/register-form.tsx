@@ -28,7 +28,9 @@ export function RegisterForm() {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [confirmPasswordError, setConfirmPasswordError] = useState<string | null>(null);
+  const [confirmPasswordError, setConfirmPasswordError] = useState<
+    string | null
+  >(null);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -109,7 +111,10 @@ export function RegisterForm() {
           aria-describedby="register-password-hint"
           disabled={pending}
         />
-        <p id="register-password-hint" className="m-0 text-xs text-text-secondary">
+        <p
+          id="register-password-hint"
+          className="m-0 text-xs text-text-secondary"
+        >
           Sử dụng từ 8 đến 64 ký tự.
         </p>
       </div>

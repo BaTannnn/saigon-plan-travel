@@ -78,9 +78,7 @@ export function ItineraryGenerationSheet({
       return;
     }
 
-    const placeSlugs = generationPreview.stops.map(
-      (stop) => stop.place.slug,
-    );
+    const placeSlugs = generationPreview.stops.map((stop) => stop.place.slug);
 
     setApplyLoading(true);
     setApplyError(null);
@@ -121,9 +119,7 @@ export function ItineraryGenerationSheet({
         }
       >
         <DialogHeader className="border-b border-border pb-5">
-          <DialogTitle>
-            Tạo hành trình tự động
-          </DialogTitle>
+          <DialogTitle>Tạo hành trình tự động</DialogTitle>
           <DialogDescription>
             {generationPreview
               ? "Đây là bản đề xuất, chưa thay đổi hành trình hiện tại."
