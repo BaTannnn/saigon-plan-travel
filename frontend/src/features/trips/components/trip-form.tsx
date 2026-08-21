@@ -476,12 +476,35 @@ export function TripForm({
               <SearchIcon />
               {searchState === "loading" ? "Đang tìm…" : "Tìm"}
             </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={useCurrentLocation}
+              disabled={
+                pending ||
+                locationState === "locating" ||
+                searchState === "loading"
+              }
+            >
+              <PinIcon />
+              {locationState === "locating"
+                ? "Đang lấy vị trí…"
+                : "Dùng vị trí của tôi"}
+            </Button>
             {searchState === "loading" ? (
               <p className="m-0 text-sm text-text-secondary" role="status">
                 Đang tìm tối đa 5 kết quả phù hợp…
               </p>
             ) : null}
           </div>
+          {locationMessage ? (
+            <p
+              className={`m-0 text-sm ${locationState === "error" ? "text-destructive" : "text-primary-strong"}`}
+              role={locationState === "error" ? "alert" : "status"}
+            >
+              {locationMessage}
+            </p>
+          ) : null}
           {searchMessage ? (
             <p
               className={`m-0 text-sm ${searchState === "error" ? "text-destructive" : "text-text-secondary"}`}
@@ -551,27 +574,6 @@ export function TripForm({
           ) : null}
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={useCurrentLocation}
-            disabled={
-              pending || locationState === "locating" || searchState === "loading"
-            }
-          >
-            <PinIcon />
-            {locationState === "locating" ? "Đang lấy vị trí…" : "Dùng vị trí của tôi"}
-          </Button>
-          {locationMessage ? (
-            <p
-              className={`m-0 text-sm ${locationState === "error" ? "text-destructive" : "text-primary-strong"}`}
-              role={locationState === "error" ? "alert" : "status"}
-            >
-              {locationMessage}
-            </p>
-          ) : null}
-        </div>
       </section>
 
       <section className="grid gap-5 border-b border-border py-6">

@@ -35,14 +35,15 @@ export function TripMonthToolbar({
 }: TripMonthToolbarProps) {
   return (
     <div
-      className="flex flex-wrap items-center gap-2"
+      className="inline-flex h-11 w-fit max-w-full items-center rounded-full border border-border/80 bg-card px-1 shadow-mint-sm"
       role="group"
       aria-label="Chọn tháng xem chuyến đi"
     >
       <Button
         type="button"
-        variant="outline"
+        variant="ghost"
         size="icon-sm"
+        className="rounded-full text-text-secondary hover:bg-primary-soft/60 hover:text-primary-strong"
         disabled={previousDisabled}
         onClick={onPreviousMonth}
         aria-label="Xem tháng trước"
@@ -54,7 +55,10 @@ export function TripMonthToolbar({
         value={String(month)}
         onValueChange={(value) => onMonthChange(Number(value))}
       >
-        <SelectTrigger className="h-10 min-w-28 bg-card" aria-label="Tháng">
+        <SelectTrigger
+          className="h-10 w-24 justify-center gap-2 rounded-none border-0 bg-transparent px-2 font-semibold text-text-primary shadow-none focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-ring/35"
+          aria-label="Tháng"
+        >
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -68,11 +72,16 @@ export function TripMonthToolbar({
         </SelectContent>
       </Select>
 
+      <span className="h-6 w-px shrink-0 bg-border" aria-hidden="true" />
+
       <Select
         value={String(year)}
         onValueChange={(value) => onYearChange(Number(value))}
       >
-        <SelectTrigger className="h-10 min-w-24 bg-card" aria-label="Năm">
+        <SelectTrigger
+          className="h-10 w-20 justify-center gap-2 rounded-none border-0 bg-transparent px-2 font-semibold text-text-primary shadow-none focus-visible:border-transparent focus-visible:ring-2 focus-visible:ring-ring/35"
+          aria-label="Năm"
+        >
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -86,8 +95,9 @@ export function TripMonthToolbar({
 
       <Button
         type="button"
-        variant="outline"
+        variant="ghost"
         size="icon-sm"
+        className="rounded-full text-text-secondary hover:bg-primary-soft/60 hover:text-primary-strong"
         disabled={nextDisabled}
         onClick={onNextMonth}
         aria-label="Xem tháng sau"

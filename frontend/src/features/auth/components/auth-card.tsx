@@ -1,6 +1,6 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
-import { PinIcon } from "@/components/ui/icons";
 
 type AuthCardProps = {
   title: string;
@@ -22,9 +22,13 @@ export function AuthCard({
       <Card className="w-full max-w-[440px] border border-border/50 bg-card p-7 sm:p-8">
         <div className="mb-7">
           <div className="mb-5 flex items-center gap-2 text-primary">
-            <span className="grid size-8 place-items-center rounded-md bg-primary-soft">
-              <PinIcon className="size-4" />
-            </span>
+            <Image
+              src="/saigonplantravel-logo-icon.svg"
+              alt=""
+              width={32}
+              height={32}
+              className="size-8 shrink-0"
+            />
             <span className="text-sm font-bold tracking-[-0.02em]">
               SaigonPlanTravel
             </span>

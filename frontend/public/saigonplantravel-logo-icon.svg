@@ -1,0 +1,9 @@
+<svg viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">SaigonPlanTravel icon</title>
+  <desc id="desc">A winding route line ending in a pin dot, on a white rounded background.</desc>
+
+  <rect x="0" y="0" width="96" height="96" rx="22" fill="#FFFFFF" />
+  <path d="M22,76 C22,52 56,52 56,38 C56,24 78,24 78,10"
+        fill="none" stroke="#0E4C86" stroke-width="10" stroke-linecap="round" />
+  <circle cx="78" cy="10" r="9" fill="#2FA8E0" />
+</svg>

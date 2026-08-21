@@ -10,7 +10,7 @@ const PlaceMap = dynamic(
     ssr: false,
     loading: () => (
       <Skeleton
-        className="flex size-full items-center justify-center gap-2.5 bg-[linear-gradient(135deg,var(--primary-soft),var(--background))] text-primary-strong"
+        className="flex size-full items-center justify-center gap-2.5 bg-primary-soft text-primary-strong"
         role="status"
       >
         <span className="size-6 animate-spin rounded-full border-[3px] border-border border-t-primary motion-reduce:animate-none" />

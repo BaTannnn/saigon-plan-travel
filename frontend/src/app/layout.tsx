@@ -17,6 +17,15 @@ export const metadata: Metadata = {
   },
   description:
     "Khám phá địa điểm và lưu sở thích chuyến đi tại Thành phố Hồ Chí Minh.",
+  icons: {
+    icon: [
+      {
+        url: "/saigonplantravel-logo-icon.svg",
+        type: "image/svg+xml",
+      },
+    ],
+    shortcut: "/saigonplantravel-logo-icon.svg",
+  },
 };
 
 export default function RootLayout({

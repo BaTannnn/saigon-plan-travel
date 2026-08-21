@@ -51,7 +51,7 @@ export function AuthControls() {
       aria-label={`Người dùng ${user.displayName}`}
     >
       <Avatar
-        className="size-[42px] border border-border bg-[linear-gradient(145deg,var(--primary-soft),var(--surface))] text-primary-strong max-md:size-[38px]"
+        className="size-[42px] border border-border bg-primary-soft text-primary-strong max-md:size-[38px]"
         size="lg"
         aria-hidden="true"
       >

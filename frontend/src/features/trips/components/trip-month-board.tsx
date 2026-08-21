@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -93,7 +94,10 @@ function TripEntry({
             <MoreHorizontal aria-hidden="true" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent
+          align="end"
+          className={variant === "popover" ? "z-[1100]" : undefined}
+        >
           <DropdownMenuItem destructive onSelect={() => onDelete(trip)}>
             <Trash2 aria-hidden="true" />
             Xóa chuyến đi
@@ -117,13 +121,15 @@ function TripDayPopover({
   trips: TripSummaryResponse[];
   onDelete: (trip: TripSummaryResponse) => void;
 }) {
+  const [open, setOpen] = useState(false);
+
   return (
     <div className="flex items-center justify-between gap-3">
       <p className="m-0 text-sm font-bold text-text-primary">
         {trips.length} chuyến đi
       </p>
 
-      <Popover>
+      <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
             type="button"
@@ -157,7 +163,10 @@ function TripDayPopover({
               <TripEntry
                 key={trip.publicId}
                 trip={trip}
-                onDelete={onDelete}
+                onDelete={(selectedTrip) => {
+                  setOpen(false);
+                  onDelete(selectedTrip);
+                }}
                 variant="popover"
               />
             ))}
