@@ -191,7 +191,7 @@ class PlaceRepositoryTest {
     void administrationCanListAndOpenInactivePlaceWhilePublicQueriesStillHideIt() {
         PlaceSearchRequest request = searchRequest(null, null, null, null, 0, 100);
 
-        PageResponse<AdminPlaceSummaryResponse> adminPlaces = placeService.getPlacesForAdministration(0, 100);
+        PageResponse<AdminPlaceSummaryResponse> adminPlaces = placeService.getPlacesForAdministration(null, 0, 100);
         AdminPlaceDetailResponse inactivePlace =
                 placeService.getPlaceDetailForAdministrationBySlug("demo-temporarily-hidden-place");
         PageResponse<PlaceSummaryResponse> publicPlaces = placeService.searchPlaces(request);
@@ -206,6 +206,61 @@ class PlaceRepositoryTest {
                 .doesNotContain("demo-temporarily-hidden-place");
         assertThatThrownBy(() -> placeService.getPlaceDetailBySlug("demo-temporarily-hidden-place"))
                 .hasMessage("Place not found");
+    }
+
+    @Test
+    @Transactional
+    void administrationSearchesNameSlugAndAddressAcrossAllStatuses() {
+        insertSearchPlace("admin-name-match", "Dinh Độc Lập Admin", null, null, "Unrelated address", true);
+        insertSearchPlace("admin-slug-match-target", "Unrelated Slug Name", null, null, "Other address", true);
+        insertSearchPlace(
+                "admin-inactive-address-match",
+                "Inactive Admin Place",
+                null,
+                null,
+                "Đường Nam Kỳ Khởi Nghĩa Admin",
+                false);
+
+        assertThat(placeService.getPlacesForAdministration("DINH DOC LAP", 0, 100).content())
+                .extracting(AdminPlaceSummaryResponse::slug)
+                .containsExactly("admin-name-match");
+        assertThat(placeService.getPlacesForAdministration("slug-match-target", 0, 100).content())
+                .extracting(AdminPlaceSummaryResponse::slug)
+                .containsExactly("admin-slug-match-target");
+        assertThat(placeService.getPlacesForAdministration("nam ky khoi nghia admin", 0, 100).content())
+                .singleElement()
+                .satisfies(place -> {
+                    assertThat(place.slug()).isEqualTo("admin-inactive-address-match");
+                    assertThat(place.active()).isFalse();
+                });
+    }
+
+    @Test
+    @Transactional
+    void administrationSearchKeepsTotalCountAndStableOrderingAcrossPages() {
+        for (int index = 0; index < 23; index++) {
+            insertSearchPlace(
+                    "admin-pagination-" + index,
+                    "Admin pagination place %02d".formatted(index),
+                    null,
+                    null,
+                    "Unique admin pagination target",
+                    index % 2 == 0);
+        }
+
+        PageResponse<AdminPlaceSummaryResponse> firstPage =
+                placeService.getPlacesForAdministration("admin pagination target", 0, 10);
+        PageResponse<AdminPlaceSummaryResponse> secondPage =
+                placeService.getPlacesForAdministration("admin pagination target", 1, 10);
+
+        assertThat(firstPage.totalElements()).isEqualTo(23);
+        assertThat(firstPage.totalPages()).isEqualTo(3);
+        assertThat(firstPage.content()).hasSize(10).extracting(AdminPlaceSummaryResponse::name).isSorted();
+        assertThat(secondPage.content()).hasSize(10).extracting(AdminPlaceSummaryResponse::name).isSorted();
+        assertThat(firstPage.content())
+                .extracting(AdminPlaceSummaryResponse::id)
+                .doesNotContainAnyElementsOf(
+                        secondPage.content().stream().map(AdminPlaceSummaryResponse::id).toList());
     }
 
     @Test

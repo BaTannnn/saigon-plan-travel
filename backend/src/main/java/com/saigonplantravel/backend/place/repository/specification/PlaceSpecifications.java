@@ -43,15 +43,29 @@ public final class PlaceSpecifications {
         };
     }
 
+    public static Specification<Place> adminKeyword(String keyword) {
+        return (root, query, criteriaBuilder) -> {
+            Expression<String> pattern = normalizedPattern(criteriaBuilder, keyword);
+            return criteriaBuilder.or(
+                    literalSubstring(criteriaBuilder, root.get("name"), pattern),
+                    literalSubstring(criteriaBuilder, root.get("slug"), pattern),
+                    literalSubstring(criteriaBuilder, root.get("address"), pattern));
+        };
+    }
+
     private static Predicate keywordPredicate(Root<Place> root, CriteriaBuilder criteriaBuilder, String keyword) {
-        String escapedKeyword = PlaceSearchNormalizer.escapeLikePattern(keyword.toLowerCase(Locale.ROOT));
-        Expression<String> pattern = normalizedLiteral(criteriaBuilder, "%" + escapedKeyword + "%");
+        Expression<String> pattern = normalizedPattern(criteriaBuilder, keyword);
 
         return criteriaBuilder.or(
                 literalSubstring(criteriaBuilder, root.get("name"), pattern),
                 literalSubstring(criteriaBuilder, root.get("shortDescription"), pattern),
                 literalSubstring(criteriaBuilder, root.get("fullDescription"), pattern),
                 literalSubstring(criteriaBuilder, root.get("address"), pattern));
+    }
+
+    private static Expression<String> normalizedPattern(CriteriaBuilder criteriaBuilder, String keyword) {
+        String escapedKeyword = PlaceSearchNormalizer.escapeLikePattern(keyword.toLowerCase(Locale.ROOT));
+        return normalizedLiteral(criteriaBuilder, "%" + escapedKeyword + "%");
     }
 
     private static Predicate literalSubstring(

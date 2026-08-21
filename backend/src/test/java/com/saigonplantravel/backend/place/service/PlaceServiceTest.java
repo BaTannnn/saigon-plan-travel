@@ -169,7 +169,8 @@ class PlaceServiceTest {
         when(placeMapper.toAdminSummaryResponse(place)).thenReturn(summary);
 
         PageResponse<AdminPlaceSummaryResponse> response =
-                new PlaceService(placeRepository, categoryRepository, placeMapper).getPlacesForAdministration(0, 20);
+                new PlaceService(placeRepository, categoryRepository, placeMapper)
+                        .getPlacesForAdministration("   ", 0, 20);
 
         assertThat(response.content()).containsExactly(summary);
         assertThat(response.content().getFirst().active()).isFalse();
@@ -179,6 +180,43 @@ class PlaceServiceTest {
         verify(placeRepository).findAll(pageableCaptor.capture());
         assertThat(pageableCaptor.getValue().getPageNumber()).isZero();
         assertThat(pageableCaptor.getValue().getPageSize()).isEqualTo(20);
+        assertThat(pageableCaptor.getValue().getSort().toString()).isEqualTo("name: ASC,id: ASC");
+    }
+
+    @Test
+    void searchesAdministrationWithSpecificationAndStablePagination() {
+        Place place = mock(Place.class);
+        AdminPlaceSummaryResponse summary = new AdminPlaceSummaryResponse(
+                1L,
+                "Matching Place",
+                "matching-place",
+                null,
+                new BigDecimal("10.0000000"),
+                new BigDecimal("106.0000000"),
+                60,
+                BigDecimal.ZERO,
+                new BigDecimal("100000.00"),
+                true,
+                false);
+        when(placeRepository.findAll(
+                        org.mockito.ArgumentMatchers.<Specification<Place>>any(),
+                        org.mockito.ArgumentMatchers.any(Pageable.class)))
+                .thenAnswer(invocation -> {
+                    Pageable pageable = invocation.getArgument(1);
+                    return new PageImpl<>(List.of(place), pageable, 1);
+                });
+        when(placeMapper.toAdminSummaryResponse(place)).thenReturn(summary);
+
+        PageResponse<AdminPlaceSummaryResponse> response =
+                new PlaceService(placeRepository, categoryRepository, placeMapper)
+                        .getPlacesForAdministration("  MATCHING   PLACE ", 2, 10);
+
+        assertThat(response.content()).containsExactly(summary);
+        ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
+        verify(placeRepository)
+                .findAll(org.mockito.ArgumentMatchers.<Specification<Place>>any(), pageableCaptor.capture());
+        assertThat(pageableCaptor.getValue().getPageNumber()).isEqualTo(2);
+        assertThat(pageableCaptor.getValue().getPageSize()).isEqualTo(10);
         assertThat(pageableCaptor.getValue().getSort().toString()).isEqualTo("name: ASC,id: ASC");
     }
 

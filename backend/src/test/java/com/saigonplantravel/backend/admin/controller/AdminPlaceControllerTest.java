@@ -66,7 +66,7 @@ class AdminPlaceControllerTest {
                 3,
                 false,
                 true);
-        when(placeService.getPlacesForAdministration(2, 10)).thenReturn(page);
+        when(placeService.getPlacesForAdministration(null, 2, 10)).thenReturn(page);
 
         mockMvc.perform(get("/admin/places").param("page", "2").param("size", "10"))
                 .andExpect(status().isOk())
@@ -74,19 +74,49 @@ class AdminPlaceControllerTest {
                 .andExpect(model().attribute("placesPage", page))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Demo Place")));
 
-        verify(placeService).getPlacesForAdministration(2, 10);
+        verify(placeService).getPlacesForAdministration(null, 2, 10);
     }
 
     @Test
     void usesDefaultPaginationForPlaceList() throws Exception {
         PageResponse<AdminPlaceSummaryResponse> page = new PageResponse<>(List.of(), 0, 20, 0, 0, true, true);
-        when(placeService.getPlacesForAdministration(0, 20)).thenReturn(page);
+        when(placeService.getPlacesForAdministration(null, 0, 20)).thenReturn(page);
 
         mockMvc.perform(get("/admin/places"))
                 .andExpect(status().isOk())
                 .andExpect(model().attribute("placesPage", page));
 
-        verify(placeService).getPlacesForAdministration(0, 20);
+        verify(placeService).getPlacesForAdministration(null, 0, 20);
+    }
+
+    @Test
+    void normalizesKeywordAndPreservesItInPaginationLinks() throws Exception {
+        PageResponse<AdminPlaceSummaryResponse> page = new PageResponse<>(List.of(), 1, 10, 25, 3, false, false);
+        when(placeService.getPlacesForAdministration("Bảo tàng", 1, 10)).thenReturn(page);
+
+        mockMvc.perform(get("/admin/places")
+                        .param("keyword", "  Bảo   tàng  ")
+                        .param("page", "1")
+                        .param("size", "10"))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("keyword", "Bảo tàng"))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("No places match your search.")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("keyword=B%E1%BA%A3o%20t%C3%A0ng")));
+
+        verify(placeService).getPlacesForAdministration("Bảo tàng", 1, 10);
+    }
+
+    @Test
+    void treatsBlankKeywordAsNoSearch() throws Exception {
+        PageResponse<AdminPlaceSummaryResponse> page = new PageResponse<>(List.of(), 0, 20, 0, 0, true, true);
+        when(placeService.getPlacesForAdministration(null, 0, 20)).thenReturn(page);
+
+        mockMvc.perform(get("/admin/places").param("keyword", "   "))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("keyword", org.hamcrest.Matchers.nullValue()))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("No places found.")));
+
+        verify(placeService).getPlacesForAdministration(null, 0, 20);
     }
 
     @Test
@@ -96,7 +126,9 @@ class AdminPlaceControllerTest {
 
         verify(placeService, never())
                 .getPlacesForAdministration(
-                        org.mockito.ArgumentMatchers.anyInt(), org.mockito.ArgumentMatchers.anyInt());
+                        org.mockito.ArgumentMatchers.any(),
+                        org.mockito.ArgumentMatchers.anyInt(),
+                        org.mockito.ArgumentMatchers.anyInt());
     }
 
     @Test

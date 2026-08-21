@@ -9,6 +9,7 @@ import com.saigonplantravel.backend.place.dto.admin.PlaceCreateRequest;
 import com.saigonplantravel.backend.place.dto.admin.PlaceUpdateRequest;
 import com.saigonplantravel.backend.place.exception.PlaceImageException;
 import com.saigonplantravel.backend.place.exception.PlaceSlugAlreadyExistsException;
+import com.saigonplantravel.backend.place.search.PlaceSearchNormalizer;
 import com.saigonplantravel.backend.place.service.PlaceImageService;
 import com.saigonplantravel.backend.place.service.PlaceService;
 import jakarta.validation.Valid;
@@ -38,11 +39,15 @@ public class AdminPlaceController {
 
     @GetMapping("/places")
     String placesPage(
+            @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size,
             Model model) {
-        PageResponse<AdminPlaceSummaryResponse> placesPage = placeService.getPlacesForAdministration(page, size);
+        String normalizedKeyword = PlaceSearchNormalizer.normalizeText(keyword);
+        PageResponse<AdminPlaceSummaryResponse> placesPage =
+                placeService.getPlacesForAdministration(normalizedKeyword, page, size);
         model.addAttribute("placesPage", placesPage);
+        model.addAttribute("keyword", normalizedKeyword);
         return "admin/places/list";
     }
 
