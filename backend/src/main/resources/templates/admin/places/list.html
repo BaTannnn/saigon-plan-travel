@@ -69,7 +69,7 @@
                       th:text="${place.active ? 'Active' : 'Inactive'}">Active</span>
             </td>
             <td><a class="btn btn-sm btn-outline-primary"
-                   th:href="@{/admin/places/{slug}/edit(slug=${place.slug})}">Edit</a></td>
+                   th:href="@{/admin/places/{slug}(slug=${place.slug})}">Manage</a></td>
         </tr>
         </tbody>
         </table>

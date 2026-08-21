@@ -72,7 +72,11 @@ class AdminPlaceControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("admin/places/list"))
                 .andExpect(model().attribute("placesPage", page))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Demo Place")));
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Demo Place")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString(">Manage</a>")))
+                .andExpect(content()
+                        .string(org.hamcrest.Matchers.not(
+                                org.hamcrest.Matchers.containsString("/admin/places/demo-place/edit"))));
 
         verify(placeService).getPlacesForAdministration(null, 2, 10);
     }
