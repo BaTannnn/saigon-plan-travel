@@ -24,7 +24,9 @@ spring:
     clients:
       connect-timeout: 2s
       read-timeout: 10s
-
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
 management:
   endpoints:
     web:
