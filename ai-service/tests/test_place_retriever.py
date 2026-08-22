@@ -1,6 +1,5 @@
 import unittest
 
-from app.rag.knowledge_repository import SearchResult
 from app.recommendation.place_retriever import select_unique_candidate_chunks
 
 

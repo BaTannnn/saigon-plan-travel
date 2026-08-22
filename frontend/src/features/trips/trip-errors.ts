@@ -5,11 +5,6 @@ export type TripFormFeedback = {
   fieldErrors: Record<string, string>;
 };
 
-function normalizeFieldName(field: string) {
-  if (field.startsWith("startLocation.")) return field;
-  return field;
-}
-
 export function getTripFormFeedback(error: unknown): TripFormFeedback {
   if (!(error instanceof ApiError)) {
     return {
@@ -27,10 +22,7 @@ export function getTripFormFeedback(error: unknown): TripFormFeedback {
   }
 
   const fieldErrors = Object.fromEntries(
-    (error.problem?.fieldErrors ?? []).map((item) => [
-      normalizeFieldName(item.field),
-      item.message,
-    ]),
+    (error.problem?.fieldErrors ?? []).map((item) => [item.field, item.message]),
   );
 
   return {

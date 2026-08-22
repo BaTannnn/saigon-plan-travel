@@ -37,7 +37,7 @@ public class ItineraryRecalculationService {
         return new CalculatedItinerary(plan, issues);
     }
 
-    public ItineraryPlan calculatePlan(Trip trip, List<Place> orderedPlaces) {
+    private ItineraryPlan calculatePlan(Trip trip, List<Place> orderedPlaces) {
 
         List<ScheduledStop> stops = new ArrayList<>();
 
