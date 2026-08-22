@@ -1,0 +1,46 @@
+{
+  "placeSlug": "duong-sach-nguyen-van-binh",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Đường sách Thành phố Hồ Chí Minh trên đường Nguyễn Văn Bình là một không gian văn hóa dành cho sách, hoạt động đọc và giao lưu cộng đồng ở khu trung tâm thành phố. Nơi đây tập hợp các gian sách và hoạt động liên quan đến xuất bản, tạo một điểm dừng phù hợp cho người yêu sách, gia đình hoặc du khách muốn có trải nghiệm nhẹ nhàng giữa các địa danh trung tâm.",
+      "source": {
+        "label": "Đường Sách TP.HCM - Trang chính thức",
+        "uri": "https://duongsachtphcm.com/",
+        "retrievedAt": "2026-08-22"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Đường sách Thành phố Hồ Chí Minh chính thức đi vào hoạt động ngày 9 tháng 1 năm 2016 trên đường Nguyễn Văn Bình. Công trình được hình thành như một không gian hoạt động về sách cố định và lâu dài, hướng đến phát triển văn hóa đọc và tạo nơi kết nối giữa người làm sách, đơn vị xuất bản, bạn đọc và cộng đồng thành phố.",
+      "source": {
+        "label": "VietnamPlus - Đường sách Thành phố Hồ Chí Minh lan tỏa văn hóa đọc",
+        "uri": "https://www.vietnamplus.vn/duong-sach-thanh-pho-ho-chi-minh-lan-toa-van-hoa-doc-post365413.vnp",
+        "retrievedAt": "2026-08-22"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Điểm đặc trưng của Đường sách là sự kết hợp giữa các gian trưng bày và giới thiệu sách với những hoạt động giao lưu tác giả - bạn đọc, tọa đàm, giới thiệu xuất bản phẩm và các sinh hoạt văn hóa liên quan đến sách. Không gian mở trên tuyến Nguyễn Văn Bình cũng giúp địa điểm dễ kết hợp trong hành trình đi bộ với Bưu điện Trung tâm và khu vực Nhà thờ Đức Bà.",
+      "source": {
+        "label": "VOV5 - Đường sách Thành phố Hồ Chí Minh chính thức hoạt động",
+        "uri": "https://vovworld.vn/vi-VN/tin-tuc/duong-sach-thanh-pho-ho-chi-minh-chinh-thuc-hoat-dong-tu-0901-399579.vov",
+        "retrievedAt": "2026-08-22"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Du khách có thể dành thời gian dạo bộ giữa các gian sách, tìm đọc hoặc mua sách, tham dự hoạt động văn hóa khi có chương trình phù hợp và nghỉ chân trong không gian mang tính cộng đồng. Trải nghiệm tại đây thường nhẹ nhàng hơn các điểm tham quan lịch sử lớn, nên thích hợp làm điểm chuyển tiếp hoặc nghỉ giữa một lịch trình đi bộ quanh khu trung tâm.",
+      "source": {
+        "label": "VietnamPlus - Đường sách TP.HCM nơi lan tỏa văn hóa đọc",
+        "uri": "https://www.vietnamplus.vn/duong-sach-thanh-pho-ho-chi-minh-noi-lan-toa-van-hoa-doc-post955921.vnp",
+        "retrievedAt": "2026-08-22"
+      }
+    }
+  ]
+}

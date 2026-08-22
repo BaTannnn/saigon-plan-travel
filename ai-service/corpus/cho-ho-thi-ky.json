@@ -1,0 +1,46 @@
+{
+  "placeSlug": "cho-ho-thi-ky",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Chợ Hồ Thị Kỷ là một khu chợ nổi tiếng của Thành phố Hồ Chí Minh, được biết đến trước hết với hoạt động kinh doanh hoa tươi và sau đó còn thu hút khách nhờ khu vực ẩm thực đường phố. Không gian chợ phù hợp với người muốn quan sát nhịp sống thương mại địa phương, chụp ảnh các quầy hoa nhiều màu sắc và kết hợp khám phá món ăn bình dân.",
+      "source": {
+        "label": "Du lịch Thành phố Hồ Chí Minh - Chợ hoa Hồ Thị Kỷ",
+        "uri": "https://visithcmc.net/news/top-6-khu-cho-lau-doi-nhat-tai-tp-hcm",
+        "retrievedAt": "2026-08-22"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Theo thông tin của Trung tâm Xúc tiến Du lịch Thành phố Hồ Chí Minh, Chợ hoa Hồ Thị Kỷ được hình thành từ năm 1987 và phát triển thành một đầu mối phân phối, buôn bán hoa tươi lớn tại thành phố. Hoạt động chợ gắn với dòng hoa từ nhiều vùng sản xuất, góp phần tạo nên một không gian thương mại chuyên biệt và có nhịp sinh hoạt khác với các chợ tổng hợp truyền thống.",
+      "source": {
+        "label": "Du lịch Thành phố Hồ Chí Minh - Lịch sử Chợ hoa Hồ Thị Kỷ",
+        "uri": "https://visithcmc.net/news/top-6-khu-cho-lau-doi-nhat-tai-tp-hcm",
+        "retrievedAt": "2026-08-22"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Điểm nổi bật của Chợ Hồ Thị Kỷ là các quầy kinh doanh nhiều loại hoa tươi và vật liệu trang trí, tạo nên không gian nhiều màu sắc, giàu yếu tố thị giác. Bên cạnh khu chợ hoa, khu vực này còn được biết đến với nhiều hàng quán và món ăn đường phố, giúp trải nghiệm tại chợ kết hợp giữa mua sắm, quan sát hoạt động giao thương và khám phá ẩm thực địa phương.",
+      "source": {
+        "label": "Du lịch Thành phố Hồ Chí Minh - Chợ đêm Hồ Thị Kỷ",
+        "uri": "https://visithcmc.net/news/kham-pha-9-khu-cho-dem-noi-tieng-o-tphcm",
+        "retrievedAt": "2026-08-22"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Khách tham quan có thể đi bộ trong các lối chợ để quan sát hoạt động mua bán hoa, chụp ảnh và thử các món ăn đường phố ở khu vực lân cận. Đây là trải nghiệm thiên về đời sống địa phương hơn là một điểm tham quan có phòng trưng bày hoặc tuyến cố định. Không gian chợ có thể đông và hoạt động thương mại diễn ra liên tục, vì vậy du khách nên chú ý di chuyển gọn gàng và tránh cản trở người mua bán.",
+      "source": {
+        "label": "Du lịch Thành phố Hồ Chí Minh - Trải nghiệm Chợ Hồ Thị Kỷ",
+        "uri": "https://visithcmc.net/news/kham-pha-9-khu-cho-dem-noi-tieng-o-tphcm",
+        "retrievedAt": "2026-08-22"
+      }
+    }
+  ]
+}

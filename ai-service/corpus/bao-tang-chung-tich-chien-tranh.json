@@ -1,0 +1,46 @@
+{
+  "placeSlug": "bao-tang-chung-tich-chien-tranh",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Bảo tàng Chứng tích Chiến tranh là một bảo tàng chuyên nghiên cứu, sưu tầm, bảo quản và trưng bày tư liệu, hiện vật, hình ảnh và phim về chiến tranh tại Việt Nam trong thời kỳ cận - hiện đại. Bảo tàng định hướng hoạt động giáo dục công chúng về hậu quả chiến tranh, giá trị của hòa bình và tinh thần đoàn kết giữa các dân tộc.",
+      "source": {
+        "label": "Bảo tàng Chứng tích Chiến tranh - Về Bảo tàng",
+        "uri": "https://baotangchungtichchientranh.vn/",
+        "retrievedAt": "2026-08-22"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Bảo tàng được thành lập ngày 4 tháng 9 năm 1975. Theo thông tin giới thiệu chính thức, bảo tàng hiện lưu giữ hơn 20.000 tài liệu, hiện vật, hình ảnh và phim tư liệu được sưu tầm từ nhiều nguồn trong và ngoài nước. Qua quá trình hoạt động, bảo tàng phát triển thành một địa điểm nghiên cứu, giáo dục và tham quan tập trung vào ký ức chiến tranh và thông điệp hòa bình.",
+      "source": {
+        "label": "Bảo tàng Chứng tích Chiến tranh - Tham quan",
+        "uri": "https://baotangchungtichchientranh.vn/vi/tham-quan",
+        "retrievedAt": "2026-08-22"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Nội dung trưng bày của bảo tàng bao gồm nhiều chuyên đề thường xuyên về chiến tranh và hậu quả của chiến tranh, trong đó có các chủ đề về chất độc da cam, tội ác chiến tranh, phong trào quốc tế ủng hộ Việt Nam và các bộ sưu tập ảnh tư liệu. Bảo tàng cũng lưu giữ nhiều nhóm hiện vật như xe tăng, máy bay, bom mìn, thư từ và các tài liệu lịch sử, tạo nên nguồn tư liệu trực quan phong phú cho người tìm hiểu lịch sử Việt Nam hiện đại.",
+      "source": {
+        "label": "Bảo tàng Chứng tích Chiến tranh - Trưng bày",
+        "uri": "https://baotangchungtichchientranh.vn/vi/trung-bay-va-su-kien/trung-bay",
+        "retrievedAt": "2026-08-22"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Khách tham quan có thể khám phá các phòng trưng bày theo từng chủ đề lịch sử, quan sát hiện vật và tư liệu trực quan, đồng thời sử dụng các dịch vụ hỗ trợ như thuyết minh tự động bằng nhiều ngôn ngữ hoặc tham quan theo đoàn. Đây là trải nghiệm phù hợp với người quan tâm lịch sử Việt Nam hiện đại, tư liệu chiến tranh và các chủ đề giáo dục về hòa bình; một số nội dung trưng bày có thể tạo cảm xúc mạnh đối với người xem.",
+      "source": {
+        "label": "Bảo tàng Chứng tích Chiến tranh - Trải nghiệm tham quan",
+        "uri": "https://baotangchungtichchientranh.vn/vi/tham-quan",
+        "retrievedAt": "2026-08-22"
+      }
+    }
+  ]
+}

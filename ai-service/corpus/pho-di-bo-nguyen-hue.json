@@ -1,0 +1,46 @@
+{
+  "placeSlug": "pho-di-bo-nguyen-hue",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Phố đi bộ Nguyễn Huệ là một không gian công cộng nổi bật ở trung tâm Thành phố Hồ Chí Minh, kéo dài hơn 600 mét từ khu vực trụ sở Ủy ban nhân dân Thành phố đến Bến Bạch Đằng. Tuyến phố là nơi người dân và du khách đi bộ, nghỉ ngơi, gặp gỡ và tham gia nhiều hoạt động đô thị, đặc biệt vào buổi tối và các dịp lễ hội.",
+      "source": {
+        "label": "Du lịch Thành phố Hồ Chí Minh - Du lịch Quận 1",
+        "uri": "https://visithcmc.net/en/news/du-lich-quan-1",
+        "retrievedAt": "2026-08-22"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Khu vực đường Nguyễn Huệ có lịch sử lâu đời trong quá trình phát triển đô thị Sài Gòn. Sau khi được tổ chức thành không gian đi bộ hiện đại, tuyến phố trở thành một trục kết nối cảnh quan từ khu vực trung tâm hành chính đến bờ sông Sài Gòn, đồng thời giữ vai trò quan trọng trong các hoạt động cộng đồng và sự kiện văn hóa của thành phố.",
+      "source": {
+        "label": "Du lịch Thành phố Hồ Chí Minh - Phố đi bộ Nguyễn Huệ",
+        "uri": "https://visithcmc.net/news/10-dia-diem-tham-quan-hap-dan-khong-the-bo-qua-khi-den-thanh-pho-ho-chi-minh",
+        "retrievedAt": "2026-08-22"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Hai bên phố đi bộ là các công trình, khách sạn, trung tâm thương mại, nhà hàng và không gian dịch vụ của khu trung tâm. Tuyến phố thường được sử dụng cho các lễ hội, chương trình nghệ thuật và sự kiện công cộng như Đường hoa Nguyễn Huệ hoặc các chương trình đếm ngược năm mới. Không gian mở và trục nhìn hướng về khu trung tâm khiến nơi đây phù hợp cho đi bộ, chụp ảnh và quan sát nhịp sống đô thị.",
+      "source": {
+        "label": "Du lịch Thành phố Hồ Chí Minh - Du lịch Quận 1",
+        "uri": "https://visithcmc.net/en/news/du-lich-quan-1",
+        "retrievedAt": "2026-08-22"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Phố đi bộ Nguyễn Huệ phù hợp với lịch trình nhẹ nhàng vào chiều tối, khi du khách có thể đi bộ, chụp ảnh, quan sát các hoạt động đường phố và kết hợp ăn uống tại khu vực lân cận. Từ đây có thể dễ dàng nối lịch trình với Bến Bạch Đằng, Nhà hát Thành phố và các điểm trung tâm khác. Vào dịp lễ hội hoặc sự kiện lớn, khu vực có thể đông hơn đáng kể so với ngày thường.",
+      "source": {
+        "label": "Du lịch Thành phố Hồ Chí Minh - Phố đi bộ Nguyễn Huệ",
+        "uri": "https://visithcmc.net/news/10-dia-diem-tham-quan-hap-dan-khong-the-bo-qua-khi-den-thanh-pho-ho-chi-minh",
+        "retrievedAt": "2026-08-22"
+      }
+    }
+  ]
+}
