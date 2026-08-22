@@ -6,10 +6,10 @@ import { cn } from "@/lib/utils";
 
 const navigationItems = [
   {
-    href: "/places",
+    href: "/",
     label: "Khám phá",
     active: (pathname: string) =>
-      pathname === "/places" || pathname.startsWith("/places/"),
+      pathname === "/" || pathname.startsWith("/places/"),
   },
   {
     href: "/trips",

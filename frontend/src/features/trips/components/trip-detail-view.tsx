@@ -271,7 +271,7 @@ export function TripDetailView({ publicId }: TripDetailViewProps) {
               <Link href="/trips/new">Tạo chuyến đi mới</Link>
             </Button>
             <Button asChild variant="outline">
-              <Link href="/places">Về khám phá</Link>
+              <Link href="/">Về khám phá</Link>
             </Button>
           </div>
         </Alert>

@@ -42,7 +42,7 @@ export function LoginForm({ registered = false }: { registered?: boolean }) {
         email: String(formData.get("email") ?? ""),
         password: String(formData.get("password") ?? ""),
       });
-      router.push("/places");
+      router.replace("/");
       router.refresh();
     } catch (error) {
       setErrorMessage(loginErrorMessage(error));

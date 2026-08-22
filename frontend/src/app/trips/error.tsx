@@ -25,7 +25,7 @@ export default function TripsError({
         </AlertDescription>
         <div className="mt-5 flex gap-3">
           <Button type="button" onClick={reset}>Thử lại</Button>
-          <Button asChild variant="outline"><Link href="/places">Về khám phá</Link></Button>
+          <Button asChild variant="outline"><Link href="/">Về khám phá</Link></Button>
         </div>
       </Alert>
     </main>

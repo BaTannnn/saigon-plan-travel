@@ -21,7 +21,7 @@ const steps = [
   },
 ];
 
-export function ExploreLanding() {
+export function HomeLanding() {
   return (
     <main>
       <section
@@ -120,7 +120,7 @@ export function ExploreLanding() {
               <li>
                 <Link
                   className="text-text-secondary transition-colors hover:text-primary"
-                  href="/places"
+                  href="/"
                 >
                   Khám phá
                 </Link>

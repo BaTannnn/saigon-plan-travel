@@ -27,7 +27,7 @@ export default function PlaceNotFound() {
           </p>
         </AlertDescription>
         <Button asChild className="mt-4 justify-self-center">
-          <Link href="/places">
+          <Link href="/">
             <ArrowLeftIcon /> Quay lại khám phá
           </Link>
         </Button>

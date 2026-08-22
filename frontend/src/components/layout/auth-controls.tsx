@@ -42,7 +42,7 @@ export function AuthControls() {
 
   function handleLogout() {
     logout();
-    router.push("/places");
+    router.replace("/");
     router.refresh();
   }
 
