@@ -19,6 +19,7 @@ import com.saigonplantravel.backend.place.dto.admin.AdminPlaceDetailResponse;
 import com.saigonplantravel.backend.place.dto.admin.AdminPlaceSummaryResponse;
 import com.saigonplantravel.backend.place.dto.admin.PlaceCreateRequest;
 import com.saigonplantravel.backend.place.dto.admin.PlaceUpdateRequest;
+import com.saigonplantravel.backend.place.exception.PlaceNotFoundException;
 import com.saigonplantravel.backend.place.exception.PlaceSlugAlreadyExistsException;
 import com.saigonplantravel.backend.place.service.PlaceImageService;
 import com.saigonplantravel.backend.place.service.PlaceService;
@@ -147,6 +148,13 @@ class AdminPlaceControllerTest {
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Activate Place")))
                 .andExpect(content()
                         .string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("Deactivate Place"))));
+    }
+
+    @Test
+    void returnsNotFoundForMissingPlace() throws Exception {
+        when(placeService.getPlaceDetailForAdministrationBySlug("missing")).thenThrow(new PlaceNotFoundException());
+
+        mockMvc.perform(get("/admin/places/missing")).andExpect(status().isNotFound());
     }
 
     @Test

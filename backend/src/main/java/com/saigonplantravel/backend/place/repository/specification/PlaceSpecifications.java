@@ -1,6 +1,6 @@
 package com.saigonplantravel.backend.place.repository.specification;
 
-import com.saigonplantravel.backend.place.dto.PlaceSearchRequest;
+import com.saigonplantravel.backend.place.dto.PlaceQueryRequest;
 import com.saigonplantravel.backend.place.entity.Category;
 import com.saigonplantravel.backend.place.entity.Place;
 import com.saigonplantravel.backend.place.search.PlaceSearchNormalizer;
@@ -19,7 +19,7 @@ public final class PlaceSpecifications {
 
     private PlaceSpecifications() {}
 
-    public static Specification<Place> matching(PlaceSearchRequest request) {
+    public static Specification<Place> matching(PlaceQueryRequest request) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(criteriaBuilder.isTrue(root.get("active")));

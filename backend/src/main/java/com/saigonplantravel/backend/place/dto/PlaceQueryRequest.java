@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 
-public record PlaceSearchRequest(
+public record PlaceQueryRequest(
         @Size(max = 100, message = "keyword must contain at most 100 characters") String keyword,
         @Size(max = 120, message = "category must contain at most 120 characters")
                 @Pattern(regexp = "^[a-z0-9]+(?:-[a-z0-9]+)*$", message = "category must be a lowercase slug")
@@ -23,7 +23,7 @@ public record PlaceSearchRequest(
                 @Max(value = 100, message = "size must be between 1 and 100")
                 Integer size) {
 
-    public PlaceSearchRequest {
+    public PlaceQueryRequest {
         keyword = PlaceSearchNormalizer.normalizeText(keyword);
     }
 

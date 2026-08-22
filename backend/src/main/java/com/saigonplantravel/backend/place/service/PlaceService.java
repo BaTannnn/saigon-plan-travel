@@ -3,7 +3,7 @@ package com.saigonplantravel.backend.place.service;
 import com.saigonplantravel.backend.place.dto.OpeningHourState;
 import com.saigonplantravel.backend.place.dto.PageResponse;
 import com.saigonplantravel.backend.place.dto.PlaceDetailResponse;
-import com.saigonplantravel.backend.place.dto.PlaceSearchRequest;
+import com.saigonplantravel.backend.place.dto.PlaceQueryRequest;
 import com.saigonplantravel.backend.place.dto.PlaceSummaryResponse;
 import com.saigonplantravel.backend.place.dto.admin.AdminPlaceDetailResponse;
 import com.saigonplantravel.backend.place.dto.admin.AdminPlaceSummaryResponse;
@@ -47,15 +47,7 @@ public class PlaceService {
         this.placeMapper = placeMapper;
     }
 
-    public PageResponse<PlaceSummaryResponse> getActivePlaces(int page, int size) {
-        Page<PlaceSummaryResponse> result = placeRepository
-                .findAllByActiveTrue(PageRequest.of(page, size, PLACE_SORT))
-                .map(placeMapper::toSummaryResponse);
-
-        return toPageResponse(result);
-    }
-
-    public PageResponse<PlaceSummaryResponse> searchPlaces(PlaceSearchRequest request) {
+    public PageResponse<PlaceSummaryResponse> findActivePlaces(PlaceQueryRequest request) {
         Page<PlaceSummaryResponse> result = placeRepository
                 .findAll(
                         PlaceSpecifications.matching(request),

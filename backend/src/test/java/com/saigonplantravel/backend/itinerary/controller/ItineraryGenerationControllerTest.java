@@ -258,7 +258,9 @@ class ItineraryGenerationControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("INVALID_GENERATED_ITINERARY"))
-                .andExpect(jsonPath("$.title").value("Invalid generated itinerary"));
+                .andExpect(jsonPath("$.title").value("Invalid generated itinerary"))
+                .andExpect(
+                        jsonPath("$.instance").value("/api/v1/trips/" + tripPublicId + "/itinerary/generation-apply"));
 
         verify(itineraryService).applyGeneratedItinerary(principal.id(), tripPublicId, placeSlugs);
     }

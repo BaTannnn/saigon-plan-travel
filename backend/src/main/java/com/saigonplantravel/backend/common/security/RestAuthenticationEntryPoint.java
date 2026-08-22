@@ -31,6 +31,7 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
         problem.setTitle("Authentication failed");
         problem.setInstance(URI.create(request.getRequestURI()));
+        problem.setProperty("code", "AUTHENTICATION_REQUIRED");
 
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.setContentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE);

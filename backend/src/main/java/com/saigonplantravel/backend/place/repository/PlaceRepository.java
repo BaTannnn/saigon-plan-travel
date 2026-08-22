@@ -16,9 +16,6 @@ public interface PlaceRepository extends JpaRepository<Place, Long>, JpaSpecific
     boolean existsBySlug(String slug);
 
     @EntityGraph(attributePaths = "coverImage")
-    Page<Place> findAllByActiveTrue(Pageable pageable);
-
-    @EntityGraph(attributePaths = "coverImage")
     Optional<Place> findBySlug(String slug);
 
     @EntityGraph(attributePaths = "coverImage")

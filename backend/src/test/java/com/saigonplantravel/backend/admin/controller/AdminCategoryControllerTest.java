@@ -23,7 +23,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -152,12 +151,10 @@ class AdminCategoryControllerTest {
     }
 
     @Test
-    void returnsNotFoundForMissingCategoryEditPage() throws Exception {
+    void returnsNotFoundForMissingCategory() throws Exception {
         when(categoryService.getCategoryForAdministrationBySlug("missing")).thenThrow(new CategoryNotFoundException());
 
-        mockMvc.perform(get("/admin/categories/missing/edit"))
-                .andExpect(status().isNotFound())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON));
+        mockMvc.perform(get("/admin/categories/missing/edit")).andExpect(status().isNotFound());
     }
 
     private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder validCategoryPost() {

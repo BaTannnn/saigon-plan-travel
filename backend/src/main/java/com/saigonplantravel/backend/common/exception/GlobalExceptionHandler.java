@@ -22,45 +22,40 @@ import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-@RestControllerAdvice
+@RestControllerAdvice(annotations = RestController.class)
 public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
     private static final URI ABOUT_BLANK = URI.create("about:blank");
     private static final Set<String> PAGINATION_FIELDS = Set.of("page", "size");
 
-    @ExceptionHandler(InvalidPaginationException.class)
-    public ProblemDetail handleInvalidPagination(InvalidPaginationException exception, HttpServletRequest request) {
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, exception.getMessage());
-
-        problem.setType(ABOUT_BLANK);
-        problem.setTitle("Invalid pagination parameters");
-        problem.setInstance(URI.create(request.getRequestURI()));
-        problem.setProperty("code", "INVALID_REQUEST");
-
-        return problem;
-    }
-
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ProblemDetail handleTypeMismatch(MethodArgumentTypeMismatchException exception, HttpServletRequest request) {
         boolean paginationField = PAGINATION_FIELDS.contains(exception.getName());
 
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+        ProblemDetail problem = problem(
                 HttpStatus.BAD_REQUEST,
-                paginationField ? "page and size must be valid integers" : "Request validation failed");
-
-        problem.setType(ABOUT_BLANK);
-        problem.setTitle(paginationField ? "Invalid pagination parameters" : "Invalid request");
-        problem.setInstance(URI.create(request.getRequestURI()));
-        problem.setProperty("code", "INVALID_REQUEST");
+                paginationField ? "Invalid pagination parameters" : "Invalid request",
+                paginationField ? "page and size must be valid integers" : "Request validation failed",
+                "INVALID_REQUEST",
+                request);
         problem.setProperty("fieldErrors", List.of(new FieldValidationError(exception.getName(), "has invalid type")));
 
         return problem;
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ProblemDetail handleMissingRequestParameter(
+            MissingServletRequestParameterException exception, HttpServletRequest request) {
+        return validationProblem(
+                List.of(new FieldValidationError(exception.getParameterName(), "is required")), request);
     }
 
     @ExceptionHandler({MethodArgumentNotValidException.class, BindException.class})
@@ -95,11 +90,12 @@ public class GlobalExceptionHandler {
         String detail = paginationOnly && fieldErrors.size() == 1
                 ? fieldErrors.getFirst().message()
                 : "Request validation failed";
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, detail);
-        problem.setType(ABOUT_BLANK);
-        problem.setTitle(paginationOnly ? "Invalid pagination parameters" : "Invalid request");
-        problem.setInstance(URI.create(request.getRequestURI()));
-        problem.setProperty("code", "INVALID_REQUEST");
+        ProblemDetail problem = problem(
+                HttpStatus.BAD_REQUEST,
+                paginationOnly ? "Invalid pagination parameters" : "Invalid request",
+                detail,
+                "INVALID_REQUEST",
+                request);
         problem.setProperty("fieldErrors", fieldErrors);
         return problem;
     }
@@ -107,43 +103,34 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ProblemDetail handleMessageNotReadable(
             HttpMessageNotReadableException exception, HttpServletRequest request) {
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
-                HttpStatus.BAD_REQUEST, "Request body is malformed or contains an invalid value");
-
-        problem.setType(ABOUT_BLANK);
-        problem.setTitle("Invalid request");
-        problem.setInstance(URI.create(request.getRequestURI()));
-        problem.setProperty("code", "INVALID_REQUEST");
-
-        return problem;
+        return problem(
+                HttpStatus.BAD_REQUEST,
+                "Invalid request",
+                "Request body is malformed or contains an invalid value",
+                "INVALID_REQUEST",
+                request);
     }
 
     @ExceptionHandler(EmailAlreadyExistsException.class)
-    public ProblemDetail handleEmailAlreadyExists(EmailAlreadyExistsException exception) {
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, exception.getMessage());
-
-        problem.setTitle("Email already exists");
-
-        return problem;
+    public ProblemDetail handleEmailAlreadyExists(EmailAlreadyExistsException exception, HttpServletRequest request) {
+        return problem(
+                HttpStatus.CONFLICT, "Email already exists", exception.getMessage(), "EMAIL_ALREADY_EXISTS", request);
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)
-    public ProblemDetail handleInvalidCredentials(InvalidCredentialsException exception) {
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, exception.getMessage());
-
-        problem.setTitle("Authentication failed");
-
-        return problem;
+    public ProblemDetail handleInvalidCredentials(InvalidCredentialsException exception, HttpServletRequest request) {
+        return problem(
+                HttpStatus.UNAUTHORIZED,
+                "Authentication failed",
+                exception.getMessage(),
+                "INVALID_CREDENTIALS",
+                request);
     }
 
     @ExceptionHandler(InvalidTripException.class)
     public ProblemDetail handleInvalidTrip(InvalidTripException exception, HttpServletRequest request) {
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, exception.getMessage());
-
-        problem.setType(ABOUT_BLANK);
-        problem.setTitle("Invalid request");
-        problem.setInstance(URI.create(request.getRequestURI()));
-        problem.setProperty("code", "INVALID_REQUEST");
+        ProblemDetail problem = problem(
+                HttpStatus.BAD_REQUEST, "Invalid request", exception.getMessage(), exception.getCode(), request);
         problem.setProperty(
                 "fieldErrors", List.of(new FieldValidationError(exception.getField(), exception.getMessage())));
 
@@ -153,114 +140,105 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(GeocodingUnavailableException.class)
     public ProblemDetail handleGeocodingUnavailable(
             GeocodingUnavailableException exception, HttpServletRequest request) {
-        ProblemDetail problem =
-                ProblemDetail.forStatusAndDetail(HttpStatus.BAD_GATEWAY, "Location search is temporarily unavailable");
-        problem.setType(ABOUT_BLANK);
-        problem.setTitle("Location search unavailable");
-        problem.setInstance(URI.create(request.getRequestURI()));
-        problem.setProperty("code", "GEOCODING_UNAVAILABLE");
-        return problem;
+        return problem(
+                HttpStatus.BAD_GATEWAY,
+                "Location search unavailable",
+                "Location search is temporarily unavailable",
+                "GEOCODING_UNAVAILABLE",
+                request);
     }
 
     @ExceptionHandler(TripNotFoundException.class)
     public ProblemDetail handleTripNotFound(TripNotFoundException exception, HttpServletRequest request) {
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, exception.getMessage());
-
-        problem.setType(ABOUT_BLANK);
-        problem.setTitle("Trip not found");
-        problem.setInstance(URI.create(request.getRequestURI()));
-        problem.setProperty("code", "TRIP_NOT_FOUND");
-
-        return problem;
+        return problem(HttpStatus.NOT_FOUND, "Trip not found", exception.getMessage(), "TRIP_NOT_FOUND", request);
     }
 
     @ExceptionHandler(PlaceNotFoundException.class)
     public ProblemDetail handlePlaceNotFound(PlaceNotFoundException exception, HttpServletRequest request) {
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, exception.getMessage());
-        problem.setType(ABOUT_BLANK);
-        problem.setTitle("Place not found");
-        problem.setInstance(URI.create(request.getRequestURI()));
-        problem.setProperty("code", "PLACE_NOT_FOUND");
-        return problem;
+        return problem(HttpStatus.NOT_FOUND, "Place not found", exception.getMessage(), "PLACE_NOT_FOUND", request);
     }
 
     @ExceptionHandler(CategoryNotFoundException.class)
     public ProblemDetail handleCategoryNotFound(CategoryNotFoundException exception, HttpServletRequest request) {
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, exception.getMessage());
-        problem.setType(ABOUT_BLANK);
-        problem.setTitle("Category not found");
-        problem.setInstance(URI.create(request.getRequestURI()));
-        problem.setProperty("code", "CATEGORY_NOT_FOUND");
-        return problem;
+        return problem(
+                HttpStatus.NOT_FOUND, "Category not found", exception.getMessage(), "CATEGORY_NOT_FOUND", request);
     }
 
     @ExceptionHandler(ItineraryItemNotFoundException.class)
     public ProblemDetail handleItineraryItemNotFound(
             ItineraryItemNotFoundException exception, HttpServletRequest request) {
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, exception.getMessage());
-        problem.setType(ABOUT_BLANK);
-        problem.setTitle("Itinerary item not found");
-        problem.setInstance(URI.create(request.getRequestURI()));
-        problem.setProperty("code", "ITINERARY_ITEM_NOT_FOUND");
-        return problem;
+        return problem(
+                HttpStatus.NOT_FOUND,
+                "Itinerary item not found",
+                exception.getMessage(),
+                "ITINERARY_ITEM_NOT_FOUND",
+                request);
     }
 
     @ExceptionHandler(DuplicateItineraryPlaceException.class)
     public ProblemDetail handleDuplicateItineraryPlace(
             DuplicateItineraryPlaceException exception, HttpServletRequest request) {
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, exception.getMessage());
-        problem.setType(ABOUT_BLANK);
-        problem.setTitle("Duplicate itinerary Place");
-        problem.setInstance(URI.create(request.getRequestURI()));
-        problem.setProperty("code", "DUPLICATE_ITINERARY_PLACE");
-        return problem;
+        return problem(
+                HttpStatus.CONFLICT,
+                "Duplicate itinerary Place",
+                exception.getMessage(),
+                "DUPLICATE_ITINERARY_PLACE",
+                request);
     }
 
     @ExceptionHandler(InactiveItineraryPlaceException.class)
     public ProblemDetail handleInactiveItineraryPlace(
             InactiveItineraryPlaceException exception, HttpServletRequest request) {
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, exception.getMessage());
-        problem.setType(ABOUT_BLANK);
-        problem.setTitle("Inactive itinerary Place");
-        problem.setInstance(URI.create(request.getRequestURI()));
-        problem.setProperty("code", "ITINERARY_PLACE_INACTIVE");
-        return problem;
+        return problem(
+                HttpStatus.CONFLICT,
+                "Inactive itinerary Place",
+                exception.getMessage(),
+                "ITINERARY_PLACE_INACTIVE",
+                request);
     }
 
     @ExceptionHandler(InvalidItineraryOrderException.class)
     public ProblemDetail handleInvalidItineraryOrder(
             InvalidItineraryOrderException exception, HttpServletRequest request) {
 
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, exception.getMessage());
-
-        problem.setTitle("Invalid itinerary order");
-        problem.setInstance(URI.create(request.getRequestURI()));
-        problem.setProperty("code", "INVALID_ITINERARY_ORDER");
-
-        return problem;
+        return problem(
+                HttpStatus.BAD_REQUEST,
+                "Invalid itinerary order",
+                exception.getMessage(),
+                "INVALID_ITINERARY_ORDER",
+                request);
     }
 
     @ExceptionHandler(InvalidGeneratedItineraryException.class)
-    public ProblemDetail handleInvalidGeneratedItinerary(InvalidGeneratedItineraryException exception) {
-
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, exception.getMessage());
-
-        problem.setTitle("Invalid generated itinerary");
-
-        problem.setProperty("code", "INVALID_GENERATED_ITINERARY");
-
-        return problem;
+    public ProblemDetail handleInvalidGeneratedItinerary(
+            InvalidGeneratedItineraryException exception, HttpServletRequest request) {
+        return problem(
+                HttpStatus.BAD_REQUEST,
+                "Invalid generated itinerary",
+                exception.getMessage(),
+                "INVALID_GENERATED_ITINERARY",
+                request);
     }
 
     @ExceptionHandler(Exception.class)
     public ProblemDetail handleUnexpected(Exception exception, HttpServletRequest request) {
         log.error("Unexpected error while handling {}", request.getRequestURI(), exception);
 
-        ProblemDetail problem =
-                ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred");
+        return problem(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "Internal server error",
+                "An unexpected error occurred",
+                "INTERNAL_SERVER_ERROR",
+                request);
+    }
+
+    private ProblemDetail problem(
+            HttpStatus status, String title, String detail, String code, HttpServletRequest request) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(status, detail);
         problem.setType(ABOUT_BLANK);
-        problem.setTitle("Internal server error");
+        problem.setTitle(title);
         problem.setInstance(URI.create(request.getRequestURI()));
+        problem.setProperty("code", code);
         return problem;
     }
 

@@ -165,7 +165,7 @@ class TripControllerTest {
                         .queryParam("month", "13")
                         .with(authenticatedAs(principal)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value("INVALID_REQUEST"))
+                .andExpect(jsonPath("$.code").value("INVALID_TRIP_MONTH_FILTER"))
                 .andExpect(jsonPath("$.fieldErrors[0].field").value("month"));
 
         verifyNoInteractions(tripService);
@@ -177,10 +177,12 @@ class TripControllerTest {
 
         mockMvc.perform(get("/api/v1/trips").queryParam("year", "2026").with(authenticatedAs(principal)))
                 .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_TRIP_MONTH_FILTER"))
                 .andExpect(jsonPath("$.fieldErrors[0].field").value("month"));
 
         mockMvc.perform(get("/api/v1/trips").queryParam("month", "8").with(authenticatedAs(principal)))
                 .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_TRIP_MONTH_FILTER"))
                 .andExpect(jsonPath("$.fieldErrors[0].field").value("year"));
 
         verifyNoInteractions(tripService);
@@ -231,7 +233,9 @@ class TripControllerTest {
                         .content(requestBody))
                 .andExpect(status().isUnauthorized())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
-                .andExpect(jsonPath("$.title").value("Authentication failed"));
+                .andExpect(jsonPath("$.title").value("Authentication failed"))
+                .andExpect(jsonPath("$.instance").value("/api/v1/trips"))
+                .andExpect(jsonPath("$.code").value("AUTHENTICATION_REQUIRED"));
 
         mockMvc.perform(get("/api/v1/trips")).andExpect(status().isUnauthorized());
 

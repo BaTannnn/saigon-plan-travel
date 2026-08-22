@@ -343,7 +343,8 @@ class ItineraryControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value("INVALID_ITINERARY_ORDER"));
+                .andExpect(jsonPath("$.code").value("INVALID_ITINERARY_ORDER"))
+                .andExpect(jsonPath("$.instance").value("/api/v1/trips/" + tripPublicId + "/itinerary/items/order"));
 
         verify(itineraryService).reorderItems(principal.id(), tripPublicId, request.itemPublicIds());
     }

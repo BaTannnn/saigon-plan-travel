@@ -1,5 +1,7 @@
 package com.saigonplantravel.backend.common.security;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -20,12 +22,17 @@ import com.saigonplantravel.backend.admin.controller.AdminPlaceController;
 import com.saigonplantravel.backend.admin.controller.AdminPlaceOpeningHoursController;
 import com.saigonplantravel.backend.auth.controller.AuthController;
 import com.saigonplantravel.backend.auth.domain.UserRole;
+import com.saigonplantravel.backend.auth.dto.LoginRequest;
+import com.saigonplantravel.backend.auth.dto.RegisterRequest;
 import com.saigonplantravel.backend.auth.entity.UserAccount;
+import com.saigonplantravel.backend.auth.exception.EmailAlreadyExistsException;
+import com.saigonplantravel.backend.auth.exception.InvalidCredentialsException;
 import com.saigonplantravel.backend.auth.repository.UserAccountRepository;
 import com.saigonplantravel.backend.auth.security.JwtAuthenticationService;
 import com.saigonplantravel.backend.auth.security.UserAccountDetailsService;
 import com.saigonplantravel.backend.auth.security.UserPrincipal;
 import com.saigonplantravel.backend.auth.service.AuthService;
+import com.saigonplantravel.backend.common.exception.GlobalExceptionHandler;
 import com.saigonplantravel.backend.common.security.jwt.AccessTokenClaims;
 import com.saigonplantravel.backend.common.security.jwt.JwtService;
 import com.saigonplantravel.backend.place.dto.PageResponse;
@@ -50,6 +57,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @WebMvcTest(
         controllers = {
@@ -62,6 +71,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
         })
 @Import({
     SecurityConfig.class,
+    GlobalExceptionHandler.class,
     RestAuthenticationEntryPoint.class,
     UserAccountDetailsService.class,
     AdminSecurityConfigTest.SecurityProbeController.class
@@ -262,7 +272,57 @@ class AdminSecurityConfigTest {
                 .andExpect(status().isUnauthorized())
                 .andExpect(header().string(HttpHeaders.WWW_AUTHENTICATE, "Bearer"))
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
-                .andExpect(jsonPath("$.title").value("Authentication failed"));
+                .andExpect(jsonPath("$.title").value("Authentication failed"))
+                .andExpect(jsonPath("$.instance").value("/api/v1/auth/me"))
+                .andExpect(jsonPath("$.code").value("AUTHENTICATION_REQUIRED"));
+    }
+
+    @Test
+    void returnsConsistentProblemForExistingEmail() throws Exception {
+        when(authService.register(any(RegisterRequest.class))).thenThrow(new EmailAlreadyExistsException());
+
+        mockMvc.perform(
+                        post("/api/v1/auth/register")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        """
+                                {
+                                  "email": "user@example.com",
+                                  "password": "password123",
+                                  "displayName": "Test User"
+                                }
+                                """))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.title").value("Email already exists"))
+                .andExpect(jsonPath("$.instance").value("/api/v1/auth/register"))
+                .andExpect(jsonPath("$.code").value("EMAIL_ALREADY_EXISTS"));
+    }
+
+    @Test
+    void returnsConsistentProblemForInvalidCredentials() throws Exception {
+        when(authService.login(any(LoginRequest.class))).thenThrow(new InvalidCredentialsException());
+
+        mockMvc.perform(
+                        post("/api/v1/auth/login")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        """
+                                {
+                                  "email": "user@example.com",
+                                  "password": "password123"
+                                }
+                                """))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.title").value("Authentication failed"))
+                .andExpect(jsonPath("$.instance").value("/api/v1/auth/login"))
+                .andExpect(jsonPath("$.code").value("INVALID_CREDENTIALS"));
+    }
+
+    @Test
+    void scopesGlobalExceptionHandlerToRestControllers() {
+        RestControllerAdvice advice = GlobalExceptionHandler.class.getAnnotation(RestControllerAdvice.class);
+
+        assertThat(advice.annotations()).containsExactly(RestController.class);
     }
 
     @Test

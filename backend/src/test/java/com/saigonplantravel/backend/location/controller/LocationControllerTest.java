@@ -85,6 +85,17 @@ class LocationControllerTest {
     }
 
     @Test
+    void rejectsMissingQueryAsInvalidRequest() throws Exception {
+        mockMvc.perform(get("/api/v1/locations/search").with(authenticatedUser()))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST"))
+                .andExpect(jsonPath("$.fieldErrors[0].field").value("q"))
+                .andExpect(jsonPath("$.fieldErrors[0].message").value("is required"));
+
+        verifyNoInteractions(locationSearchService);
+    }
+
+    @Test
     void requiresAuthentication() throws Exception {
         mockMvc.perform(get("/api/v1/locations/search").param("q", "Dinh Độc Lập"))
                 .andExpect(status().isUnauthorized());

@@ -20,7 +20,7 @@ import com.saigonplantravel.backend.place.dto.CategoryResponse;
 import com.saigonplantravel.backend.place.dto.OpeningHourResponse;
 import com.saigonplantravel.backend.place.dto.PageResponse;
 import com.saigonplantravel.backend.place.dto.PlaceDetailResponse;
-import com.saigonplantravel.backend.place.dto.PlaceSearchRequest;
+import com.saigonplantravel.backend.place.dto.PlaceQueryRequest;
 import com.saigonplantravel.backend.place.dto.PlaceSummaryResponse;
 import com.saigonplantravel.backend.place.exception.PlaceNotFoundException;
 import com.saigonplantravel.backend.place.service.PlaceService;
@@ -58,7 +58,7 @@ class PlaceControllerTest {
     @Test
     void usesDefaultPaginationAndReturnsLockedResponseContract() throws Exception {
         PlaceSummaryResponse place = demoPlace();
-        when(placeService.searchPlaces(any(PlaceSearchRequest.class)))
+        when(placeService.findActivePlaces(any(PlaceQueryRequest.class)))
                 .thenReturn(new PageResponse<>(List.of(place), 0, 20, 1, 1, true, true));
 
         mockMvc.perform(get("/api/v1/places"))
@@ -91,7 +91,7 @@ class PlaceControllerTest {
 
     @Test
     void acceptsCustomPaginationAndAllowsEmptyPage() throws Exception {
-        when(placeService.searchPlaces(any(PlaceSearchRequest.class)))
+        when(placeService.findActivePlaces(any(PlaceQueryRequest.class)))
                 .thenReturn(new PageResponse<>(List.of(), 3, 10, 5, 1, false, true));
 
         mockMvc.perform(get("/api/v1/places").param("page", "3").param("size", "10"))
@@ -132,7 +132,7 @@ class PlaceControllerTest {
 
     @Test
     void acceptsBoundaryPageSizes() throws Exception {
-        when(placeService.searchPlaces(any(PlaceSearchRequest.class)))
+        when(placeService.findActivePlaces(any(PlaceQueryRequest.class)))
                 .thenReturn(
                         new PageResponse<>(List.of(), 0, 1, 0, 0, true, true),
                         new PageResponse<>(List.of(), 0, 100, 0, 0, true, true));
@@ -155,7 +155,7 @@ class PlaceControllerTest {
 
     @Test
     void returnsSafeProblemDetailForUnexpectedErrors() throws Exception {
-        when(placeService.searchPlaces(any(PlaceSearchRequest.class)))
+        when(placeService.findActivePlaces(any(PlaceQueryRequest.class)))
                 .thenThrow(new DataAccessResourceFailureException("jdbc:postgresql://secret"));
 
         mockMvc.perform(get("/api/v1/places"))
@@ -163,13 +163,15 @@ class PlaceControllerTest {
                 .andExpect(content().contentType("application/problem+json"))
                 .andExpect(jsonPath("$.title").value("Internal server error"))
                 .andExpect(jsonPath("$.detail").value("An unexpected error occurred"))
+                .andExpect(jsonPath("$.instance").value("/api/v1/places"))
+                .andExpect(jsonPath("$.code").value("INTERNAL_SERVER_ERROR"))
                 .andExpect(content()
                         .string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("jdbc:postgresql"))));
     }
 
     @Test
     void bindsAndNormalizesAllSearchFilters() throws Exception {
-        when(placeService.searchPlaces(any(PlaceSearchRequest.class)))
+        when(placeService.findActivePlaces(any(PlaceQueryRequest.class)))
                 .thenReturn(new PageResponse<>(List.of(), 2, 10, 0, 0, false, true));
 
         mockMvc.perform(get("/api/v1/places")
@@ -182,9 +184,9 @@ class PlaceControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", aMapWithSize(7)));
 
-        ArgumentCaptor<PlaceSearchRequest> requestCaptor = ArgumentCaptor.forClass(PlaceSearchRequest.class);
-        verify(placeService).searchPlaces(requestCaptor.capture());
-        PlaceSearchRequest request = requestCaptor.getValue();
+        ArgumentCaptor<PlaceQueryRequest> requestCaptor = ArgumentCaptor.forClass(PlaceQueryRequest.class);
+        verify(placeService).findActivePlaces(requestCaptor.capture());
+        PlaceQueryRequest request = requestCaptor.getValue();
         org.assertj.core.api.Assertions.assertThat(request.keyword()).isEqualTo("Bảo tàng");
         org.assertj.core.api.Assertions.assertThat(request.category()).isEqualTo("van-hoa");
         org.assertj.core.api.Assertions.assertThat(request.indoor()).isFalse();
