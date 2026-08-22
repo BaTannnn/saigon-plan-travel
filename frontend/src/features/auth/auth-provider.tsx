@@ -13,6 +13,13 @@ import { getCurrentUser, login as requestLogin } from "@/lib/api/auth-api";
 import type { AuthUser, LoginRequest } from "@/types/auth";
 
 const ACCESS_TOKEN_KEY = "saigonplantravel.accessToken";
+const ACCESS_TOKEN_EXPIRES_AT_KEY =
+  "saigonplantravel.accessTokenExpiresAt";
+
+type StoredAuthSession = {
+  accessToken: string;
+  expiresAt: number;
+};
 
 type AuthStatus = "loading" | "authenticated" | "guest";
 
@@ -42,40 +49,44 @@ const initialState: AuthState = {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-function readStoredToken() {
-  try {
-    return window.sessionStorage.getItem(ACCESS_TOKEN_KEY);
-  } catch {
-    return null;
-  }
-}
-
-function storeToken(token: string) {
-  window.sessionStorage.setItem(ACCESS_TOKEN_KEY, token);
-}
-
-function removeStoredToken() {
+function removeAuthSession() {
   try {
     window.sessionStorage.removeItem(ACCESS_TOKEN_KEY);
+    window.sessionStorage.removeItem(ACCESS_TOKEN_EXPIRES_AT_KEY);
   } catch {
     // In-memory state is still cleared when browser storage is unavailable.
   }
 }
 
-function readTokenExpiration(token: string) {
+function storeAuthSession(session: StoredAuthSession) {
   try {
-    const payload = token.split(".")[1];
-    if (!payload) return null;
-
-    const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
-    const padded = normalized.padEnd(
-      normalized.length + ((4 - (normalized.length % 4)) % 4),
-      "=",
+    window.sessionStorage.setItem(ACCESS_TOKEN_KEY, session.accessToken);
+    window.sessionStorage.setItem(
+      ACCESS_TOKEN_EXPIRES_AT_KEY,
+      String(session.expiresAt),
     );
-    const claims = JSON.parse(window.atob(padded)) as { exp?: unknown };
+  } catch (error) {
+    removeAuthSession();
+    throw error;
+  }
+}
 
-    return typeof claims.exp === "number" ? claims.exp * 1000 : null;
+function readAuthSession(): StoredAuthSession | null {
+  try {
+    const accessToken = window.sessionStorage.getItem(ACCESS_TOKEN_KEY);
+    const storedExpiresAt = window.sessionStorage.getItem(
+      ACCESS_TOKEN_EXPIRES_AT_KEY,
+    );
+    const expiresAt = storedExpiresAt === null ? NaN : Number(storedExpiresAt);
+
+    if (!accessToken || !Number.isFinite(expiresAt) || expiresAt <= Date.now()) {
+      removeAuthSession();
+      return null;
+    }
+
+    return { accessToken, expiresAt };
   } catch {
+    removeAuthSession();
     return null;
   }
 }
@@ -84,7 +95,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<AuthState>(initialState);
 
   const logout = useCallback(() => {
-    removeStoredToken();
+    removeAuthSession();
     setState({
       status: "guest",
       user: null,
@@ -95,9 +106,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let cancelled = false;
-    const storedToken = readStoredToken();
+    const storedSession = readAuthSession();
 
-    if (!storedToken) {
+    if (!storedSession) {
       window.queueMicrotask(() => {
         if (cancelled) return;
 
@@ -114,15 +125,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       };
     }
 
-    getCurrentUser(storedToken)
+    getCurrentUser(storedSession.accessToken)
       .then((user) => {
         if (cancelled) return;
 
         setState({
           status: "authenticated",
           user,
-          accessToken: storedToken,
-          expiresAt: readTokenExpiration(storedToken),
+          accessToken: storedSession.accessToken,
+          expiresAt: storedSession.expiresAt,
         });
       })
       .catch(() => {
@@ -150,7 +161,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = useCallback(async (request: LoginRequest) => {
     const response = await requestLogin(request);
-    storeToken(response.accessToken);
+    const expiresAt = Date.now() + response.expiresInSeconds * 1000;
+
+    storeAuthSession({
+      accessToken: response.accessToken,
+      expiresAt,
+    });
 
     setState({
       status: "authenticated",
@@ -161,7 +177,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         role: response.role,
       },
       accessToken: response.accessToken,
-      expiresAt: Date.now() + response.expiresInSeconds * 1000,
+      expiresAt,
     });
   }, []);
 
