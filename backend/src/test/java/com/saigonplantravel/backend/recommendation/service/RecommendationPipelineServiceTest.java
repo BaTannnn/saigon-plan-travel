@@ -1,9 +1,11 @@
 package com.saigonplantravel.backend.recommendation.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.saigonplantravel.backend.place.entity.Place;
 import com.saigonplantravel.backend.recommendation.filter.BudgetCandidateFilter;
 import com.saigonplantravel.backend.recommendation.filter.OpeningHoursCandidateFilter;
 import com.saigonplantravel.backend.recommendation.model.RecommendationCandidate;
@@ -30,17 +32,16 @@ class RecommendationPipelineServiceTest {
     @Mock
     private Trip trip;
 
-    @Mock
     private RecommendationCandidate candidateA;
 
-    @Mock
     private RecommendationCandidate candidateB;
 
     private RecommendationPipelineService service;
 
     @BeforeEach
     void setUp() {
-
+        candidateA = new RecommendationCandidate(mock(Place.class), 0.95, "architecture");
+        candidateB = new RecommendationCandidate(mock(Place.class), 0.90, "art");
         service = new RecommendationPipelineService(
                 placeRecommendationService, openingHoursCandidateFilter, budgetCandidateFilter);
     }

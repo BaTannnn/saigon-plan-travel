@@ -2,9 +2,11 @@ package com.saigonplantravel.backend.itinerary.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.saigonplantravel.backend.place.entity.Place;
 import com.saigonplantravel.backend.recommendation.model.RecommendationCandidate;
 import com.saigonplantravel.backend.recommendation.service.RecommendationPipelineService;
 import com.saigonplantravel.backend.scheduling.model.ItineraryPlan;
@@ -37,14 +39,13 @@ class ItineraryGenerationServiceTest {
     @Mock
     private Trip trip;
 
-    @Mock
     private RecommendationCandidate candidateA;
 
     private ItineraryGenerationService service;
 
     @BeforeEach
     void setUp() {
-
+        candidateA = new RecommendationCandidate(mock(Place.class), 0.95, "architecture");
         service = new ItineraryGenerationService(tripRepository, recommendationPipelineService, itineraryScheduler);
     }
 
