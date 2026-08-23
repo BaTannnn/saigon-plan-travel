@@ -54,7 +54,7 @@ class AuthE2ETest extends BaseE2ETest {
     @Test
     void shouldLoginSuccessfullyWithValidCredentials() {
         loginPage.open();
-        loginPage.login(email, password);
+        loginPage.login(TEST_ACCOUNT_EMAIL, TEST_ACCOUNT_PASSWORD);
 
         homePage.waitForAuthenticatedState();
         assertTrue(homePage.isAuthenticatedUiVisible());
@@ -63,7 +63,7 @@ class AuthE2ETest extends BaseE2ETest {
     @Test
     void shouldLogoutSuccessfullyAndLoseProtectedAccess() {
         loginPage.open();
-        loginPage.login(email, password);
+        loginPage.login(TEST_ACCOUNT_EMAIL, TEST_ACCOUNT_PASSWORD);
         homePage.waitForAuthenticatedState();
 
         homePage.logout();
