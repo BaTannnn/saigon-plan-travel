@@ -19,8 +19,8 @@ public abstract class BaseE2ETest {
     protected WebDriverWait wait;
     protected String baseUrl;
 
-    protected static final String email = requiredEnvironmentVariable("TEST_ACCOUNT_EMAIL");
-    protected static final String password = requiredEnvironmentVariable("TEST_ACCOUNT_PASSWORD");
+    protected static final String TEST_ACCOUNT_EMAIL = requiredEnvironmentVariable("TEST_ACCOUNT_EMAIL");
+    protected static final String TEST_ACCOUNT_PASSWORD = requiredEnvironmentVariable("TEST_ACCOUNT_PASSWORD");
 
     protected static String requiredEnvironmentVariable(String name) {
         String value = System.getenv(name);
