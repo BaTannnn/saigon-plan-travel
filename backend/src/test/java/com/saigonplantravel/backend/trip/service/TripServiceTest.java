@@ -95,11 +95,10 @@ class TripServiceTest {
     void rejectsCreateWhenDayAlreadyHasFiveTrips() {
         Long userId = 99L;
         SaveTripRequest request = createValidRequest();
-        when(tripRepository.countByUserIdAndTripDate(userId, request.tripDate())).thenReturn(5L);
+        when(tripRepository.countByUserIdAndTripDate(userId, request.tripDate()))
+                .thenReturn(5L);
         doThrow(new InvalidTripException(
-                        "TRIP_DAILY_LIMIT_EXCEEDED",
-                        "tripDate",
-                        "You can create at most 5 trips on the same day"))
+                        "TRIP_DAILY_LIMIT_EXCEEDED", "tripDate", "You can create at most 5 trips on the same day"))
                 .when(tripPolicy)
                 .validateDailyTripLimit(5);
 
@@ -253,7 +252,8 @@ class TripServiceTest {
                 responseFor(publicId, request, createdAt, OffsetDateTime.parse("2026-08-01T10:00:00+07:00"));
 
         when(tripRepository.findByPublicIdAndUserId(publicId, userId)).thenReturn(Optional.of(trip));
-        when(tripRepository.countByUserIdAndTripDate(userId, request.tripDate())).thenReturn(4L);
+        when(tripRepository.countByUserIdAndTripDate(userId, request.tripDate()))
+                .thenReturn(4L);
         when(tripMapper.toResponse(trip)).thenReturn(expectedResponse);
 
         assertThat(tripService.replaceTrip(userId, publicId, request)).isSameAs(expectedResponse);
@@ -271,11 +271,10 @@ class TripServiceTest {
         SaveTripRequest request = requestForDate(LocalDate.of(2026, 8, 21));
 
         when(tripRepository.findByPublicIdAndUserId(publicId, userId)).thenReturn(Optional.of(trip));
-        when(tripRepository.countByUserIdAndTripDate(userId, request.tripDate())).thenReturn(5L);
+        when(tripRepository.countByUserIdAndTripDate(userId, request.tripDate()))
+                .thenReturn(5L);
         doThrow(new InvalidTripException(
-                        "TRIP_DAILY_LIMIT_EXCEEDED",
-                        "tripDate",
-                        "You can create at most 5 trips on the same day"))
+                        "TRIP_DAILY_LIMIT_EXCEEDED", "tripDate", "You can create at most 5 trips on the same day"))
                 .when(tripPolicy)
                 .validateDailyTripLimit(5);
 

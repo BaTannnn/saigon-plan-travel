@@ -111,9 +111,9 @@ class PlaceServiceTest {
                 });
         when(placeMapper.toAdminSummaryResponse(place)).thenReturn(summary);
 
-        PageResponse<AdminPlaceSummaryResponse> response =
-                new PlaceService(placeRepository, categoryRepository, placeMapper)
-                        .getPlacesForAdministration("   ", 0, 20);
+        PageResponse<AdminPlaceSummaryResponse> response = new PlaceService(
+                        placeRepository, categoryRepository, placeMapper)
+                .getPlacesForAdministration("   ", 0, 20);
 
         assertThat(response.content()).containsExactly(summary);
         assertThat(response.content().getFirst().active()).isFalse();
@@ -150,9 +150,9 @@ class PlaceServiceTest {
                 });
         when(placeMapper.toAdminSummaryResponse(place)).thenReturn(summary);
 
-        PageResponse<AdminPlaceSummaryResponse> response =
-                new PlaceService(placeRepository, categoryRepository, placeMapper)
-                        .getPlacesForAdministration("  MATCHING   PLACE ", 2, 10);
+        PageResponse<AdminPlaceSummaryResponse> response = new PlaceService(
+                        placeRepository, categoryRepository, placeMapper)
+                .getPlacesForAdministration("  MATCHING   PLACE ", 2, 10);
 
         assertThat(response.content()).containsExactly(summary);
         ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);

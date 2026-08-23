@@ -8,16 +8,17 @@ import com.saigonplantravel.backend.media.MediaUpload;
 import com.saigonplantravel.backend.media.StoredMedia;
 import java.io.IOException;
 import java.util.Map;
-import org.springframework.stereotype.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
 @Component
 public class CloudinaryMediaStorage implements MediaStorage {
 
     private final CloudinaryProperties properties;
     private final Cloudinary cloudinary;
-    private static final Logger log =
-            LoggerFactory.getLogger(CloudinaryMediaStorage.class);
+    private static final Logger log = LoggerFactory.getLogger(CloudinaryMediaStorage.class);
+
     public CloudinaryMediaStorage(CloudinaryProperties properties) {
         this.properties = properties;
         this.cloudinary = new Cloudinary(ObjectUtils.asMap(
@@ -46,11 +47,7 @@ public class CloudinaryMediaStorage implements MediaStorage {
                                     false));
             return new StoredMedia(requiredResult(result, "public_id"), requiredResult(result, "secure_url"));
         } catch (IOException | RuntimeException exception) {
-            log.error(
-                    "Cloudinary Place image upload failed for storage key {}",
-                    upload.storageKey(),
-                    exception
-            );
+            log.error("Cloudinary Place image upload failed for storage key {}", upload.storageKey(), exception);
             throw new MediaStorageException("Place image upload failed", exception);
         }
     }

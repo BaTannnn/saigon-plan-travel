@@ -109,7 +109,8 @@ class AdminSecurityConfigTest {
     void setUpPlacePage() {
         when(placeService.getPlacesForAdministration(
                         org.mockito.ArgumentMatchers.any(),
-                        org.mockito.ArgumentMatchers.anyInt(), org.mockito.ArgumentMatchers.anyInt()))
+                        org.mockito.ArgumentMatchers.anyInt(),
+                        org.mockito.ArgumentMatchers.anyInt()))
                 .thenReturn(new PageResponse<>(List.of(), 0, 20, 0, 0, true, true));
     }
 
