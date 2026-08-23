@@ -44,15 +44,14 @@ class PlaceCorpus(BaseModel):
         max_length=20,
     )
 
-@model_validator(mode="after")
-def validate_chunk_indexes(self):
-    indexes = [chunk.chunkIndex for chunk in self.sections]
+    @model_validator(mode="after")
+    def validate_chunk_indexes(self):
+        indexes = [chunk.chunkIndex for chunk in self.sections]
 
-    expected = list(range(1, len(indexes) + 1))
+        expected = list(range(1, len(indexes) + 1))
 
-    if indexes != expected:
-        raise ValueError(
-            "chunkIndex must be unique and continuous starting from 1"
-        )
-
-    return self
+        if indexes != expected:
+            raise ValueError(
+                "chunkIndex must be unique and continuous starting from 1"
+            )
+        return self
