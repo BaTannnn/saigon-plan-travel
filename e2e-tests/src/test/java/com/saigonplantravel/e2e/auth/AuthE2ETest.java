@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 class AuthE2ETest extends BaseE2ETest {
 
-    private static final String INVALID_EMAIL = "invalid-e2e@example.com";
+    private static final String INVALID_EMAIL = "invalid-test@example.com";
     private static final String INVALID_PASSWORD = "wrong-password";
     private static final String INVALID_CREDENTIALS_MESSAGE =
             "Email hoặc mật khẩu không đúng.";
@@ -53,9 +53,6 @@ class AuthE2ETest extends BaseE2ETest {
 
     @Test
     void shouldLoginSuccessfullyWithValidCredentials() {
-        String email = requiredEnvironmentVariable("E2E_EMAIL");
-        String password = requiredEnvironmentVariable("E2E_PASSWORD");
-
         loginPage.open();
         loginPage.login(email, password);
 
@@ -65,9 +62,6 @@ class AuthE2ETest extends BaseE2ETest {
 
     @Test
     void shouldLogoutSuccessfullyAndLoseProtectedAccess() {
-        String email = requiredEnvironmentVariable("E2E_EMAIL");
-        String password = requiredEnvironmentVariable("E2E_PASSWORD");
-
         loginPage.open();
         loginPage.login(email, password);
         homePage.waitForAuthenticatedState();
@@ -81,13 +75,5 @@ class AuthE2ETest extends BaseE2ETest {
         assertEquals(url("/login"), driver.getCurrentUrl());
     }
 
-    private String requiredEnvironmentVariable(String name) {
-        String value = System.getenv(name);
 
-        if (value == null || value.isBlank()) {
-            fail(name + " must be set to run authenticated E2E tests.");
-        }
-
-        return value;
-    }
 }

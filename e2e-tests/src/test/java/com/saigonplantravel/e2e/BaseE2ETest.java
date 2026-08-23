@@ -8,6 +8,8 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
 
+import static org.junit.jupiter.api.Assertions.fail;
+
 public abstract class BaseE2ETest {
 
     private static final String DEFAULT_BASE_URL = "http://localhost:3000";
@@ -17,6 +19,18 @@ public abstract class BaseE2ETest {
     protected WebDriverWait wait;
     protected String baseUrl;
 
+    protected static final String email = requiredEnvironmentVariable("TEST_ACCOUNT_EMAIL");
+    protected static final String password = requiredEnvironmentVariable("TEST_ACCOUNT_PASSWORD");
+
+    protected static String requiredEnvironmentVariable(String name) {
+        String value = System.getenv(name);
+
+        if (value == null || value.isBlank()) {
+            fail(name + " must be set to run authenticated E2E tests.");
+        }
+
+        return value;
+    }
     @BeforeEach
     protected void setUpWebDriver() {
         String configuredBaseUrl = System.getenv("E2E_BASE_URL");
