@@ -68,6 +68,7 @@ export function AuthControls() {
         type="button"
         variant="ghost"
         size="sm"
+        aria-label="Đăng xuất"
         onClick={handleLogout}
       >
         <span className="max-md:hidden">Đăng xuất</span>

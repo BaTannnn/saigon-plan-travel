@@ -21,6 +21,7 @@
 
 # Backend
 backend/target/
+e2e-tests/target/
 
 # Python
 __pycache__/
