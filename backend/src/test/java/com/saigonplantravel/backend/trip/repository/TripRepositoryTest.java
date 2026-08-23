@@ -3,6 +3,7 @@ package com.saigonplantravel.backend.trip.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.saigonplantravel.backend.auth.entity.UserAccount;
+import com.saigonplantravel.backend.testsupport.PostgresIntegrationTestSupport;
 import com.saigonplantravel.backend.testsupport.database.DatabaseTestFixtures;
 import com.saigonplantravel.backend.trip.domain.EnvironmentPreference;
 import com.saigonplantravel.backend.trip.domain.TravelPace;
@@ -25,7 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
-import org.testcontainers.utility.DockerImageName;
 
 @Testcontainers
 @SpringBootTest
@@ -33,20 +33,15 @@ import org.testcontainers.utility.DockerImageName;
 class TripRepositoryTest {
 
     @Container
-    static final PostgreSQLContainer postgres = new PostgreSQLContainer(
-            DockerImageName.parse("pgvector/pgvector:pg16").asCompatibleSubstituteFor("postgres"));
+    static final PostgreSQLContainer postgres = PostgresIntegrationTestSupport.newContainer();
 
     @DynamicPropertySource
     static void databaseProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
-        registry.add("spring.datasource.username", postgres::getUsername);
-        registry.add("spring.datasource.password", postgres::getPassword);
+        PostgresIntegrationTestSupport.registerCommonProperties(registry, postgres);
 
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "validate");
 
         registry.add("spring.jpa.open-in-view", () -> "false");
-
-        registry.add("app.security.jwt.secret", () -> "MDEyMzQ1Njc4OWFiY2RlZjAx" + "MjM0NTY3ODlhYmNkZWY=");
     }
 
     @Autowired
@@ -179,8 +174,10 @@ class TripRepositoryTest {
 
         entityManager.clear();
 
-        assertThat(tripRepository.countByUserIdAndTripDate(ownerUserId, requestedDate)).isEqualTo(3);
-        assertThat(tripRepository.countByUserIdAndTripDate(anotherUserId, requestedDate)).isEqualTo(1);
+        assertThat(tripRepository.countByUserIdAndTripDate(ownerUserId, requestedDate))
+                .isEqualTo(3);
+        assertThat(tripRepository.countByUserIdAndTripDate(anotherUserId, requestedDate))
+                .isEqualTo(1);
     }
 
     @Test

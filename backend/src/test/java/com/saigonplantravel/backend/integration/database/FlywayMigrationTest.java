@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.saigonplantravel.backend.media.StoredMedia;
 import com.saigonplantravel.backend.place.service.PlaceImageMetadataService;
+import com.saigonplantravel.backend.testsupport.PostgresIntegrationTestSupport;
 import java.util.List;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.output.MigrateResult;
@@ -16,22 +17,17 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
-import org.testcontainers.utility.DockerImageName;
 
 @Testcontainers
 @SpringBootTest
 class FlywayMigrationTest {
 
     @Container
-    static final PostgreSQLContainer postgres = new PostgreSQLContainer(
-            DockerImageName.parse("pgvector/pgvector:pg16").asCompatibleSubstituteFor("postgres"));
+    static final PostgreSQLContainer postgres = PostgresIntegrationTestSupport.newContainer();
 
     @DynamicPropertySource
     static void databaseProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
-        registry.add("spring.datasource.username", postgres::getUsername);
-        registry.add("spring.datasource.password", postgres::getPassword);
-        registry.add("app.security.jwt.secret", () -> "MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=");
+        PostgresIntegrationTestSupport.registerCommonProperties(registry, postgres);
     }
 
     @Autowired
@@ -42,9 +38,6 @@ class FlywayMigrationTest {
 
     @Autowired
     private PlaceImageMetadataService placeImageMetadataService;
-
-    @Test
-    void contextLoadsWithFlywayAndHibernateValidation() {}
 
     @Test
     void appliesCanonicalMigrationsAndSeedExactlyOnce() {

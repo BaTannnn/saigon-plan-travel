@@ -2,6 +2,7 @@ package com.saigonplantravel.backend.trip.repository;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.saigonplantravel.backend.testsupport.PostgresIntegrationTestSupport;
 import com.saigonplantravel.backend.testsupport.database.DatabaseTestFixtures;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -19,28 +20,20 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
-import org.testcontainers.utility.DockerImageName;
 
 @Testcontainers
 @SpringBootTest
 class TripDatabaseIntegrityTest {
     @Container
-    static final PostgreSQLContainer postgres = new PostgreSQLContainer(
-            DockerImageName.parse("pgvector/pgvector:pg16").asCompatibleSubstituteFor("postgres"));
+    static final PostgreSQLContainer postgres = PostgresIntegrationTestSupport.newContainer();
 
     @DynamicPropertySource
     static void databaseProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
-
-        registry.add("spring.datasource.username", postgres::getUsername);
-
-        registry.add("spring.datasource.password", postgres::getPassword);
+        PostgresIntegrationTestSupport.registerCommonProperties(registry, postgres);
 
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "validate");
 
         registry.add("spring.jpa.open-in-view", () -> "false");
-
-        registry.add("app.security.jwt.secret", () -> "MDEyMzQ1Njc4OWFiY2RlZjAx" + "MjM0NTY3ODlhYmNkZWY=");
     }
 
     private DatabaseTestFixtures fixtures;

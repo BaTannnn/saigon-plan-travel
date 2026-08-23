@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 
+import com.saigonplantravel.backend.testsupport.PostgresIntegrationTestSupport;
 import com.saigonplantravel.backend.trip.domain.EnvironmentPreference;
 import com.saigonplantravel.backend.trip.domain.TravelPace;
 import com.saigonplantravel.backend.trip.dto.SaveTripRequest;
@@ -26,7 +27,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
-import org.testcontainers.utility.DockerImageName;
 
 @Testcontainers
 @SpringBootTest
@@ -42,22 +42,15 @@ class TripServiceTransactionTest {
     private TripMapper tripMapper;
 
     @Container
-    static final PostgreSQLContainer postgres = new PostgreSQLContainer(
-            DockerImageName.parse("pgvector/pgvector:pg16").asCompatibleSubstituteFor("postgres"));
+    static final PostgreSQLContainer postgres = PostgresIntegrationTestSupport.newContainer();
 
     @DynamicPropertySource
     static void databaseProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
-
-        registry.add("spring.datasource.username", postgres::getUsername);
-
-        registry.add("spring.datasource.password", postgres::getPassword);
+        PostgresIntegrationTestSupport.registerCommonProperties(registry, postgres);
 
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "validate");
 
         registry.add("spring.jpa.open-in-view", () -> "false");
-
-        registry.add("app.security.jwt.secret", () -> "MDEyMzQ1Njc4OWFiY2RlZjAx" + "MjM0NTY3ODlhYmNkZWY=");
     }
 
     @Test

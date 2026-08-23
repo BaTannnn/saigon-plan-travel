@@ -17,6 +17,7 @@ import com.saigonplantravel.backend.place.entity.Category;
 import com.saigonplantravel.backend.place.entity.Place;
 import com.saigonplantravel.backend.place.service.CategoryService;
 import com.saigonplantravel.backend.place.service.PlaceService;
+import com.saigonplantravel.backend.testsupport.PostgresIntegrationTestSupport;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import java.math.BigDecimal;
@@ -35,22 +36,17 @@ import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
-import org.testcontainers.utility.DockerImageName;
 
 @Testcontainers
 @SpringBootTest
 class PlaceRepositoryTest {
 
     @Container
-    static final PostgreSQLContainer postgres = new PostgreSQLContainer(
-            DockerImageName.parse("pgvector/pgvector:pg16").asCompatibleSubstituteFor("postgres"));
+    static final PostgreSQLContainer postgres = PostgresIntegrationTestSupport.newContainer();
 
     @DynamicPropertySource
     static void databaseProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
-        registry.add("spring.datasource.username", postgres::getUsername);
-        registry.add("spring.datasource.password", postgres::getPassword);
-        registry.add("app.security.jwt.secret", () -> "MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=");
+        PostgresIntegrationTestSupport.registerCommonProperties(registry, postgres);
         registry.add("spring.jpa.properties.hibernate.generate_statistics", () -> "true");
     }
 
@@ -194,13 +190,19 @@ class PlaceRepositoryTest {
                 "Đường Nam Kỳ Khởi Nghĩa Admin",
                 false);
 
-        assertThat(placeService.getPlacesForAdministration("DINH DOC LAP", 0, 100).content())
+        assertThat(placeService
+                        .getPlacesForAdministration("DINH DOC LAP", 0, 100)
+                        .content())
                 .extracting(AdminPlaceSummaryResponse::slug)
                 .containsExactly("admin-name-match");
-        assertThat(placeService.getPlacesForAdministration("slug-match-target", 0, 100).content())
+        assertThat(placeService
+                        .getPlacesForAdministration("slug-match-target", 0, 100)
+                        .content())
                 .extracting(AdminPlaceSummaryResponse::slug)
                 .containsExactly("admin-slug-match-target");
-        assertThat(placeService.getPlacesForAdministration("nam ky khoi nghia admin", 0, 100).content())
+        assertThat(placeService
+                        .getPlacesForAdministration("nam ky khoi nghia admin", 0, 100)
+                        .content())
                 .singleElement()
                 .satisfies(place -> {
                     assertThat(place.slug()).isEqualTo("admin-inactive-address-match");
@@ -228,12 +230,19 @@ class PlaceRepositoryTest {
 
         assertThat(firstPage.totalElements()).isEqualTo(23);
         assertThat(firstPage.totalPages()).isEqualTo(3);
-        assertThat(firstPage.content()).hasSize(10).extracting(AdminPlaceSummaryResponse::name).isSorted();
-        assertThat(secondPage.content()).hasSize(10).extracting(AdminPlaceSummaryResponse::name).isSorted();
+        assertThat(firstPage.content())
+                .hasSize(10)
+                .extracting(AdminPlaceSummaryResponse::name)
+                .isSorted();
+        assertThat(secondPage.content())
+                .hasSize(10)
+                .extracting(AdminPlaceSummaryResponse::name)
+                .isSorted();
         assertThat(firstPage.content())
                 .extracting(AdminPlaceSummaryResponse::id)
-                .doesNotContainAnyElementsOf(
-                        secondPage.content().stream().map(AdminPlaceSummaryResponse::id).toList());
+                .doesNotContainAnyElementsOf(secondPage.content().stream()
+                        .map(AdminPlaceSummaryResponse::id)
+                        .toList());
     }
 
     @Test
