@@ -537,14 +537,23 @@ export function TripForm({
                 ))}
               </ul>
               <p className="m-0 text-xs text-text-secondary">
-                Dữ liệu ©{" "}
+                Powered by{" "}
+                <a
+                  className="underline underline-offset-2"
+                  href="https://www.geoapify.com/"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Geoapify
+                </a>{" "}
+                |{" "}
                 <a
                   className="underline underline-offset-2"
                   href="https://www.openstreetmap.org/copyright"
                   target="_blank"
                   rel="noreferrer"
                 >
-                  OpenStreetMap contributors
+                  © OpenStreetMap contributors
                 </a>
               </p>
             </div>
@@ -564,14 +573,23 @@ export function TripForm({
           ) : null}
           {resolvedSource === "search" ? (
             <p className="m-0 text-xs text-text-secondary">
-              Dữ liệu ©{" "}
+              Powered by{" "}
+              <a
+                className="underline underline-offset-2"
+                href="https://www.geoapify.com/"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Geoapify
+              </a>{" "}
+              |{" "}
               <a
                 className="underline underline-offset-2"
                 href="https://www.openstreetmap.org/copyright"
                 target="_blank"
                 rel="noreferrer"
               >
-                OpenStreetMap contributors
+                © OpenStreetMap contributors
               </a>
             </p>
           ) : null}

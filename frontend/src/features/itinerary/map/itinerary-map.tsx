@@ -11,6 +11,11 @@ import {
   ZoomControl,
   useMap,
 } from "react-leaflet";
+import {
+  GEOAPIFY_TILE_ATTRIBUTION,
+  GEOAPIFY_TILE_MAX_ZOOM,
+  GEOAPIFY_TILE_URL,
+} from "@/lib/geoapify-map";
 import { cn } from "@/lib/utils";
 import type { ItineraryItemResponse } from "@/types/itinerary";
 import styles from "./itinerary-map.module.css";
@@ -124,8 +129,9 @@ export function ItineraryMap({
         zoomControl={false}
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution={GEOAPIFY_TILE_ATTRIBUTION}
+          maxZoom={GEOAPIFY_TILE_MAX_ZOOM}
+          url={GEOAPIFY_TILE_URL}
         />
         <MapViewport
           origin={origin}
