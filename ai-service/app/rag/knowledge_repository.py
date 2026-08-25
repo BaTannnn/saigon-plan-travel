@@ -24,6 +24,18 @@ class CandidateChunk:
     similarity: float
     embedding: list[float]
 
+
+@dataclass
+class KnowledgeChunk:
+    place_slug: str
+    place_name: str
+    chunk_index: int
+    section: str
+    content: str
+    source_label: str
+    source_uri: str
+
+
 def upsert_chunk(
     *,
     place_id: int,
@@ -181,6 +193,48 @@ def search_candidate_chunks(
             section=row[2],
             similarity=float(row[3]),
             embedding=row[4].to_list(),
+        )
+        for row in rows
+    ]
+
+
+def find_chunks_by_place_slugs(
+    place_slugs: list[str],
+) -> list[KnowledgeChunk]:
+    if not place_slugs:
+        return []
+
+    query = """
+        SELECT
+            p.slug,
+            p.name,
+            c.chunk_index,
+            c.section,
+            c.content,
+            c.source_label,
+            c.source_uri
+        FROM place_knowledge_chunks c
+        JOIN places p
+            ON p.id = c.place_id
+        WHERE p.active = TRUE
+          AND p.slug = ANY(%s)
+        ORDER BY p.slug, c.chunk_index
+    """
+
+    with get_connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(query, (place_slugs,))
+            rows = cursor.fetchall()
+
+    return [
+        KnowledgeChunk(
+            place_slug=row[0],
+            place_name=row[1],
+            chunk_index=row[2],
+            section=row[3],
+            content=row[4],
+            source_label=row[5],
+            source_uri=row[6],
         )
         for row in rows
     ]

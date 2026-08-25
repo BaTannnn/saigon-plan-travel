@@ -57,6 +57,7 @@ export type GeneratedItineraryStopResponse = {
   sequenceNo: number;
   place: ItineraryPlaceResponse;
   schedule: ItineraryScheduleResponse;
+  reason: string | null;
 };
 
 export type ItineraryGenerationPreviewResponse = {

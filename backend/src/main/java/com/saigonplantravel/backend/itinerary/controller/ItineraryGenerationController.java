@@ -6,9 +6,9 @@ import com.saigonplantravel.backend.itinerary.dto.GenerateItineraryPreviewReques
 import com.saigonplantravel.backend.itinerary.dto.ItineraryDetailResponse;
 import com.saigonplantravel.backend.itinerary.dto.ItineraryGenerationPreviewResponse;
 import com.saigonplantravel.backend.itinerary.mapper.ItineraryGenerationPreviewMapper;
+import com.saigonplantravel.backend.itinerary.model.GeneratedItineraryPreview;
 import com.saigonplantravel.backend.itinerary.service.ItineraryGenerationService;
 import com.saigonplantravel.backend.itinerary.service.ItineraryService;
-import com.saigonplantravel.backend.scheduling.model.ItineraryPlan;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -44,10 +44,10 @@ public class ItineraryGenerationController {
             @PathVariable UUID tripPublicId,
             @Valid @RequestBody GenerateItineraryPreviewRequest request) {
 
-        ItineraryPlan plan =
-                itineraryGenerationService.generatePlan(principal.id(), tripPublicId, request.preferenceDescription());
+        GeneratedItineraryPreview preview = itineraryGenerationService.generatePreview(
+                principal.id(), tripPublicId, request.preferenceDescription());
 
-        return previewMapper.toResponse(plan);
+        return previewMapper.toResponse(preview);
     }
 
     @PostMapping("/generation-apply")

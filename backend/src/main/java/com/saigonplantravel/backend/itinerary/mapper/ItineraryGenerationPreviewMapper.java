@@ -5,7 +5,7 @@ import com.saigonplantravel.backend.itinerary.dto.ItineraryGenerationPreviewResp
 import com.saigonplantravel.backend.itinerary.dto.ItineraryPlaceResponse;
 import com.saigonplantravel.backend.itinerary.dto.ItineraryScheduleResponse;
 import com.saigonplantravel.backend.itinerary.dto.ItinerarySummaryResponse;
-import com.saigonplantravel.backend.scheduling.model.ItineraryPlan;
+import com.saigonplantravel.backend.itinerary.model.GeneratedItineraryPreview;
 import java.util.List;
 import java.util.stream.IntStream;
 import org.springframework.stereotype.Component;
@@ -13,7 +13,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class ItineraryGenerationPreviewMapper {
 
-    public ItineraryGenerationPreviewResponse toResponse(ItineraryPlan plan) {
+    public ItineraryGenerationPreviewResponse toResponse(GeneratedItineraryPreview preview) {
+        var plan = preview.plan();
 
         List<GeneratedItineraryStopResponse> stops = IntStream.range(
                         0, plan.stops().size())
@@ -36,7 +37,8 @@ public class ItineraryGenerationPreviewMapper {
                                     stop.visitEndTime(),
                                     stop.travelMinutes(),
                                     stop.travelDistanceKm(),
-                                    stop.estimatedCost()));
+                                    stop.estimatedCost()),
+                            preview.reasonsByPlaceSlug().get(place.getSlug()));
                 })
                 .toList();
 

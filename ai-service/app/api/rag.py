@@ -1,5 +1,7 @@
-from pydantic import BaseModel, Field
 from fastapi import APIRouter
+from pydantic import BaseModel, Field, field_validator
+
+from app.rag.itinerary_explanation_service import generate_itinerary_reasons
 from app.rag.rag_service import answer_question
 
 
@@ -36,6 +38,40 @@ class RagAskResponse(BaseModel):
     sources: list[RagSourceResponse]
 
 
+class ItineraryReasonsRequest(BaseModel):
+    preference: str = Field(
+        min_length=3,
+        max_length=1000,
+    )
+    place_slugs: list[str] = Field(
+        min_length=1,
+        max_length=30,
+    )
+
+    @field_validator("place_slugs")
+    @classmethod
+    def normalize_place_slugs(cls, place_slugs: list[str]) -> list[str]:
+        normalized = list(
+            dict.fromkeys(
+                slug.strip()
+                for slug in place_slugs
+                if slug.strip()
+            )
+        )
+        if not normalized:
+            raise ValueError("At least one non-blank place slug is required")
+        return normalized
+
+
+class ItineraryReasonResponse(BaseModel):
+    place_slug: str
+    reason: str | None
+
+
+class ItineraryReasonsResponse(BaseModel):
+    reasons: list[ItineraryReasonResponse]
+
+
 @router.post(
     "/ask",
     response_model=RagAskResponse,
@@ -64,4 +100,27 @@ def ask_rag(
     return RagAskResponse(
         answer=result.answer,
         sources=sources,
+    )
+
+
+@router.post(
+    "/itinerary-reasons",
+    response_model=ItineraryReasonsResponse,
+)
+def explain_itinerary(
+    request: ItineraryReasonsRequest,
+) -> ItineraryReasonsResponse:
+    reasons = generate_itinerary_reasons(
+        preference=request.preference.strip(),
+        place_slugs=request.place_slugs,
+    )
+
+    return ItineraryReasonsResponse(
+        reasons=[
+            ItineraryReasonResponse(
+                place_slug=item.place_slug,
+                reason=item.reason,
+            )
+            for item in reasons
+        ]
     )
