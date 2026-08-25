@@ -50,7 +50,7 @@ def recommend_places(
     fetch_k: int = 50,
     candidate_k: int = 30,
     top_k: int = 15,
-    lambda_weight: float = 0.7,
+    lambda_weight: float = 0.9,
 ) -> list[PlaceCandidate]:
     candidates, embeddings_by_slug = retrieve_candidate_places(
         query=query,
