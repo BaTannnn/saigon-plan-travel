@@ -5,11 +5,11 @@ import static org.mockito.Mockito.*;
 
 import com.saigonplantravel.backend.place.entity.Place;
 import com.saigonplantravel.backend.recommendation.model.RecommendationCandidate;
-import com.saigonplantravel.backend.recommendation.ranking.CandidateRanker;
-import com.saigonplantravel.backend.recommendation.scoring.BudgetScorer;
-import com.saigonplantravel.backend.recommendation.scoring.CandidateScorer;
-import com.saigonplantravel.backend.recommendation.scoring.EnvironmentScorer;
-import com.saigonplantravel.backend.recommendation.scoring.TravelScorer;
+import com.saigonplantravel.backend.scheduling.ranking.CandidateRanker;
+import com.saigonplantravel.backend.scheduling.scoring.BudgetScorer;
+import com.saigonplantravel.backend.scheduling.scoring.CandidateScorer;
+import com.saigonplantravel.backend.scheduling.scoring.EnvironmentScorer;
+import com.saigonplantravel.backend.scheduling.scoring.TravelScorer;
 import com.saigonplantravel.backend.scheduling.model.ItineraryPlan;
 import com.saigonplantravel.backend.scheduling.model.TravelEstimate;
 import com.saigonplantravel.backend.scheduling.travel.TravelEstimator;

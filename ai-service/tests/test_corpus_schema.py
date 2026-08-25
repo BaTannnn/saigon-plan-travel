@@ -3,7 +3,7 @@ from datetime import date
 
 from pydantic import ValidationError
 
-from app.rag.corpus_schema import CorpusSection, PlaceCorpus, Source
+from app.knowledge.corpus_schema import CorpusSection, PlaceCorpus, Source
 
 
 CONTENT = (

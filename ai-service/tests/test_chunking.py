@@ -2,13 +2,13 @@ import unittest
 from datetime import date
 from pathlib import Path
 
-from app.rag.chunking import (
+from app.knowledge.chunking import (
     SECTION_CHUNK_SIZE,
     build_place_markdown,
     split_place_corpus,
     split_place_markdown,
 )
-from app.rag.corpus_schema import CorpusSection, PlaceCorpus, Source
+from app.knowledge.corpus_schema import CorpusSection, PlaceCorpus, Source
 
 
 CORPUS_DIR = Path(__file__).resolve().parents[1] / "corpus"

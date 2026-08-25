@@ -1,6 +1,6 @@
-package com.saigonplantravel.backend.recommendation.ranking;
+package com.saigonplantravel.backend.scheduling.ranking;
 
-import com.saigonplantravel.backend.recommendation.model.ScoredCandidate;
+import com.saigonplantravel.backend.scheduling.model.ScoredCandidate;
 import java.util.Comparator;
 import java.util.List;
 import org.springframework.stereotype.Component;

@@ -1,8 +1,8 @@
 from pathlib import Path
 
-from app.rag.chunking import split_place_corpus
-from app.rag.corpus_schema import PlaceCorpus
-from app.rag.embedding_service import compute_document_fingerprint
+from app.knowledge.chunking import split_place_corpus
+from app.knowledge.corpus_schema import PlaceCorpus
+from app.knowledge.embedding_service import compute_document_fingerprint
 
 
 CORPUS_DIR = Path("corpus")

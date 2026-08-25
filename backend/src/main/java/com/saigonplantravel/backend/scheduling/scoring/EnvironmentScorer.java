@@ -1,4 +1,4 @@
-package com.saigonplantravel.backend.recommendation.scoring;
+package com.saigonplantravel.backend.scheduling.scoring;
 
 import com.saigonplantravel.backend.trip.domain.EnvironmentPreference;
 import org.springframework.stereotype.Component;

@@ -1,4 +1,4 @@
-from app.rag.knowledge_repository import CandidateChunk
+from app.knowledge.knowledge_repository import CandidateChunk
 
 
 def select_unique_candidate_chunks(

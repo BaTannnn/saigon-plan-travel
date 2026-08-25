@@ -6,13 +6,13 @@ from unittest.mock import MagicMock, patch
 
 from pydantic import ValidationError
 
-from app.rag.chunking import (
+from app.knowledge.chunking import (
     PreparedKnowledgeChunk,
     split_place_corpus,
 )
-from app.rag.corpus_schema import CorpusSection, PlaceCorpus, Source
-from app.rag.embedding_service import compute_document_fingerprint
-from app.rag.knowledge_repository import StoredChunkState
+from app.knowledge.corpus_schema import CorpusSection, PlaceCorpus, Source
+from app.knowledge.embedding_service import compute_document_fingerprint
+from app.knowledge.knowledge_repository import StoredChunkState
 from scripts.ingest_corpus import (
     ChunkIngestionStatus,
     ingest_chunk,

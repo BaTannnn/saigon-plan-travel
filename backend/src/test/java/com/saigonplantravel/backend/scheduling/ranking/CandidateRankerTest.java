@@ -1,9 +1,9 @@
-package com.saigonplantravel.backend.recommendation.ranking;
+package com.saigonplantravel.backend.scheduling.ranking;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.saigonplantravel.backend.place.entity.Place;
-import com.saigonplantravel.backend.recommendation.model.ScoredCandidate;
+import com.saigonplantravel.backend.scheduling.model.ScoredCandidate;
 import java.math.BigDecimal;
 import java.util.List;
 import org.junit.jupiter.api.Test;

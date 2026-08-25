@@ -5,8 +5,8 @@ from statistics import mean
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-from app.rag.chunking import build_place_markdown, split_place_corpus
-from app.rag.corpus_schema import PlaceCorpus
+from app.knowledge.chunking import build_place_markdown, split_place_corpus
+from app.knowledge.corpus_schema import PlaceCorpus
 
 
 PROJECT_DIR = Path(__file__).resolve().parents[1]

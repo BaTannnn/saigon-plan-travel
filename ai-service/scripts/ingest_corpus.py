@@ -1,23 +1,23 @@
 from enum import Enum
 from pathlib import Path
 
-from app.rag.chunking import (
+from app.knowledge.chunking import (
     PreparedKnowledgeChunk,
     split_place_corpus,
 )
-from app.rag.corpus_schema import PlaceCorpus
-from app.rag.embedding_service import (
+from app.knowledge.corpus_schema import PlaceCorpus
+from app.knowledge.embedding_service import (
     compute_document_fingerprint,
     embed_document,
 )
-from app.rag.knowledge_repository import (
+from app.knowledge.knowledge_repository import (
     StoredChunkState,
     delete_stale_chunks,
     find_stored_chunk_state,
     update_chunk_metadata,
     upsert_chunk,
 )
-from app.rag.place_lookup import resolve_place_id
+from app.knowledge.place_lookup import resolve_place_id
 from app.db.postgres import pool
 
 CORPUS_DIR = Path("corpus")

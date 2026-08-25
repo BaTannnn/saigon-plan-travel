@@ -2,7 +2,7 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
-from app.rag.corpus_schema import PlaceCorpus
+from app.knowledge.corpus_schema import PlaceCorpus
 
 
 CORPUS_DIR = Path("corpus")

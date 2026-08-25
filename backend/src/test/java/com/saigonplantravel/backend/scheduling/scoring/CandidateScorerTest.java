@@ -1,11 +1,11 @@
-package com.saigonplantravel.backend.recommendation.scoring;
+package com.saigonplantravel.backend.scheduling.scoring;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 
 import com.saigonplantravel.backend.place.entity.Place;
 import com.saigonplantravel.backend.recommendation.model.RecommendationCandidate;
-import com.saigonplantravel.backend.recommendation.model.ScoredCandidate;
+import com.saigonplantravel.backend.scheduling.model.ScoredCandidate;
 import com.saigonplantravel.backend.trip.domain.EnvironmentPreference;
 import com.saigonplantravel.backend.trip.domain.TravelPace;
 import com.saigonplantravel.backend.trip.entity.Trip;

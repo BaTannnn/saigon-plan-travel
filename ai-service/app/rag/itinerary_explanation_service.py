@@ -1,8 +1,8 @@
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from app.rag.embedding_service import embed_query
-from app.rag.knowledge_repository import (
+from app.knowledge.embedding_service import embed_query
+from app.knowledge.knowledge_repository import (
     KnowledgeChunk,
     find_relevant_chunks_by_place_slugs,
 )

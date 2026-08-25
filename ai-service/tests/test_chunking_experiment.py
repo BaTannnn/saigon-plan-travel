@@ -3,7 +3,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
-from app.rag.chunking import split_place_corpus
+from app.knowledge.chunking import split_place_corpus
 from scripts.evaluate_chunking import (
     CONFIGURATION_ORDER,
     CORPUS_DIR,
@@ -145,15 +145,15 @@ class ChunkingExperimentTest(unittest.TestCase):
         corpus = load_sample_corpora()[0]
 
         with patch(
-            "app.rag.embedding_service.embed_document"
+            "app.knowledge.embedding_service.embed_document"
         ) as embed_document, patch(
-            "app.rag.embedding_service.embed_query"
+            "app.knowledge.embedding_service.embed_query"
         ) as embed_query, patch(
-            "app.rag.knowledge_repository.get_connection"
+            "app.knowledge.knowledge_repository.get_connection"
         ) as get_connection, patch(
-            "app.rag.knowledge_repository.upsert_chunk"
+            "app.knowledge.knowledge_repository.upsert_chunk"
         ) as upsert_chunk, patch(
-            "app.rag.knowledge_repository.delete_stale_chunks"
+            "app.knowledge.knowledge_repository.delete_stale_chunks"
         ) as delete_stale_chunks:
             report, _ = build_markdown_report([corpus])
 

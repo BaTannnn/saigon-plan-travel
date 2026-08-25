@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch
 
-from app.rag.knowledge_repository import CandidateChunk
+from app.knowledge.knowledge_repository import CandidateChunk
 from app.recommendation.recommendation_service import recommend_places
 
 

@@ -1,4 +1,4 @@
-package com.saigonplantravel.backend.recommendation.scoring;
+package com.saigonplantravel.backend.scheduling.scoring;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

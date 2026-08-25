@@ -6,7 +6,7 @@ from langchain_text_splitters import (
     RecursiveCharacterTextSplitter,
 )
 
-from app.rag.corpus_schema import (
+from app.knowledge.corpus_schema import (
     KnowledgeSection,
     PlaceCorpus,
     Source,

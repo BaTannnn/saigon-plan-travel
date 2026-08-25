@@ -1,7 +1,7 @@
 from google import genai
 from google.genai import types
 from dotenv import load_dotenv
-from app.rag.content_hash import compute_content_hash
+from app.knowledge.content_hash import compute_content_hash
 
 
 EMBEDDING_MODEL = "gemini-embedding-2"

@@ -7,7 +7,7 @@ from app.rag.itinerary_explanation_service import (
     INSUFFICIENT_CONTEXT_REASON,
     generate_itinerary_reasons,
 )
-from app.rag.knowledge_repository import KnowledgeChunk
+from app.knowledge.knowledge_repository import KnowledgeChunk
 
 
 def chunk(

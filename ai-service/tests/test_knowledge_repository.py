@@ -2,7 +2,7 @@ import unittest
 from datetime import date
 from unittest.mock import MagicMock, patch
 
-from app.rag.knowledge_repository import (
+from app.knowledge.knowledge_repository import (
     delete_stale_chunks,
     find_relevant_chunks_by_place_slugs,
     find_stored_chunk_state,
@@ -13,7 +13,7 @@ from app.rag.knowledge_repository import (
 
 class KnowledgeRepositoryTest(unittest.TestCase):
 
-    @patch("app.rag.knowledge_repository.get_connection")
+    @patch("app.knowledge.knowledge_repository.get_connection")
     def test_finds_stored_chunk_state_by_existing_chunk_identity(
         self,
         get_connection: MagicMock,
@@ -42,7 +42,7 @@ class KnowledgeRepositoryTest(unittest.TestCase):
         self.assertIn("chunk_index = %s", query)
         self.assertEqual((42, 3), parameters)
 
-    @patch("app.rag.knowledge_repository.get_connection")
+    @patch("app.knowledge.knowledge_repository.get_connection")
     def test_missing_chunk_has_no_stored_state(
         self,
         get_connection: MagicMock,
@@ -60,7 +60,7 @@ class KnowledgeRepositoryTest(unittest.TestCase):
 
         self.assertIsNone(state)
 
-    @patch("app.rag.knowledge_repository.get_connection")
+    @patch("app.knowledge.knowledge_repository.get_connection")
     def test_updates_only_metadata_without_vector(
         self,
         get_connection: MagicMock,
@@ -87,7 +87,7 @@ class KnowledgeRepositoryTest(unittest.TestCase):
         self.assertEqual(42, parameters[4])
         self.assertEqual(3, parameters[5])
 
-    @patch("app.rag.knowledge_repository.get_connection")
+    @patch("app.knowledge.knowledge_repository.get_connection")
     def test_deletes_stale_chunks_only_for_current_place(
         self,
         get_connection: MagicMock,
@@ -109,7 +109,7 @@ class KnowledgeRepositoryTest(unittest.TestCase):
         self.assertIn("NOT (chunk_index = ANY(%s))", query)
         self.assertEqual((42, [1, 2, 3]), parameters)
 
-    @patch("app.rag.knowledge_repository.get_connection")
+    @patch("app.knowledge.knowledge_repository.get_connection")
     def test_refuses_stale_cleanup_with_empty_current_indexes(
         self,
         get_connection: MagicMock,
@@ -122,7 +122,7 @@ class KnowledgeRepositoryTest(unittest.TestCase):
 
         get_connection.assert_not_called()
 
-    @patch("app.rag.knowledge_repository.get_connection")
+    @patch("app.knowledge.knowledge_repository.get_connection")
     def test_finds_ranked_evidence_for_requested_places_in_one_query(
         self,
         get_connection: MagicMock,
@@ -177,7 +177,7 @@ class KnowledgeRepositoryTest(unittest.TestCase):
         self.assertEqual(["place-a", "place-b"], parameters[2])
         self.assertEqual(2, parameters[3])
 
-    @patch("app.rag.knowledge_repository.get_connection")
+    @patch("app.knowledge.knowledge_repository.get_connection")
     def test_empty_relevant_place_list_does_not_query_database(
         self,
         get_connection: MagicMock,
@@ -191,7 +191,7 @@ class KnowledgeRepositoryTest(unittest.TestCase):
         self.assertEqual([], chunks)
         get_connection.assert_not_called()
 
-    @patch("app.rag.knowledge_repository.get_connection")
+    @patch("app.knowledge.knowledge_repository.get_connection")
     def test_candidate_search_filters_whitelist_before_ranking_and_limit(
         self,
         get_connection: MagicMock,
@@ -217,7 +217,7 @@ class KnowledgeRepositoryTest(unittest.TestCase):
         self.assertEqual(["place-d", "place-e"], parameters[1])
         self.assertEqual(15, parameters[3])
 
-    @patch("app.rag.knowledge_repository.get_connection")
+    @patch("app.knowledge.knowledge_repository.get_connection")
     def test_empty_candidate_whitelist_does_not_query_database(
         self,
         get_connection: MagicMock,

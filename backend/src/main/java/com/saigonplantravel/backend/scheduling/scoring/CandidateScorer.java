@@ -1,7 +1,7 @@
-package com.saigonplantravel.backend.recommendation.scoring;
+package com.saigonplantravel.backend.scheduling.scoring;
 
 import com.saigonplantravel.backend.recommendation.model.RecommendationCandidate;
-import com.saigonplantravel.backend.recommendation.model.ScoredCandidate;
+import com.saigonplantravel.backend.scheduling.model.ScoredCandidate;
 import com.saigonplantravel.backend.trip.entity.Trip;
 import java.math.BigDecimal;
 import org.springframework.stereotype.Component;

@@ -3,7 +3,7 @@ import unittest
 from app.recommendation.place_retriever import select_unique_candidate_chunks
 
 
-from app.rag.knowledge_repository import CandidateChunk
+from app.knowledge.knowledge_repository import CandidateChunk
 
 
 def result(

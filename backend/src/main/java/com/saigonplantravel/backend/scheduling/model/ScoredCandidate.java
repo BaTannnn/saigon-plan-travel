@@ -1,4 +1,4 @@
-package com.saigonplantravel.backend.recommendation.model;
+package com.saigonplantravel.backend.scheduling.model;
 
 import com.saigonplantravel.backend.place.entity.Place;
 
