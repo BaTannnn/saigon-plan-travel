@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 
 from app.rag.knowledge_repository import (
     delete_stale_chunks,
-    find_chunks_by_place_slugs,
+    find_relevant_chunks_by_place_slugs,
     find_stored_chunk_state,
     update_chunk_metadata,
 )
@@ -121,8 +121,57 @@ class KnowledgeRepositoryTest(unittest.TestCase):
 
         get_connection.assert_not_called()
 
+    # @patch("app.rag.knowledge_repository.get_connection")
+    # def test_finds_only_chunks_for_requested_place_slugs(
+    #     self,
+    #     get_connection: MagicMock,
+    # ):
+    #     cursor = (
+    #         get_connection.return_value.__enter__.return_value
+    #         .cursor.return_value.__enter__.return_value
+    #     )
+    #     cursor.fetchall.return_value = [
+    #         (
+    #             "place-a",
+    #             "Place A",
+    #             1,
+    #             "OVERVIEW",
+    #             "Context A",
+    #             "Source A",
+    #             "https://example.com/a",
+    #         ),
+    #         (
+    #             "place-b",
+    #             "Place B",
+    #             2,
+    #             "HIGHLIGHTS",
+    #             "Context B",
+    #             "Source B",
+    #             "https://example.com/b",
+    #         ),
+    #     ]
+    #
+    #     chunks = find_chunks_by_place_slugs(["place-a", "place-b"])
+    #
+    #     self.assertEqual(
+    #         ["place-a", "place-b"],
+    #         [chunk.place_slug for chunk in chunks],
+    #     )
+    #     query, parameters = cursor.execute.call_args.args
+    #     self.assertIn("p.slug = ANY(%s)", query)
+    #     self.assertIn("ORDER BY p.slug, c.chunk_index", query)
+    #     self.assertEqual((["place-a", "place-b"],), parameters)
+
+    # @patch("app.rag.knowledge_repository.get_connection")
+    # def test_empty_slug_list_does_not_query_database(
+    #     self,
+    #     get_connection: MagicMock,
+    # ):
+    #     self.assertEqual([], find_chunks_by_place_slugs([]))
+    #     get_connection.assert_not_called()
+
     @patch("app.rag.knowledge_repository.get_connection")
-    def test_finds_only_chunks_for_requested_place_slugs(
+    def test_finds_ranked_evidence_for_requested_places_in_one_query(
         self,
         get_connection: MagicMock,
     ):
@@ -134,40 +183,60 @@ class KnowledgeRepositoryTest(unittest.TestCase):
             (
                 "place-a",
                 "Place A",
-                1,
-                "OVERVIEW",
-                "Context A",
+                2,
+                "HIGHLIGHTS",
+                "Relevant context A",
                 "Source A",
                 "https://example.com/a",
+                0.91,
             ),
             (
                 "place-b",
                 "Place B",
-                2,
-                "HIGHLIGHTS",
-                "Context B",
+                4,
+                "EXPERIENCE",
+                "Relevant context B",
                 "Source B",
                 "https://example.com/b",
+                0.88,
             ),
         ]
 
-        chunks = find_chunks_by_place_slugs(["place-a", "place-b"])
+        chunks = find_relevant_chunks_by_place_slugs(
+            query_embedding=[0.1, 0.2],
+            place_slugs=["place-a", "place-b"],
+            chunks_per_place=2,
+        )
 
         self.assertEqual(
             ["place-a", "place-b"],
             [chunk.place_slug for chunk in chunks],
         )
+        self.assertEqual([0.91, 0.88], [chunk.similarity for chunk in chunks])
+        get_connection.assert_called_once()
+        cursor.execute.assert_called_once()
         query, parameters = cursor.execute.call_args.args
+        self.assertIn("p.active = TRUE", query)
         self.assertIn("p.slug = ANY(%s)", query)
-        self.assertIn("ORDER BY p.slug, c.chunk_index", query)
-        self.assertEqual((["place-a", "place-b"],), parameters)
+        self.assertIn("ROW_NUMBER() OVER", query)
+        self.assertIn("PARTITION BY p.id", query)
+        self.assertIn("c.embedding <=> %s", query)
+        self.assertIn("evidence_rank <= %s", query)
+        self.assertEqual(["place-a", "place-b"], parameters[2])
+        self.assertEqual(2, parameters[3])
 
     @patch("app.rag.knowledge_repository.get_connection")
-    def test_empty_slug_list_does_not_query_database(
+    def test_empty_relevant_place_list_does_not_query_database(
         self,
         get_connection: MagicMock,
     ):
-        self.assertEqual([], find_chunks_by_place_slugs([]))
+        chunks = find_relevant_chunks_by_place_slugs(
+            query_embedding=[0.1, 0.2],
+            place_slugs=[],
+            chunks_per_place=2,
+        )
+
+        self.assertEqual([], chunks)
         get_connection.assert_not_called()
 
 
