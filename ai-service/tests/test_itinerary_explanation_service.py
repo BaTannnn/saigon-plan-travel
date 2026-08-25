@@ -154,36 +154,49 @@ class ItineraryExplanationServiceTest(unittest.TestCase):
         "app.rag.itinerary_explanation_service.embed_query",
         return_value=[0.1, 0.2],
     )
-    def test_returns_neutral_reason_for_place_without_knowledge(
+    def test_sends_only_evidenced_places_and_merges_missing_context(
         self,
         embed_query: MagicMock,
         find_chunks: MagicMock,
         create_model: MagicMock,
     ):
-        find_chunks.return_value = [chunk("place-a", "Context A")]
+        find_chunks.return_value = [
+            chunk("place-a", "Context A"),
+            chunk("place-b", "Context B"),
+        ]
         model = structured_model(create_model)
         model.invoke.return_value = GeneratedItineraryReasons(
             reasons=[
                 GeneratedItineraryReason(
-                    place_slug="place-a",
-                    reason="Lý do A",
+                    place_slug="place-b",
+                    reason="Lý do B",
                 ),
                 GeneratedItineraryReason(
-                    place_slug="place-without-context",
-                    reason="This ungrounded text must not be used",
+                    place_slug="place-a",
+                    reason="Lý do A",
                 ),
             ]
         )
 
         reasons = generate_itinerary_reasons(
             "Tôi thích thiên nhiên",
-            ["place-a", "place-without-context"],
+            ["place-a", "place-b", "place-c"],
         )
 
-        self.assertEqual("Lý do A", reasons[0].reason)
-        self.assertEqual(INSUFFICIENT_CONTEXT_REASON, reasons[1].reason)
+        self.assertEqual(
+            ["place-a", "place-b", "place-c"],
+            [item.place_slug for item in reasons],
+        )
+        self.assertEqual(
+            ["Lý do A", "Lý do B", INSUFFICIENT_CONTEXT_REASON],
+            [item.reason for item in reasons],
+        )
         prompt = model.invoke.call_args.args[0][1].content
-        self.assertIn("place-without-context", prompt)
+        self.assertIn(
+            "PLACE SLUGS:\nplace-a\nplace-b\n\nCONTEXT:",
+            prompt,
+        )
+        self.assertNotIn("place-c", prompt)
         model.invoke.assert_called_once()
 
     @patch("app.rag.itinerary_explanation_service.create_chat_model")
@@ -386,6 +399,22 @@ class ItineraryExplanationServiceTest(unittest.TestCase):
                             place_slug="place-a",
                             reason="Only A",
                         )
+                    ]
+                ),
+            ),
+            (
+                "unknown place slug",
+                ["place-a", "place-without-context"],
+                GeneratedItineraryReasons(
+                    reasons=[
+                        GeneratedItineraryReason(
+                            place_slug="place-a",
+                            reason="Grounded A",
+                        ),
+                        GeneratedItineraryReason(
+                            place_slug="place-without-context",
+                            reason="Ungrounded",
+                        ),
                     ]
                 ),
             ),

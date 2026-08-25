@@ -120,8 +120,8 @@ def generate_itinerary_reasons(
         chunks_per_place=chunks_per_place,
     )
     slugs_with_context = {chunk.place_slug for chunk in chunks}
-    slugs_without_context = [
-        slug for slug in unique_slugs if slug not in slugs_with_context
+    llm_slugs = [
+        slug for slug in unique_slugs if slug in slugs_with_context
     ]
 
     if not chunks:
@@ -129,11 +129,6 @@ def generate_itinerary_reasons(
 
     reasons_by_slug: dict[str, str] = {}
     context = build_itinerary_context(chunks)
-    if slugs_without_context:
-        context += (
-            "\n\n[PLACES WITHOUT RETRIEVED CONTEXT]\n"
-            + "\n".join(slugs_without_context)
-        )
 
     structured_model = create_chat_model().with_structured_output(
         GeneratedItineraryReasons
@@ -141,7 +136,7 @@ def generate_itinerary_reasons(
     response = structured_model.invoke(
         PROMPT.format_messages(
             preference=preference,
-            place_slugs="\n".join(unique_slugs),
+            place_slugs="\n".join(llm_slugs),
             context=context,
         )
     )
@@ -156,7 +151,7 @@ def generate_itinerary_reasons(
         raise ValueError("Malformed itinerary explanation output") from exception
 
     for item in parsed.reasons:
-        if item.place_slug not in unique_slugs:
+        if item.place_slug not in slugs_with_context:
             raise ValueError(
                 "Itinerary explanation output contains an unknown place slug"
             )
@@ -169,19 +164,22 @@ def generate_itinerary_reasons(
             raise ValueError(
                 "Itinerary explanation output contains a blank reason"
             )
-        reasons_by_slug[item.place_slug] = (
-            reason
-            if item.place_slug in slugs_with_context
-            else INSUFFICIENT_CONTEXT_REASON
-        )
+        reasons_by_slug[item.place_slug] = reason
 
-    if set(reasons_by_slug) != set(unique_slugs):
+    if set(reasons_by_slug) != slugs_with_context:
         raise ValueError(
             "Itinerary explanation output is missing a requested place slug"
         )
 
     return [
-        ItineraryReason(place_slug=slug, reason=reasons_by_slug.get(slug))
+        ItineraryReason(
+            place_slug=slug,
+            reason=(
+                reasons_by_slug[slug]
+                if slug in slugs_with_context
+                else INSUFFICIENT_CONTEXT_REASON
+            ),
+        )
         for slug in unique_slugs
     ]
 
