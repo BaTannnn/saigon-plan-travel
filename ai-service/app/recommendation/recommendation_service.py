@@ -11,7 +11,11 @@ def retrieve_candidate_places(
     query: str,
     fetch_k: int = 50,
     candidate_k: int = 30,
+    eligible_place_slugs: list[str] | None = None,
 ) -> tuple[list[PlaceCandidate], dict[str, list[float]]]:
+    if eligible_place_slugs == []:
+        return [], {}
+
     query_embedding = embed_query(query)
 
     if query_embedding is None:
@@ -20,6 +24,7 @@ def retrieve_candidate_places(
     retrieved_chunks = search_candidate_chunks(
         query_embedding=query_embedding,
         limit=fetch_k,
+        eligible_place_slugs=eligible_place_slugs,
     )
 
     unique_chunks = select_unique_candidate_chunks(
@@ -51,11 +56,16 @@ def recommend_places(
     candidate_k: int = 30,
     top_k: int = 15,
     lambda_weight: float = 0.9,
+    eligible_place_slugs: list[str] | None = None,
 ) -> list[PlaceCandidate]:
+    if eligible_place_slugs == []:
+        return []
+
     candidates, embeddings_by_slug = retrieve_candidate_places(
         query=query,
         fetch_k=fetch_k,
         candidate_k=candidate_k,
+        eligible_place_slugs=eligible_place_slugs,
     )
 
     return select_with_mmr(

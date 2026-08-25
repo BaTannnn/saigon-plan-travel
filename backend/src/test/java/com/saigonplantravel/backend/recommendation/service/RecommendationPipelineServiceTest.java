@@ -57,7 +57,7 @@ class RecommendationPipelineServiceTest {
 
         List<RecommendationCandidate> budgetFiltered = List.of(candidateB);
 
-        when(placeRecommendationService.recommend(preference)).thenReturn(retrieved);
+        when(placeRecommendationService.recommend(trip, preference)).thenReturn(retrieved);
 
         when(openingHoursCandidateFilter.filter(retrieved, trip)).thenReturn(openingFiltered);
 
@@ -67,7 +67,7 @@ class RecommendationPipelineServiceTest {
 
         assertThat(result).containsExactly(candidateB);
 
-        verify(placeRecommendationService).recommend(preference);
+        verify(placeRecommendationService).recommend(trip, preference);
 
         verify(openingHoursCandidateFilter).filter(retrieved, trip);
 
@@ -81,7 +81,7 @@ class RecommendationPipelineServiceTest {
 
         List<RecommendationCandidate> retrieved = List.of(candidateA);
 
-        when(placeRecommendationService.recommend(preference)).thenReturn(retrieved);
+        when(placeRecommendationService.recommend(trip, preference)).thenReturn(retrieved);
 
         when(openingHoursCandidateFilter.filter(retrieved, trip)).thenReturn(List.of());
 

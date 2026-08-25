@@ -282,8 +282,16 @@ def search_similar_chunks(
 def search_candidate_chunks(
     query_embedding: list[float],
     limit: int = 30,
+    eligible_place_slugs: list[str] | None = None,
 ) -> list[CandidateChunk]:
-    query = """
+    if eligible_place_slugs == []:
+        return []
+
+    eligibility_clause = ""
+    if eligible_place_slugs is not None:
+        eligibility_clause = "AND p.slug = ANY(%s)"
+
+    query = f"""
         SELECT
             p.slug,
             p.name,
@@ -294,22 +302,31 @@ def search_candidate_chunks(
         JOIN places p
             ON p.id = c.place_id
         WHERE p.active = TRUE
+          {eligibility_clause}
         ORDER BY c.embedding <=> %s
         LIMIT %s
     """
 
     vector = Vector(query_embedding)
+    parameters: tuple[object, ...]
+
+    if eligible_place_slugs is None:
+        parameters = (
+            vector,
+            vector,
+            limit,
+        )
+    else:
+        parameters = (
+            vector,
+            eligible_place_slugs,
+            vector,
+            limit,
+        )
 
     with get_connection() as connection:
         with connection.cursor() as cursor:
-            cursor.execute(
-                query,
-                (
-                    vector,
-                    vector,
-                    limit,
-                ),
-            )
+            cursor.execute(query, parameters)
 
             rows = cursor.fetchall()
 

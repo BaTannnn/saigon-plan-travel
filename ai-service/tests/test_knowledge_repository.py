@@ -6,6 +6,7 @@ from app.rag.knowledge_repository import (
     delete_stale_chunks,
     find_relevant_chunks_by_place_slugs,
     find_stored_chunk_state,
+    search_candidate_chunks,
     update_chunk_metadata,
 )
 
@@ -185,6 +186,46 @@ class KnowledgeRepositoryTest(unittest.TestCase):
             query_embedding=[0.1, 0.2],
             place_slugs=[],
             chunks_per_place=2,
+        )
+
+        self.assertEqual([], chunks)
+        get_connection.assert_not_called()
+
+    @patch("app.rag.knowledge_repository.get_connection")
+    def test_candidate_search_filters_whitelist_before_ranking_and_limit(
+        self,
+        get_connection: MagicMock,
+    ):
+        cursor = (
+            get_connection.return_value.__enter__.return_value
+            .cursor.return_value.__enter__.return_value
+        )
+        cursor.fetchall.return_value = []
+
+        search_candidate_chunks(
+            query_embedding=[0.1, 0.2],
+            limit=15,
+            eligible_place_slugs=["place-d", "place-e"],
+        )
+
+        query, parameters = cursor.execute.call_args.args
+        whitelist_position = query.index("p.slug = ANY(%s)")
+        order_position = query.index("ORDER BY c.embedding <=> %s")
+        limit_position = query.index("LIMIT %s")
+        self.assertLess(whitelist_position, order_position)
+        self.assertLess(order_position, limit_position)
+        self.assertEqual(["place-d", "place-e"], parameters[1])
+        self.assertEqual(15, parameters[3])
+
+    @patch("app.rag.knowledge_repository.get_connection")
+    def test_empty_candidate_whitelist_does_not_query_database(
+        self,
+        get_connection: MagicMock,
+    ):
+        chunks = search_candidate_chunks(
+            query_embedding=[0.1, 0.2],
+            limit=15,
+            eligible_place_slugs=[],
         )
 
         self.assertEqual([], chunks)

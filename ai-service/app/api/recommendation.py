@@ -1,5 +1,7 @@
 from fastapi import APIRouter
-from pydantic import BaseModel, Field
+from typing import Annotated
+
+from pydantic import BaseModel, Field, field_validator
 
 from app.recommendation.recommendation_service import recommend_places
 
@@ -21,6 +23,31 @@ class PlaceRecommendationRequest(BaseModel):
         ge=1,
         le=30,
     )
+
+    eligible_place_slugs: list[
+        Annotated[str, Field(strict=True, min_length=1, max_length=180)]
+    ]
+
+    @field_validator("eligible_place_slugs")
+    @classmethod
+    def normalize_eligible_place_slugs(
+        cls,
+        slugs: list[str],
+    ) -> list[str]:
+        normalized_slugs: list[str] = []
+        seen: set[str] = set()
+
+        for slug in slugs:
+            normalized_slug = slug.strip()
+
+            if not normalized_slug:
+                raise ValueError("eligible place slugs must not be blank")
+
+            if normalized_slug not in seen:
+                seen.add(normalized_slug)
+                normalized_slugs.append(normalized_slug)
+
+        return normalized_slugs
 
 
 class PlaceCandidateResponse(BaseModel):
@@ -44,6 +71,7 @@ def recommend_place_candidates(
     candidates = recommend_places(
         query=request.query.strip(),
         top_k=request.top_k,
+        eligible_place_slugs=request.eligible_place_slugs,
     )
 
     return PlaceRecommendationResponse(

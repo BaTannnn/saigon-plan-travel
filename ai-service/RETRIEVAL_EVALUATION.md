@@ -10,9 +10,57 @@ family activities, urban sightseeing, photography, and mixed preferences.
 Evaluation results are used to justify retrieval configuration choices instead
 of selecting Top-K, MMR lambda, or retrieval strategies purely by intuition.
 
-## Current baseline
+## Production constraint-aware retrieval
 
-The production recommendation retrieval flow remains:
+The itinerary recommendation path applies feasibility before semantic ranking:
+
+```text
+Preference + Trip
+       ↓
+Spring coarse feasibility
+       ↓
+eligible_place_slugs
+       ↓
+AI filtered dense retrieval
+       ↓
+place-level deduplication
+       ↓
+MMR (lambda = 0.9)
+       ↓
+Spring exact validation
+       ↓
+Scheduler
+```
+
+This prevents candidate starvation. For example, if three impossible places
+occupy the global semantic top five, post-filtering leaves only two candidates.
+Searching inside Spring's eligible whitelist lets the next three feasible
+places compete for those same five slots.
+
+The responsibility boundary is intentionally narrow:
+
+```text
+Spring:    CAN GO?       (business constraints)
+RAG:       WOULD LIKE?   (semantic preference ranking)
+Scheduler: WHEN / ORDER? (arrival, travel, remaining budget, timeline)
+```
+
+Spring sends `eligible_place_slugs` on every production recommendation
+request. An empty list is an explicit empty whitelist and returns no
+recommendations; it never falls back to unrestricted retrieval. The Python
+service's optional `None` value exists only for backward-compatible offline
+evaluation helpers, where it retains the original unrestricted corpus search.
+
+Coarse feasibility excludes only known-impossible places. A known minimum
+place cost above the whole trip budget is excluded, while unknown cost is kept.
+Opening hours must provide enough time inside the trip window for the place's
+estimated visit duration; missing or incomplete hours are kept. Existing
+Spring post-retrieval validation and dynamic scheduler checks remain defense
+in depth.
+
+## Evaluation baseline
+
+Within the eligible candidate space, the production retrieval stages remain:
 
 ```text
 dense retrieval

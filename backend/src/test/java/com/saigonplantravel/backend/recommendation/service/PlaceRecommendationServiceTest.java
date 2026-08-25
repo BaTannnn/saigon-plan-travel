@@ -28,44 +28,66 @@ class PlaceRecommendationServiceTest {
     @Mock
     private PlaceRepository placeRepository;
 
+    @Mock
+    private CoarsePlaceEligibilityService coarsePlaceEligibilityService;
+
+    @Mock
+    private com.saigonplantravel.backend.trip.entity.Trip trip;
+
     private PlaceRecommendationService service;
 
     @BeforeEach
     void setUp() {
-        service = new PlaceRecommendationService(aiRecommendationClient, placeRepository);
+        service =
+                new PlaceRecommendationService(aiRecommendationClient, placeRepository, coarsePlaceEligibilityService);
     }
 
     @Test
     void trimsPreferenceAndRequestsFifteenSemanticCandidates() {
-        when(aiRecommendationClient.recommendPlaces("Tôi thích kiến trúc và mỹ thuật", 15))
+        Place eligiblePlace = place("Place A", "place-a");
+        when(placeRepository.findAllActiveForScheduling()).thenReturn(List.of(eligiblePlace));
+        when(coarsePlaceEligibilityService.findEligiblePlaces(List.of(eligiblePlace), trip))
+                .thenReturn(List.of(eligiblePlace));
+        when(aiRecommendationClient.recommendPlaces("Tôi thích kiến trúc và mỹ thuật", 15, List.of("place-a")))
                 .thenReturn(new AiPlaceRecommendationResponse(List.of()));
 
-        service.recommend("  Tôi thích kiến trúc và mỹ thuật  ");
+        service.recommend(trip, "  Tôi thích kiến trúc và mỹ thuật  ");
 
-        verify(aiRecommendationClient).recommendPlaces("Tôi thích kiến trúc và mỹ thuật", 15);
+        verify(aiRecommendationClient).recommendPlaces("Tôi thích kiến trúc và mỹ thuật", 15, List.of("place-a"));
     }
 
     @Test
-    void returnsEmptyWithoutQueryingDatabaseWhenAiReturnsNoCandidates() {
-        when(aiRecommendationClient.recommendPlaces("kiến trúc", 15))
-                .thenReturn(new AiPlaceRecommendationResponse(List.of()));
+    void skipsAiRequestWhenNoPlaceIsCoarselyEligible() {
+        Place activePlace = place("Place A", "place-a");
+        when(placeRepository.findAllActiveForScheduling()).thenReturn(List.of(activePlace));
+        when(coarsePlaceEligibilityService.findEligiblePlaces(List.of(activePlace), trip))
+                .thenReturn(List.of());
 
-        List<RecommendationCandidate> result = service.recommend("kiến trúc");
+        List<RecommendationCandidate> result = service.recommend(trip, "kiến trúc");
 
         assertThat(result).isEmpty();
-        verifyNoInteractions(placeRepository);
+        verifyNoInteractions(aiRecommendationClient);
+    }
+
+    @Test
+    void returnsEmptyWhenAiReturnsNoCandidates() {
+        Place eligiblePlace = place("Place A", "place-a");
+        stubEligiblePlaces(eligiblePlace);
+        when(aiRecommendationClient.recommendPlaces("kiến trúc", 15, List.of("place-a")))
+                .thenReturn(new AiPlaceRecommendationResponse(List.of()));
+
+        assertThat(service.recommend(trip, "kiến trúc")).isEmpty();
     }
 
     @Test
     void mapsAiCandidatesToCanonicalDatabasePlaces() {
         AiPlaceCandidateResponse aiCandidate = candidate("place-a", "AI place name", "architecture", 0.93);
         Place canonicalPlace = place("Canonical database name", "place-a");
-        when(aiRecommendationClient.recommendPlaces("architecture", 15))
+        stubEligiblePlaces(canonicalPlace);
+        when(aiRecommendationClient.recommendPlaces("architecture", 15, List.of("place-a")))
                 .thenReturn(new AiPlaceRecommendationResponse(List.of(aiCandidate)));
-        when(placeRepository.findAllActiveBySlugsForScheduling(List.of("place-a")))
-                .thenReturn(List.of(canonicalPlace));
 
-        List<RecommendationCandidate> result = service.recommend("architecture");
+        List<RecommendationCandidate> result = service.recommend(trip, "architecture");
 
         assertThat(result).singleElement().satisfies(recommendation -> {
             assertThat(recommendation.place()).isSameAs(canonicalPlace);
@@ -83,12 +105,11 @@ class PlaceRecommendationServiceTest {
                 candidate("place-c", "AI C", "section-c", 0.85));
         Place placeA = place("Database A", "place-a");
         Place placeC = place("Database C", "place-c");
-        when(aiRecommendationClient.recommendPlaces("culture", 15))
+        stubEligiblePlaces(placeA, placeC);
+        when(aiRecommendationClient.recommendPlaces("culture", 15, List.of("place-a", "place-c")))
                 .thenReturn(new AiPlaceRecommendationResponse(aiCandidates));
-        when(placeRepository.findAllActiveBySlugsForScheduling(List.of("place-a", "place-b", "place-c")))
-                .thenReturn(List.of(placeA, placeC));
 
-        List<RecommendationCandidate> result = service.recommend("culture");
+        List<RecommendationCandidate> result = service.recommend(trip, "culture");
 
         assertThat(result).extracting(candidate -> candidate.place().getSlug()).containsExactly("place-a", "place-c");
     }
@@ -102,16 +123,22 @@ class PlaceRecommendationServiceTest {
         Place placeA = place("Database A", "place-a");
         Place placeB = place("Database B", "place-b");
         Place placeC = place("Database C", "place-c");
-        when(aiRecommendationClient.recommendPlaces("art", 15))
+        stubEligiblePlaces(placeA, placeB, placeC);
+        when(aiRecommendationClient.recommendPlaces("art", 15, List.of("place-a", "place-b", "place-c")))
                 .thenReturn(new AiPlaceRecommendationResponse(aiCandidates));
-        when(placeRepository.findAllActiveBySlugsForScheduling(List.of("place-c", "place-a", "place-b")))
-                .thenReturn(List.of(placeA, placeB, placeC));
 
-        List<RecommendationCandidate> result = service.recommend("art");
+        List<RecommendationCandidate> result = service.recommend(trip, "art");
 
         assertThat(result)
                 .extracting(candidate -> candidate.place().getSlug())
                 .containsExactly("place-c", "place-a", "place-b");
+    }
+
+    private void stubEligiblePlaces(Place... places) {
+        List<Place> activePlaces = List.of(places);
+        when(placeRepository.findAllActiveForScheduling()).thenReturn(activePlaces);
+        when(coarsePlaceEligibilityService.findEligiblePlaces(activePlaces, trip))
+                .thenReturn(activePlaces);
     }
 
     private static AiPlaceCandidateResponse candidate(
