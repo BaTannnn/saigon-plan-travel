@@ -6,7 +6,11 @@ from unittest.mock import MagicMock, patch
 
 from pydantic import ValidationError
 
-from app.rag.corpus_schema import KnowledgeChunk, PlaceCorpus, Source
+from app.rag.chunking import (
+    PreparedKnowledgeChunk,
+    split_place_corpus,
+)
+from app.rag.corpus_schema import CorpusSection, PlaceCorpus, Source
 from app.rag.embedding_service import compute_document_fingerprint
 from app.rag.knowledge_repository import StoredChunkState
 from scripts.ingest_corpus import (
@@ -32,8 +36,8 @@ def corpus_and_chunk(
     section: str = "OVERVIEW",
     content: str = CONTENT,
     source_label: str = "Test source",
-) -> tuple[PlaceCorpus, KnowledgeChunk]:
-    chunk = KnowledgeChunk(
+) -> tuple[PlaceCorpus, PreparedKnowledgeChunk]:
+    corpus_section = CorpusSection(
         chunkIndex=1,
         section=section,
         content=content,
@@ -46,9 +50,29 @@ def corpus_and_chunk(
     corpus = PlaceCorpus(
         placeSlug="test-place",
         language="vi-VN",
-        sections=[chunk],
+        sections=[corpus_section],
     )
-    return corpus, chunk
+    return corpus, split_place_corpus(corpus)[0]
+
+
+def prepared_chunk(
+    *,
+    chunk_index: int,
+    section: str = "BACKGROUND",
+    content: str = CONTENT,
+) -> PreparedKnowledgeChunk:
+    return PreparedKnowledgeChunk(
+        chunk_index=chunk_index,
+        place_slug="test-place",
+        language="vi-VN",
+        section=section,
+        content=content,
+        source=Source(
+            label="Test source",
+            uri="https://example.com/place",
+            retrievedAt=date(2026, 8, 25),
+        ),
+    )
 
 
 def stored_chunk_state(
@@ -89,13 +113,12 @@ class IngestCorpusTest(unittest.TestCase):
         upsert_chunk: MagicMock,
         update_chunk_metadata: MagicMock,
     ):
-        corpus, chunk = corpus_and_chunk()
+        _, chunk = corpus_and_chunk()
         find_stored_chunk_state.return_value = stored_chunk_state(
             content_hash=fingerprint(),
         )
 
         status = ingest_chunk(
-            corpus=corpus,
             chunk=chunk,
             place_id=42,
         )
@@ -114,13 +137,12 @@ class IngestCorpusTest(unittest.TestCase):
         embed_document: MagicMock,
         upsert_chunk: MagicMock,
     ):
-        corpus, chunk = corpus_and_chunk(content=CHANGED_CONTENT)
+        _, chunk = corpus_and_chunk(content=CHANGED_CONTENT)
         find_stored_chunk_state.return_value = stored_chunk_state(
             content_hash=fingerprint(content=CONTENT),
         )
 
         status = ingest_chunk(
-            corpus=corpus,
             chunk=chunk,
             place_id=42,
         )
@@ -141,13 +163,12 @@ class IngestCorpusTest(unittest.TestCase):
         embed_document: MagicMock,
         upsert_chunk: MagicMock,
     ):
-        corpus, chunk = corpus_and_chunk(section="BACKGROUND")
+        _, chunk = corpus_and_chunk(section="BACKGROUND")
         find_stored_chunk_state.return_value = stored_chunk_state(
             content_hash=fingerprint(section="OVERVIEW"),
         )
 
         status = ingest_chunk(
-            corpus=corpus,
             chunk=chunk,
             place_id=42,
         )
@@ -162,16 +183,15 @@ class IngestCorpusTest(unittest.TestCase):
     @patch("scripts.ingest_corpus.upsert_chunk", return_value=True)
     @patch("scripts.ingest_corpus.embed_document", return_value=[0.1, 0.2])
     @patch("scripts.ingest_corpus.find_stored_chunk_state", return_value=None)
-    def test_new_chunk_embeds_and_inserts(
+    def test_new_recursively_created_chunk_embeds_and_inserts(
         self,
         find_stored_chunk_state: MagicMock,
         embed_document: MagicMock,
         upsert_chunk: MagicMock,
     ):
-        corpus, chunk = corpus_and_chunk()
+        chunk = prepared_chunk(chunk_index=2)
 
         status = ingest_chunk(
-            corpus=corpus,
             chunk=chunk,
             place_id=42,
         )
@@ -191,14 +211,13 @@ class IngestCorpusTest(unittest.TestCase):
         upsert_chunk: MagicMock,
         update_chunk_metadata: MagicMock,
     ):
-        corpus, chunk = corpus_and_chunk(source_label="Updated source")
+        _, chunk = corpus_and_chunk(source_label="Updated source")
         find_stored_chunk_state.return_value = stored_chunk_state(
             content_hash=fingerprint(),
             source_label="Old source",
         )
 
         status = ingest_chunk(
-            corpus=corpus,
             chunk=chunk,
             place_id=42,
         )
@@ -216,23 +235,35 @@ class IngestCorpusTest(unittest.TestCase):
         "scripts.ingest_corpus.ingest_chunk",
         return_value=ChunkIngestionStatus.SKIPPED,
     )
-    def test_stale_chunks_are_deleted_after_place_ingestion_succeeds(
+    @patch("scripts.ingest_corpus.split_place_corpus")
+    def test_splitter_shrink_deletes_obsolete_chunks_after_success(
         self,
+        split_place_corpus: MagicMock,
         ingest_chunk: MagicMock,
         delete_stale_chunks: MagicMock,
     ):
         corpus, _ = corpus_and_chunk()
+        split_place_corpus.return_value = [
+            prepared_chunk(chunk_index=1, section="OVERVIEW"),
+            prepared_chunk(chunk_index=2, section="BACKGROUND"),
+            prepared_chunk(chunk_index=3, section="HIGHLIGHTS"),
+            prepared_chunk(chunk_index=4, section="EXPERIENCE"),
+        ]
 
-        statuses, deleted = ingest_place(
+        chunks, statuses, deleted = ingest_place(
             corpus=corpus,
             place_id=42,
         )
 
-        self.assertEqual([ChunkIngestionStatus.SKIPPED], statuses)
+        self.assertEqual(4, len(chunks))
+        self.assertEqual(
+            [ChunkIngestionStatus.SKIPPED] * 4,
+            statuses,
+        )
         self.assertEqual(1, deleted)
         delete_stale_chunks.assert_called_once_with(
             place_id=42,
-            current_chunk_indexes=[1],
+            current_chunk_indexes=[1, 2, 3, 4],
         )
 
     @patch("scripts.ingest_corpus.delete_stale_chunks")

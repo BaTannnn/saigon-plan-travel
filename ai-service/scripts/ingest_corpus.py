@@ -1,7 +1,11 @@
 from enum import Enum
 from pathlib import Path
 
-from app.rag.corpus_schema import KnowledgeChunk, PlaceCorpus
+from app.rag.chunking import (
+    PreparedKnowledgeChunk,
+    split_place_corpus,
+)
+from app.rag.corpus_schema import PlaceCorpus
 from app.rag.embedding_service import (
     compute_document_fingerprint,
     embed_document,
@@ -27,11 +31,10 @@ class ChunkIngestionStatus(Enum):
 
 def ingest_chunk(
     *,
-    corpus: PlaceCorpus,
-    chunk: KnowledgeChunk,
+    chunk: PreparedKnowledgeChunk,
     place_id: int,
 ) -> ChunkIngestionStatus:
-    title = _chunk_title(corpus, chunk)
+    title = _chunk_title(chunk)
     content_hash = compute_document_fingerprint(
         content=chunk.content,
         title=title,
@@ -39,23 +42,23 @@ def ingest_chunk(
 
     stored_chunk = find_stored_chunk_state(
         place_id=place_id,
-        chunk_index=chunk.chunkIndex,
+        chunk_index=chunk.chunk_index,
     )
 
     if (
         stored_chunk is not None
         and stored_chunk.content_hash == content_hash
     ):
-        if _metadata_is_unchanged(stored_chunk, corpus, chunk):
+        if _metadata_is_unchanged(stored_chunk, chunk):
             return ChunkIngestionStatus.SKIPPED
 
         update_chunk_metadata(
             place_id=place_id,
-            chunk_index=chunk.chunkIndex,
+            chunk_index=chunk.chunk_index,
             source_label=chunk.source.label,
             source_uri=str(chunk.source.uri),
             retrieved_at=chunk.source.retrievedAt,
-            language=corpus.language,
+            language=chunk.language,
         )
         return ChunkIngestionStatus.METADATA_UPDATED
 
@@ -66,13 +69,13 @@ def ingest_chunk(
 
     changed = upsert_chunk(
         place_id=place_id,
-        chunk_index=chunk.chunkIndex,
+        chunk_index=chunk.chunk_index,
         section=chunk.section,
         content=chunk.content,
         source_label=chunk.source.label,
         source_uri=str(chunk.source.uri),
         retrieved_at=chunk.source.retrievedAt,
-        language=corpus.language,
+        language=chunk.language,
         content_hash=content_hash,
         embedding=embedding,
     )
@@ -87,44 +90,46 @@ def ingest_place(
     *,
     corpus: PlaceCorpus,
     place_id: int,
-) -> tuple[list[ChunkIngestionStatus], int]:
+) -> tuple[
+    list[PreparedKnowledgeChunk],
+    list[ChunkIngestionStatus],
+    int,
+]:
+    prepared_chunks = split_place_corpus(corpus)
     statuses = [
         ingest_chunk(
-            corpus=corpus,
             chunk=chunk,
             place_id=place_id,
         )
-        for chunk in corpus.sections
+        for chunk in prepared_chunks
     ]
 
     deleted = delete_stale_chunks(
         place_id=place_id,
         current_chunk_indexes=[
-            chunk.chunkIndex
-            for chunk in corpus.sections
+            chunk.chunk_index
+            for chunk in prepared_chunks
         ],
     )
 
-    return statuses, deleted
+    return prepared_chunks, statuses, deleted
 
 
 def _chunk_title(
-    corpus: PlaceCorpus,
-    chunk: KnowledgeChunk,
+    chunk: PreparedKnowledgeChunk,
 ) -> str:
-    return f"{corpus.placeSlug} - {chunk.section}"
+    return f"{chunk.place_slug} - {chunk.section}"
 
 
 def _metadata_is_unchanged(
     stored_chunk: StoredChunkState,
-    corpus: PlaceCorpus,
-    chunk: KnowledgeChunk,
+    chunk: PreparedKnowledgeChunk,
 ) -> bool:
     return (
         stored_chunk.source_label == chunk.source.label
         and stored_chunk.source_uri == str(chunk.source.uri)
         and stored_chunk.retrieved_at == chunk.source.retrievedAt
-        and stored_chunk.language == corpus.language
+        and stored_chunk.language == chunk.language
     )
 
 
@@ -157,15 +162,15 @@ def main() -> None:
         print()
         print(f"[PLACE] {corpus.placeSlug}")
 
-        statuses, deleted = ingest_place(
+        prepared_chunks, statuses, deleted = ingest_place(
             corpus=corpus,
             place_id=place_id,
         )
 
-        for chunk, status in zip(corpus.sections, statuses):
+        for chunk, status in zip(prepared_chunks, statuses):
             print(
                 f"  [{status.value}] "
-                f"{chunk.chunkIndex} "
+                f"{chunk.chunk_index} "
                 f"{chunk.section}"
             )
 

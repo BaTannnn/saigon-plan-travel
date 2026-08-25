@@ -19,7 +19,7 @@ class Source(BaseModel):
     retrievedAt: date
 
 
-class KnowledgeChunk(BaseModel):
+class CorpusSection(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     chunkIndex: int = Field(ge=1)
@@ -39,14 +39,14 @@ class PlaceCorpus(BaseModel):
 
     language: Literal["vi-VN"]
 
-    sections: list[KnowledgeChunk] = Field(
+    sections: list[CorpusSection] = Field(
         min_length=1,
         max_length=20,
     )
 
     @model_validator(mode="after")
-    def validate_chunk_indexes(self):
-        indexes = [chunk.chunkIndex for chunk in self.sections]
+    def validate_sections(self):
+        indexes = [section.chunkIndex for section in self.sections]
 
         expected = list(range(1, len(indexes) + 1))
 
@@ -54,4 +54,10 @@ class PlaceCorpus(BaseModel):
             raise ValueError(
                 "chunkIndex must be unique and continuous starting from 1"
             )
+
+        section_names = [section.section for section in self.sections]
+
+        if len(section_names) != len(set(section_names)):
+            raise ValueError("semantic section names must be unique")
+
         return self

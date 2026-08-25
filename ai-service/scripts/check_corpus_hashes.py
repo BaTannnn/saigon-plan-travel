@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from app.rag.chunking import split_place_corpus
 from app.rag.corpus_schema import PlaceCorpus
 from app.rag.embedding_service import compute_document_fingerprint
 
@@ -24,14 +25,16 @@ def main() -> None:
         print()
         print(f"{corpus.placeSlug}")
 
-        for chunk in corpus.sections:
+        chunks = split_place_corpus(corpus)
+
+        for chunk in chunks:
             content_hash = compute_document_fingerprint(
                 content=chunk.content,
-                title=f"{corpus.placeSlug} - {chunk.section}",
+                title=f"{chunk.place_slug} - {chunk.section}",
             )
 
             print(
-                f"  chunk={chunk.chunkIndex} "
+                f"  chunk={chunk.chunk_index} "
                 f"section={chunk.section} "
                 f"hash={content_hash}"
             )

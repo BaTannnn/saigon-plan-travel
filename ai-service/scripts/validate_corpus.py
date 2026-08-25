@@ -16,7 +16,8 @@ def validate_file(path: Path) -> bool:
 
         print(
             f"[OK] {path.name}: "
-            f"{corpus.placeSlug} - {len(corpus.sections)} chunks"
+            f"{corpus.placeSlug} - "
+            f"{len(corpus.sections)} semantic sections"
         )
 
         return True
