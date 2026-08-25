@@ -1,12 +1,13 @@
 from google import genai
 from google.genai import types
-
+from dotenv import load_dotenv
 from app.rag.content_hash import compute_content_hash
 
 
 EMBEDDING_MODEL = "gemini-embedding-2"
 EMBEDDING_DIMENSION = 768
 
+load_dotenv()
 
 def create_client() -> genai.Client:
     return genai.Client()
