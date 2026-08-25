@@ -1,9 +1,10 @@
 from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
+from app.rag.embedding_service import embed_query
 from app.rag.knowledge_repository import (
     KnowledgeChunk,
-    find_chunks_by_place_slugs,
+    find_relevant_chunks_by_place_slugs,
 )
 from app.rag.rag_service import create_chat_model
 
@@ -29,6 +30,7 @@ class ItineraryReason(BaseModel):
 INSUFFICIENT_CONTEXT_REASON = (
     "Dữ liệu hiện có chưa đủ để giải thích đề xuất này."
 )
+DEFAULT_CHUNKS_PER_PLACE = 2
 
 
 PROMPT = ChatPromptTemplate.from_messages(
@@ -90,25 +92,40 @@ Source URI: {chunk.source_uri}
 def generate_itinerary_reasons(
     preference: str,
     place_slugs: list[str],
+    chunks_per_place: int = DEFAULT_CHUNKS_PER_PLACE,
 ) -> list[ItineraryReason]:
     unique_slugs = list(dict.fromkeys(place_slugs))
     if not unique_slugs:
         return []
 
-    chunks = find_chunks_by_place_slugs(unique_slugs)
+    if chunks_per_place <= 0:
+        raise ValueError("chunks_per_place must be greater than zero")
+
+    try:
+        preference_embedding = embed_query(preference)
+    except Exception:
+        return _insufficient_context_reasons(unique_slugs)
+
+    if preference_embedding is None:
+        return _insufficient_context_reasons(unique_slugs)
+
+    retrieved_chunks = find_relevant_chunks_by_place_slugs(
+        query_embedding=preference_embedding,
+        place_slugs=unique_slugs,
+        chunks_per_place=chunks_per_place,
+    )
+    chunks = _bounded_requested_chunks(
+        chunks=retrieved_chunks,
+        requested_slugs=unique_slugs,
+        chunks_per_place=chunks_per_place,
+    )
     slugs_with_context = {chunk.place_slug for chunk in chunks}
     slugs_without_context = [
         slug for slug in unique_slugs if slug not in slugs_with_context
     ]
 
     if not chunks:
-        return [
-            ItineraryReason(
-                place_slug=slug,
-                reason=INSUFFICIENT_CONTEXT_REASON,
-            )
-            for slug in unique_slugs
-        ]
+        return _insufficient_context_reasons(unique_slugs)
 
     reasons_by_slug: dict[str, str] = {}
     context = build_itinerary_context(chunks)
@@ -166,4 +183,40 @@ def generate_itinerary_reasons(
     return [
         ItineraryReason(place_slug=slug, reason=reasons_by_slug.get(slug))
         for slug in unique_slugs
+    ]
+
+
+def _bounded_requested_chunks(
+    *,
+    chunks: list[KnowledgeChunk],
+    requested_slugs: list[str],
+    chunks_per_place: int,
+) -> list[KnowledgeChunk]:
+    requested = set(requested_slugs)
+    counts_by_slug: dict[str, int] = {}
+    selected: list[KnowledgeChunk] = []
+
+    for chunk in chunks:
+        if chunk.place_slug not in requested:
+            continue
+
+        current_count = counts_by_slug.get(chunk.place_slug, 0)
+        if current_count >= chunks_per_place:
+            continue
+
+        selected.append(chunk)
+        counts_by_slug[chunk.place_slug] = current_count + 1
+
+    return selected
+
+
+def _insufficient_context_reasons(
+    place_slugs: list[str],
+) -> list[ItineraryReason]:
+    return [
+        ItineraryReason(
+            place_slug=slug,
+            reason=INSUFFICIENT_CONTEXT_REASON,
+        )
+        for slug in place_slugs
     ]
