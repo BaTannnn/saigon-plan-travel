@@ -1,8 +1,8 @@
 from pathlib import Path
 
 from app.db.postgres import pool
-from app.rag.corpus_schema import PlaceCorpus
-from app.rag.place_lookup import resolve_place_id
+from app.knowledge.corpus_schema import PlaceCorpus
+from app.knowledge.place_lookup import resolve_place_id
 
 
 CORPUS_DIR = Path("corpus")

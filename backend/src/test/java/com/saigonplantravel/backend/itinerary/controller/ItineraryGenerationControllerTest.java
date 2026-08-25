@@ -25,12 +25,14 @@ import com.saigonplantravel.backend.itinerary.dto.ItineraryScheduleResponse;
 import com.saigonplantravel.backend.itinerary.dto.ItinerarySummaryResponse;
 import com.saigonplantravel.backend.itinerary.exception.InvalidGeneratedItineraryException;
 import com.saigonplantravel.backend.itinerary.mapper.ItineraryGenerationPreviewMapper;
+import com.saigonplantravel.backend.itinerary.model.GeneratedItineraryPreview;
 import com.saigonplantravel.backend.itinerary.service.ItineraryGenerationService;
 import com.saigonplantravel.backend.itinerary.service.ItineraryService;
 import com.saigonplantravel.backend.scheduling.model.ItineraryPlan;
 import java.math.BigDecimal;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,13 +100,14 @@ class ItineraryGenerationControllerTest {
         String preference = "Tôi thích lịch sử, kiến trúc và muốn tiết kiệm chi phí";
 
         ItineraryPlan plan = new ItineraryPlan(List.of(), BigDecimal.ZERO, 0, 0, 0.0);
+        GeneratedItineraryPreview preview = new GeneratedItineraryPreview(plan, Map.of());
 
         ItineraryGenerationPreviewResponse response = previewResponse();
 
-        when(itineraryGenerationService.generatePlan(principal.id(), tripPublicId, preference))
-                .thenReturn(plan);
+        when(itineraryGenerationService.generatePreview(principal.id(), tripPublicId, preference))
+                .thenReturn(preview);
 
-        when(previewMapper.toResponse(plan)).thenReturn(response);
+        when(previewMapper.toResponse(preview)).thenReturn(response);
 
         mockMvc.perform(
                         post("/api/v1/trips/{tripPublicId}/itinerary/generation-preview", tripPublicId)
@@ -127,15 +130,16 @@ class ItineraryGenerationControllerTest {
                 .andExpect(jsonPath("$.stops[0].place.primaryImageUrl").value(org.hamcrest.Matchers.nullValue()))
                 .andExpect(jsonPath("$.stops[0].schedule.arrivalTime").value("08:15:00"))
                 .andExpect(jsonPath("$.stops[0].schedule.travelMinutes").value(15))
+                .andExpect(jsonPath("$.stops[0].reason").value("Phù hợp với sở thích lịch sử."))
                 .andExpect(jsonPath("$.summary.totalEstimatedCost").value(40000))
                 .andExpect(jsonPath("$.summary.totalTravelMinutes").value(15))
                 .andExpect(jsonPath("$.summary.totalVisitMinutes").value(90))
                 .andExpect(jsonPath("$.summary.totalDistanceKm").value(3.2))
                 .andExpect(jsonPath("$.issues").isEmpty());
 
-        verify(itineraryGenerationService).generatePlan(principal.id(), tripPublicId, preference);
+        verify(itineraryGenerationService).generatePreview(principal.id(), tripPublicId, preference);
 
-        verify(previewMapper).toResponse(plan);
+        verify(previewMapper).toResponse(preview);
     }
 
     @Test
@@ -273,7 +277,8 @@ class ItineraryGenerationControllerTest {
         ItineraryScheduleResponse schedule = new ItineraryScheduleResponse(
                 LocalTime.of(8, 15), LocalTime.of(8, 15), LocalTime.of(9, 45), 15, 3.2, new BigDecimal("40000"));
 
-        GeneratedItineraryStopResponse stop = new GeneratedItineraryStopResponse(1, place, schedule);
+        GeneratedItineraryStopResponse stop =
+                new GeneratedItineraryStopResponse(1, place, schedule, "Phù hợp với sở thích lịch sử.");
 
         ItinerarySummaryResponse summary = new ItinerarySummaryResponse(new BigDecimal("40000"), 15, 90, 3.2);
 

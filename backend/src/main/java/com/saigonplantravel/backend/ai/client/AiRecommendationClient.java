@@ -3,6 +3,7 @@ package com.saigonplantravel.backend.ai.client;
 import com.saigonplantravel.backend.ai.client.dto.AiPlaceRecommendationRequest;
 import com.saigonplantravel.backend.ai.client.dto.AiPlaceRecommendationResponse;
 import java.net.http.HttpClient;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
@@ -25,9 +26,9 @@ public class AiRecommendationClient {
                 .build();
     }
 
-    public AiPlaceRecommendationResponse recommendPlaces(String query, int topK) {
+    public AiPlaceRecommendationResponse recommendPlaces(String query, int topK, List<String> eligiblePlaceSlugs) {
 
-        AiPlaceRecommendationRequest request = new AiPlaceRecommendationRequest(query, topK);
+        AiPlaceRecommendationRequest request = new AiPlaceRecommendationRequest(query, topK, eligiblePlaceSlugs);
 
         AiPlaceRecommendationResponse response = restClient
                 .post()

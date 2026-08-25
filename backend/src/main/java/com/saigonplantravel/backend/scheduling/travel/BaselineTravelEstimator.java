@@ -1,6 +1,5 @@
 package com.saigonplantravel.backend.scheduling.travel;
 
-import com.saigonplantravel.backend.recommendation.scoring.HaversineDistanceCalculator;
 import com.saigonplantravel.backend.scheduling.model.TravelEstimate;
 import java.math.BigDecimal;
 import org.springframework.stereotype.Component;

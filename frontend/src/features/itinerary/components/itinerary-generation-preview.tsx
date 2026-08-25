@@ -1,4 +1,4 @@
-import { Clock3, Route, WalletCards } from "lucide-react";
+import { Clock3, Route, Sparkles, WalletCards } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
@@ -77,6 +77,20 @@ export function ItineraryGenerationPreview({
                       {formatCurrency(stop.schedule.estimatedCost)}
                     </span>
                   </span>
+                  {stop.reason ? (
+                    <div className="mt-3 border-t border-border/70 pt-3">
+                      <p className="m-0 flex items-center gap-1.5 text-xs font-bold text-ochre-foreground">
+                        <Sparkles
+                          className="size-3.5 shrink-0 text-ochre"
+                          aria-hidden="true"
+                        />
+                        Vì sao được đề xuất?
+                      </p>
+                      <p className="mt-1 mb-0 text-xs leading-5 text-text-secondary">
+                        {stop.reason}
+                      </p>
+                    </div>
+                  ) : null}
                 </div>
                 {stop.place.primaryImageUrl ? (
                   <Image

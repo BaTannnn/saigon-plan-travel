@@ -1,5 +1,5 @@
-from app.rag.embedding_service import embed_query
-from app.rag.knowledge_repository import search_candidate_chunks
+from app.knowledge.embedding_service import embed_query
+from app.knowledge.knowledge_repository import search_candidate_chunks
 from app.recommendation.mmr import select_with_mmr
 from app.recommendation.models import PlaceCandidate
 from app.recommendation.place_retriever import (
@@ -7,13 +7,15 @@ from app.recommendation.place_retriever import (
 )
 
 
-def recommend_places(
+def retrieve_candidate_places(
     query: str,
     fetch_k: int = 50,
     candidate_k: int = 30,
-    top_k: int = 15,
-    lambda_weight: float = 0.7,
-) -> list[PlaceCandidate]:
+    eligible_place_slugs: list[str] | None = None,
+) -> tuple[list[PlaceCandidate], dict[str, list[float]]]:
+    if eligible_place_slugs == []:
+        return [], {}
+
     query_embedding = embed_query(query)
 
     if query_embedding is None:
@@ -22,6 +24,7 @@ def recommend_places(
     retrieved_chunks = search_candidate_chunks(
         query_embedding=query_embedding,
         limit=fetch_k,
+        eligible_place_slugs=eligible_place_slugs,
     )
 
     unique_chunks = select_unique_candidate_chunks(
@@ -43,6 +46,27 @@ def recommend_places(
         chunk.place_slug: chunk.embedding
         for chunk in unique_chunks
     }
+
+    return candidates, embeddings_by_slug
+
+
+def recommend_places(
+    query: str,
+    fetch_k: int = 50,
+    candidate_k: int = 30,
+    top_k: int = 15,
+    lambda_weight: float = 0.9,
+    eligible_place_slugs: list[str] | None = None,
+) -> list[PlaceCandidate]:
+    if eligible_place_slugs == []:
+        return []
+
+    candidates, embeddings_by_slug = retrieve_candidate_places(
+        query=query,
+        fetch_k=fetch_k,
+        candidate_k=candidate_k,
+        eligible_place_slugs=eligible_place_slugs,
+    )
 
     return select_with_mmr(
         candidates=candidates,

@@ -1,13 +1,136 @@
+from enum import Enum
 from pathlib import Path
 
-from app.rag.content_hash import compute_content_hash
-from app.rag.corpus_schema import PlaceCorpus
-from app.rag.embedding_service import embed_document
-from app.rag.knowledge_repository import upsert_chunk
-from app.rag.place_lookup import resolve_place_id
+from app.knowledge.chunking import (
+    PreparedKnowledgeChunk,
+    split_place_corpus,
+)
+from app.knowledge.corpus_schema import PlaceCorpus
+from app.knowledge.embedding_service import (
+    compute_document_fingerprint,
+    embed_document,
+)
+from app.knowledge.knowledge_repository import (
+    StoredChunkState,
+    delete_stale_chunks,
+    find_stored_chunk_state,
+    update_chunk_metadata,
+    upsert_chunk,
+)
+from app.knowledge.place_lookup import resolve_place_id
 from app.db.postgres import pool
 
 CORPUS_DIR = Path("corpus")
+
+
+class ChunkIngestionStatus(Enum):
+    SKIPPED = "SKIP"
+    METADATA_UPDATED = "METADATA"
+    UPSERTED = "UPSERT"
+
+
+def ingest_chunk(
+    *,
+    chunk: PreparedKnowledgeChunk,
+    place_id: int,
+) -> ChunkIngestionStatus:
+    title = _chunk_title(chunk)
+    content_hash = compute_document_fingerprint(
+        content=chunk.content,
+        title=title,
+    )
+
+    stored_chunk = find_stored_chunk_state(
+        place_id=place_id,
+        chunk_index=chunk.chunk_index,
+    )
+
+    if (
+        stored_chunk is not None
+        and stored_chunk.content_hash == content_hash
+    ):
+        if _metadata_is_unchanged(stored_chunk, chunk):
+            return ChunkIngestionStatus.SKIPPED
+
+        update_chunk_metadata(
+            place_id=place_id,
+            chunk_index=chunk.chunk_index,
+            source_label=chunk.source.label,
+            source_uri=str(chunk.source.uri),
+            retrieved_at=chunk.source.retrievedAt,
+            language=chunk.language,
+        )
+        return ChunkIngestionStatus.METADATA_UPDATED
+
+    embedding = embed_document(
+        content=chunk.content,
+        title=title,
+    )
+
+    changed = upsert_chunk(
+        place_id=place_id,
+        chunk_index=chunk.chunk_index,
+        section=chunk.section,
+        content=chunk.content,
+        source_label=chunk.source.label,
+        source_uri=str(chunk.source.uri),
+        retrieved_at=chunk.source.retrievedAt,
+        language=chunk.language,
+        content_hash=content_hash,
+        embedding=embedding,
+    )
+
+    if changed:
+        return ChunkIngestionStatus.UPSERTED
+
+    return ChunkIngestionStatus.SKIPPED
+
+
+def ingest_place(
+    *,
+    corpus: PlaceCorpus,
+    place_id: int,
+) -> tuple[
+    list[PreparedKnowledgeChunk],
+    list[ChunkIngestionStatus],
+    int,
+]:
+    prepared_chunks = split_place_corpus(corpus)
+    statuses = [
+        ingest_chunk(
+            chunk=chunk,
+            place_id=place_id,
+        )
+        for chunk in prepared_chunks
+    ]
+
+    deleted = delete_stale_chunks(
+        place_id=place_id,
+        current_chunk_indexes=[
+            chunk.chunk_index
+            for chunk in prepared_chunks
+        ],
+    )
+
+    return prepared_chunks, statuses, deleted
+
+
+def _chunk_title(
+    chunk: PreparedKnowledgeChunk,
+) -> str:
+    return f"{chunk.place_slug} - {chunk.section}"
+
+
+def _metadata_is_unchanged(
+    stored_chunk: StoredChunkState,
+    chunk: PreparedKnowledgeChunk,
+) -> bool:
+    return (
+        stored_chunk.source_label == chunk.source.label
+        and stored_chunk.source_uri == str(chunk.source.uri)
+        and stored_chunk.retrieved_at == chunk.source.retrievedAt
+        and stored_chunk.language == chunk.language
+    )
 
 
 def main() -> None:
@@ -18,7 +141,9 @@ def main() -> None:
         return
 
     inserted_or_updated = 0
+    metadata_updated = 0
     skipped = 0
+    stale_deleted = 0
 
     for path in files:
         raw_json = path.read_text(encoding="utf-8")
@@ -37,52 +162,34 @@ def main() -> None:
         print()
         print(f"[PLACE] {corpus.placeSlug}")
 
-        for chunk in corpus.sections:
-            content_hash = compute_content_hash(
-                chunk.content
+        prepared_chunks, statuses, deleted = ingest_place(
+            corpus=corpus,
+            place_id=place_id,
+        )
+
+        for chunk, status in zip(prepared_chunks, statuses):
+            print(
+                f"  [{status.value}] "
+                f"{chunk.chunk_index} "
+                f"{chunk.section}"
             )
 
-            embedding = embed_document(
-                content=chunk.content,
-                title=(
-                    f"{corpus.placeSlug} - "
-                    f"{chunk.section}"
-                ),
-            )
-
-            changed = upsert_chunk(
-                place_id=place_id,
-                chunk_index=chunk.chunkIndex,
-                section=chunk.section,
-                content=chunk.content,
-                source_label=chunk.source.label,
-                source_uri=str(chunk.source.uri),
-                retrieved_at=chunk.source.retrievedAt,
-                language=corpus.language,
-                content_hash=content_hash,
-                embedding=embedding,
-            )
-
-            if changed:
-                print(
-                    f"  [UPSERT] "
-                    f"{chunk.chunkIndex} "
-                    f"{chunk.section}"
-                )
-
+            if status is ChunkIngestionStatus.UPSERTED:
                 inserted_or_updated += 1
+            elif status is ChunkIngestionStatus.METADATA_UPDATED:
+                metadata_updated += 1
             else:
-                print(
-                    f"  [SKIP] "
-                    f"{chunk.chunkIndex} "
-                    f"{chunk.section}"
-                )
-
                 skipped += 1
+
+        if deleted:
+            print(f"  [DELETE] {deleted} stale chunk(s)")
+            stale_deleted += deleted
 
     print()
     print(f"Changed: {inserted_or_updated}")
+    print(f"Metadata updated: {metadata_updated}")
     print(f"Skipped: {skipped}")
+    print(f"Stale deleted: {stale_deleted}")
 
 
 if __name__ == "__main__":

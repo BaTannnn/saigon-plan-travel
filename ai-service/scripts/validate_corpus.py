@@ -2,7 +2,7 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
-from app.rag.corpus_schema import PlaceCorpus
+from app.knowledge.corpus_schema import PlaceCorpus
 
 
 CORPUS_DIR = Path("corpus")
@@ -16,7 +16,8 @@ def validate_file(path: Path) -> bool:
 
         print(
             f"[OK] {path.name}: "
-            f"{corpus.placeSlug} - {len(corpus.sections)} chunks"
+            f"{corpus.placeSlug} - "
+            f"{len(corpus.sections)} semantic sections"
         )
 
         return True

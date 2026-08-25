@@ -6,10 +6,13 @@ import com.saigonplantravel.backend.ai.client.dto.AiPlaceRecommendationResponse;
 import com.saigonplantravel.backend.place.entity.Place;
 import com.saigonplantravel.backend.place.repository.PlaceRepository;
 import com.saigonplantravel.backend.recommendation.model.RecommendationCandidate;
+import com.saigonplantravel.backend.trip.entity.Trip;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,32 +20,49 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class PlaceRecommendationService {
 
+    private static final Logger log = LoggerFactory.getLogger(PlaceRecommendationService.class);
+
     private static final int SEMANTIC_CANDIDATE_LIMIT = 15;
 
     private final AiRecommendationClient aiRecommendationClient;
     private final PlaceRepository placeRepository;
+    private final CoarsePlaceEligibilityService coarsePlaceEligibilityService;
 
-    public PlaceRecommendationService(AiRecommendationClient aiRecommendationClient, PlaceRepository placeRepository) {
+    public PlaceRecommendationService(
+            AiRecommendationClient aiRecommendationClient,
+            PlaceRepository placeRepository,
+            CoarsePlaceEligibilityService coarsePlaceEligibilityService) {
         this.aiRecommendationClient = aiRecommendationClient;
         this.placeRepository = placeRepository;
+        this.coarsePlaceEligibilityService = coarsePlaceEligibilityService;
     }
 
-    public List<RecommendationCandidate> recommend(String preferenceDescription) {
+    public List<RecommendationCandidate> recommend(Trip trip, String preferenceDescription) {
+        List<Place> activePlaces = placeRepository.findAllActiveForScheduling();
+        List<Place> eligiblePlaces = coarsePlaceEligibilityService.findEligiblePlaces(activePlaces, trip);
 
-        AiPlaceRecommendationResponse aiResponse =
-                aiRecommendationClient.recommendPlaces(preferenceDescription.trim(), SEMANTIC_CANDIDATE_LIMIT);
+        log.debug("Coarse eligibility retained {} of {} active places", eligiblePlaces.size(), activePlaces.size());
+
+        if (eligiblePlaces.isEmpty()) {
+            return List.of();
+        }
+
+        List<String> eligiblePlaceSlugs =
+                eligiblePlaces.stream().map(Place::getSlug).toList();
+
+        AiPlaceRecommendationResponse aiResponse = aiRecommendationClient.recommendPlaces(
+                preferenceDescription.trim(), SEMANTIC_CANDIDATE_LIMIT, eligiblePlaceSlugs);
 
         List<AiPlaceCandidateResponse> aiCandidates = aiResponse.candidates();
+
+        log.debug("AI returned {} candidates from {} eligible places", aiCandidates.size(), eligiblePlaces.size());
 
         if (aiCandidates.isEmpty()) {
             return List.of();
         }
 
-        List<String> slugs =
-                aiCandidates.stream().map(AiPlaceCandidateResponse::placeSlug).toList();
-
-        Map<String, Place> placesBySlug = placeRepository.findAllActiveBySlugsForScheduling(slugs).stream()
-                .collect(Collectors.toMap(Place::getSlug, Function.identity()));
+        Map<String, Place> placesBySlug =
+                eligiblePlaces.stream().collect(Collectors.toMap(Place::getSlug, Function.identity()));
 
         return aiCandidates.stream()
                 .filter(candidate -> placesBySlug.containsKey(candidate.placeSlug()))

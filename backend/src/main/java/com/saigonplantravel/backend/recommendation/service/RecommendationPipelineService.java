@@ -28,7 +28,7 @@ public class RecommendationPipelineService {
 
     public List<RecommendationCandidate> recommend(Trip trip, String preferenceDescription) {
 
-        List<RecommendationCandidate> candidates = placeRecommendationService.recommend(preferenceDescription);
+        List<RecommendationCandidate> candidates = placeRecommendationService.recommend(trip, preferenceDescription);
 
         candidates = openingHoursCandidateFilter.filter(candidates, trip);
 

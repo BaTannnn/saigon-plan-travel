@@ -24,7 +24,7 @@ def select_with_mmr(
     candidates: list[PlaceCandidate],
     embeddings_by_slug: dict[str, list[float]],
     limit: int,
-    lambda_weight: float = 0.7,
+    lambda_weight: float = 0.9,
 ) -> list[PlaceCandidate]:
     if not 0.0 <= lambda_weight <= 1.0:
         raise ValueError("lambda_weight must be between 0 and 1")

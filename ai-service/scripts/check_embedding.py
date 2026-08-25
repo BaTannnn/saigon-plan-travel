@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 
-from app.rag.embedding_service import (
+from app.knowledge.embedding_service import (
     EMBEDDING_DIMENSION,
     embed_document,
     embed_query,
