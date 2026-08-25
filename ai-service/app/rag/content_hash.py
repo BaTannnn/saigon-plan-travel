@@ -1,4 +1,6 @@
 import hashlib
+
+
 def compute_content_hash(content: str) -> str:
     normalized_content = content.strip()
 

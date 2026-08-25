@@ -1,6 +1,8 @@
 from google import genai
 from google.genai import types
 
+from app.rag.content_hash import compute_content_hash
+
 
 EMBEDDING_MODEL = "gemini-embedding-2"
 EMBEDDING_DIMENSION = 768
@@ -20,6 +22,18 @@ def prepare_document(
         f"title: {document_title} | "
         f"text: {content.strip()}"
     )
+
+
+def compute_document_fingerprint(
+    content: str,
+    title: str | None = None,
+) -> str:
+    prepared_document = prepare_document(
+        content=content,
+        title=title,
+    )
+
+    return compute_content_hash(prepared_document)
 
 
 def prepare_query(query: str) -> str:

@@ -7,13 +7,11 @@ from app.recommendation.place_retriever import (
 )
 
 
-def recommend_places(
+def retrieve_candidate_places(
     query: str,
     fetch_k: int = 50,
     candidate_k: int = 30,
-    top_k: int = 15,
-    lambda_weight: float = 0.7,
-) -> list[PlaceCandidate]:
+) -> tuple[list[PlaceCandidate], dict[str, list[float]]]:
     query_embedding = embed_query(query)
 
     if query_embedding is None:
@@ -43,6 +41,22 @@ def recommend_places(
         chunk.place_slug: chunk.embedding
         for chunk in unique_chunks
     }
+
+    return candidates, embeddings_by_slug
+
+
+def recommend_places(
+    query: str,
+    fetch_k: int = 50,
+    candidate_k: int = 30,
+    top_k: int = 15,
+    lambda_weight: float = 0.7,
+) -> list[PlaceCandidate]:
+    candidates, embeddings_by_slug = retrieve_candidate_places(
+        query=query,
+        fetch_k=fetch_k,
+        candidate_k=candidate_k,
+    )
 
     return select_with_mmr(
         candidates=candidates,

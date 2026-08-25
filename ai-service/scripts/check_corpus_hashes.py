@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from app.rag.content_hash import compute_content_hash
 from app.rag.corpus_schema import PlaceCorpus
+from app.rag.embedding_service import compute_document_fingerprint
 
 
 CORPUS_DIR = Path("corpus")
@@ -25,8 +25,9 @@ def main() -> None:
         print(f"{corpus.placeSlug}")
 
         for chunk in corpus.sections:
-            content_hash = compute_content_hash(
-                chunk.content
+            content_hash = compute_document_fingerprint(
+                content=chunk.content,
+                title=f"{corpus.placeSlug} - {chunk.section}",
             )
 
             print(
