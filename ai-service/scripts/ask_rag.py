@@ -1,3 +1,4 @@
+from app.db.postgres import pool
 from app.rag.rag_service import answer_question
 
 
@@ -31,4 +32,9 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    pool.open()
+
+    try:
+        main()
+    finally:
+        pool.close()
