@@ -28,8 +28,24 @@ semantic baseline: dense retrieval → place-level deduplication
 current pipeline:  dense retrieval → place-level deduplication → MMR
 ```
 
-MMR lambda is configurable for experiments. The evaluator does not change the
-production default.
+MMR lambda remains configurable in the evaluator. Based on the current
+20-case experiment, production uses `0.9` while semantic ranking remains the
+evaluation baseline.
+
+## Measured experiment
+
+| Configuration | Recall@5 | Recall@10 | Recall@15 | MRR | ILD@5 | ILD@10 | ILD@15 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Semantic | 0.8934 | 0.9760 | 1.0000 | 0.9750 | 0.2623 | 0.2801 | 0.2875 |
+| MMR lambda=0.5 | 0.6446 | 0.8678 | 0.9381 | 0.9750 | 0.3174 | 0.3044 | 0.3018 |
+| MMR lambda=0.7 | 0.8434 | 0.9229 | 0.9795 | 0.9750 | 0.2909 | 0.2941 | 0.2956 |
+| MMR lambda=0.9 | 0.9101 | 0.9593 | 0.9962 | 0.9750 | 0.2648 | 0.2840 | 0.2898 |
+
+Among the tested values on the current evaluation set, `0.9` provides the
+best relevance-diversity trade-off: it has the strongest Recall@5, remains
+close to semantic ranking at larger K values, and keeps a small diversity gain
+over the semantic baseline. This is not a claim that `0.9` is globally optimal;
+the conclusion applies only to the tested values, corpus, and evaluation cases.
 
 ## Metrics
 
