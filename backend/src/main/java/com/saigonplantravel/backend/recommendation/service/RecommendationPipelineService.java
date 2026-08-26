@@ -14,7 +14,6 @@ public class RecommendationPipelineService {
 
     private final PlaceRecommendationService placeRecommendationService;
     private final OpeningHoursCandidateFilter openingHoursCandidateFilter;
-    private final BudgetCandidateFilter budgetCandidateFilter;
 
     public RecommendationPipelineService(
             PlaceRecommendationService placeRecommendationService,
@@ -23,7 +22,6 @@ public class RecommendationPipelineService {
 
         this.placeRecommendationService = placeRecommendationService;
         this.openingHoursCandidateFilter = openingHoursCandidateFilter;
-        this.budgetCandidateFilter = budgetCandidateFilter;
     }
 
     public List<RecommendationCandidate> recommend(Trip trip, String preferenceDescription) {
@@ -32,7 +30,6 @@ public class RecommendationPipelineService {
 
         candidates = openingHoursCandidateFilter.filter(candidates, trip);
 
-        candidates = budgetCandidateFilter.filter(candidates, trip);
 
         return candidates;
     }
