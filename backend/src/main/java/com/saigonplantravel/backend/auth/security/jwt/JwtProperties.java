@@ -1,4 +1,4 @@
-package com.saigonplantravel.backend.common.security.jwt;
+package com.saigonplantravel.backend.auth.security.jwt;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

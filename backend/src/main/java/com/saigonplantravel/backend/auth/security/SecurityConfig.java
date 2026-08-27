@@ -1,9 +1,8 @@
-package com.saigonplantravel.backend.common.security;
+package com.saigonplantravel.backend.auth.security;
 
-import com.saigonplantravel.backend.auth.security.JwtAuthenticationService;
-import com.saigonplantravel.backend.common.security.jwt.JwtAuthenticationFilter;
-import com.saigonplantravel.backend.common.security.jwt.JwtProperties;
-import com.saigonplantravel.backend.common.security.jwt.JwtService;
+import com.saigonplantravel.backend.auth.security.jwt.JwtAuthenticationFilter;
+import com.saigonplantravel.backend.auth.security.jwt.JwtProperties;
+import com.saigonplantravel.backend.auth.security.jwt.JwtService;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;

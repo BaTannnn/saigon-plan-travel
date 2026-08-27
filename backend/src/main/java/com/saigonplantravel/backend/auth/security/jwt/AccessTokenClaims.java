@@ -1,4 +1,4 @@
-package com.saigonplantravel.backend.common.security.jwt;
+package com.saigonplantravel.backend.auth.security.jwt;
 
 import com.saigonplantravel.backend.auth.domain.UserRole;
 import java.util.UUID;

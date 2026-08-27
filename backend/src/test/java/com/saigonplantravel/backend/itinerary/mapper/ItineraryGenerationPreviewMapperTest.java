@@ -4,9 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.saigonplantravel.backend.itinerary.dto.ItineraryGenerationPreviewResponse;
 import com.saigonplantravel.backend.itinerary.model.GeneratedItineraryPreview;
-import com.saigonplantravel.backend.place.entity.Place;
 import com.saigonplantravel.backend.scheduling.model.ItineraryPlan;
+import com.saigonplantravel.backend.scheduling.model.OpeningWindow;
 import com.saigonplantravel.backend.scheduling.model.ScheduledStop;
+import com.saigonplantravel.backend.scheduling.model.SchedulingPlace;
 import java.math.BigDecimal;
 import java.time.LocalTime;
 import java.util.List;
@@ -19,8 +20,8 @@ class ItineraryGenerationPreviewMapperTest {
 
     @Test
     void mapsReasonsByPlaceSlugAndKeepsMissingReasonNull() {
-        Place firstPlace = place("place-a", "Place A");
-        Place secondPlace = place("place-b", "Place B");
+        SchedulingPlace firstPlace = place("place-a", "Place A");
+        SchedulingPlace secondPlace = place("place-b", "Place B");
         ItineraryPlan plan = new ItineraryPlan(
                 List.of(stop(firstPlace, LocalTime.of(8, 0)), stop(secondPlace, LocalTime.of(9, 0))),
                 BigDecimal.ZERO,
@@ -37,12 +38,21 @@ class ItineraryGenerationPreviewMapperTest {
         assertThat(response.stops().get(1).reason()).isEqualTo("Lý do cho địa điểm B");
     }
 
-    private Place place(String slug, String name) {
-        return new Place(
-                name, slug, "Address", BigDecimal.ONE, BigDecimal.ONE, 60, BigDecimal.ZERO, BigDecimal.ZERO, false);
+    private SchedulingPlace place(String slug, String name) {
+        return new SchedulingPlace(
+                slug,
+                name,
+                BigDecimal.ONE,
+                BigDecimal.ONE,
+                60,
+                BigDecimal.ZERO,
+                false,
+                null,
+                OpeningWindow.open(LocalTime.of(8, 0), LocalTime.of(18, 0)));
     }
 
-    private ScheduledStop stop(Place place, LocalTime start) {
-        return new ScheduledStop(place, start, start, start.plusHours(1), 0, 0.0, BigDecimal.ZERO);
+    private ScheduledStop stop(SchedulingPlace place, LocalTime start) {
+        return new ScheduledStop(
+                place, start, start, start.plusHours(1), 0, 0.0, BigDecimal.ZERO, true, true);
     }
 }

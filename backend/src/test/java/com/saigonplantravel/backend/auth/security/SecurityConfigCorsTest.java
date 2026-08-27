@@ -1,4 +1,4 @@
-package com.saigonplantravel.backend.common.security;
+package com.saigonplantravel.backend.auth.security;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -6,8 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.saigonplantravel.backend.auth.security.JwtAuthenticationService;
-import com.saigonplantravel.backend.common.security.jwt.JwtService;
+import com.saigonplantravel.backend.auth.security.jwt.JwtService;
 import com.saigonplantravel.backend.place.controller.PlaceController;
 import com.saigonplantravel.backend.place.service.PlaceService;
 import org.junit.jupiter.api.Test;

@@ -8,11 +8,9 @@ import com.saigonplantravel.backend.itinerary.mapper.ItineraryDetailMapper;
 import com.saigonplantravel.backend.itinerary.model.CalculatedItinerary;
 import com.saigonplantravel.backend.itinerary.repository.ItineraryRepository;
 import com.saigonplantravel.backend.place.entity.Place;
-import com.saigonplantravel.backend.place.exception.PlaceNotFoundException;
-import com.saigonplantravel.backend.place.repository.PlaceRepository;
+import com.saigonplantravel.backend.place.service.PlaceQueryService;
 import com.saigonplantravel.backend.trip.entity.Trip;
-import com.saigonplantravel.backend.trip.exception.TripNotFoundException;
-import com.saigonplantravel.backend.trip.repository.TripRepository;
+import com.saigonplantravel.backend.trip.service.TripQueryService;
 import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
@@ -26,24 +24,24 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class ItineraryService {
 
-    private final TripRepository tripRepository;
+    private final TripQueryService tripQueryService;
     private final ItineraryRepository itineraryRepository;
-    private final PlaceRepository placeRepository;
+    private final PlaceQueryService placeQueryService;
     private final ItineraryRecalculationService recalculationService;
     private final ItineraryDetailMapper itineraryDetailMapper;
     private final Clock clock;
 
     public ItineraryService(
-            TripRepository tripRepository,
+            TripQueryService tripQueryService,
             ItineraryRepository itineraryRepository,
-            PlaceRepository placeRepository,
+            PlaceQueryService placeQueryService,
             ItineraryRecalculationService recalculationService,
             ItineraryDetailMapper itineraryDetailMapper,
             Clock clock) {
 
-        this.tripRepository = tripRepository;
+        this.tripQueryService = tripQueryService;
         this.itineraryRepository = itineraryRepository;
-        this.placeRepository = placeRepository;
+        this.placeQueryService = placeQueryService;
         this.recalculationService = recalculationService;
         this.itineraryDetailMapper = itineraryDetailMapper;
         this.clock = clock;
@@ -117,7 +115,7 @@ public class ItineraryService {
     }
 
     private Trip findOwnedTrip(Long userId, UUID tripPublicId) {
-        return tripRepository.findByPublicIdAndUserId(tripPublicId, userId).orElseThrow(TripNotFoundException::new);
+        return tripQueryService.findOwnedTrip(userId, tripPublicId);
     }
 
     private Itinerary findItineraryWithItem(Long tripId, UUID itemPublicId) {
@@ -131,7 +129,7 @@ public class ItineraryService {
     }
 
     private Place findActivePlace(Long placeId) {
-        Place place = placeRepository.findById(placeId).orElseThrow(PlaceNotFoundException::new);
+        Place place = placeQueryService.findPlace(placeId);
 
         if (!Boolean.TRUE.equals(place.getActive())) {
             throw new InactiveItineraryPlaceException();
@@ -231,7 +229,7 @@ public class ItineraryService {
             throw new InvalidGeneratedItineraryException();
         }
 
-        List<Place> places = placeRepository.findAllActiveBySlugsForScheduling(placeSlugs);
+        List<Place> places = placeQueryService.findAllActiveBySlugsForScheduling(placeSlugs);
 
         if (places.size() != placeSlugs.size()) {
 

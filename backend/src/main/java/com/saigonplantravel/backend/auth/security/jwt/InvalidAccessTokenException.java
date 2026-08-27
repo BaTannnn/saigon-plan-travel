@@ -1,4 +1,4 @@
-package com.saigonplantravel.backend.common.security.jwt;
+package com.saigonplantravel.backend.auth.security.jwt;
 
 public class InvalidAccessTokenException extends RuntimeException {
 

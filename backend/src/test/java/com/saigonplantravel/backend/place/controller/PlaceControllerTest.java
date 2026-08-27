@@ -12,16 +12,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.saigonplantravel.backend.auth.security.JwtAuthenticationService;
+import com.saigonplantravel.backend.auth.security.RestAuthenticationEntryPoint;
+import com.saigonplantravel.backend.auth.security.SecurityConfig;
+import com.saigonplantravel.backend.auth.security.jwt.JwtService;
 import com.saigonplantravel.backend.common.exception.GlobalExceptionHandler;
-import com.saigonplantravel.backend.common.security.RestAuthenticationEntryPoint;
-import com.saigonplantravel.backend.common.security.SecurityConfig;
-import com.saigonplantravel.backend.common.security.jwt.JwtService;
 import com.saigonplantravel.backend.place.dto.CategoryResponse;
 import com.saigonplantravel.backend.place.dto.OpeningHourResponse;
 import com.saigonplantravel.backend.place.dto.PageResponse;
 import com.saigonplantravel.backend.place.dto.PlaceDetailResponse;
 import com.saigonplantravel.backend.place.dto.PlaceQueryRequest;
 import com.saigonplantravel.backend.place.dto.PlaceSummaryResponse;
+import com.saigonplantravel.backend.place.exception.PlaceExceptionHandler;
 import com.saigonplantravel.backend.place.exception.PlaceNotFoundException;
 import com.saigonplantravel.backend.place.service.PlaceService;
 import java.math.BigDecimal;
@@ -37,7 +38,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(PlaceController.class)
-@Import({GlobalExceptionHandler.class, SecurityConfig.class})
+@Import({GlobalExceptionHandler.class, PlaceExceptionHandler.class, SecurityConfig.class})
 class PlaceControllerTest {
 
     @Autowired

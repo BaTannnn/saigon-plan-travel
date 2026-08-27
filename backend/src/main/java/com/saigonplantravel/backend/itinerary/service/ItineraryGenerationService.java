@@ -1,14 +1,16 @@
 package com.saigonplantravel.backend.itinerary.service;
 
 import com.saigonplantravel.backend.ai.client.AiItineraryExplanationClient;
+import com.saigonplantravel.backend.itinerary.mapper.SchedulingInputMapper;
 import com.saigonplantravel.backend.itinerary.model.GeneratedItineraryPreview;
 import com.saigonplantravel.backend.recommendation.model.RecommendationCandidate;
 import com.saigonplantravel.backend.recommendation.service.RecommendationPipelineService;
 import com.saigonplantravel.backend.scheduling.model.ItineraryPlan;
+import com.saigonplantravel.backend.scheduling.model.PlanningContext;
+import com.saigonplantravel.backend.scheduling.model.SchedulingCandidate;
 import com.saigonplantravel.backend.scheduling.service.ItineraryScheduler;
 import com.saigonplantravel.backend.trip.entity.Trip;
-import com.saigonplantravel.backend.trip.exception.TripNotFoundException;
-import com.saigonplantravel.backend.trip.repository.TripRepository;
+import com.saigonplantravel.backend.trip.service.TripQueryService;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -22,20 +24,22 @@ public class ItineraryGenerationService {
 
     private static final Logger log = LoggerFactory.getLogger(ItineraryGenerationService.class);
 
-    private final TripRepository tripRepository;
+    private final TripQueryService tripQueryService;
     private final RecommendationPipelineService recommendationPipelineService;
+    private final SchedulingInputMapper schedulingInputMapper;
     private final ItineraryScheduler itineraryScheduler;
     private final AiItineraryExplanationClient itineraryExplanationClient;
 
     public ItineraryGenerationService(
-            TripRepository tripRepository,
+            TripQueryService tripQueryService,
             RecommendationPipelineService recommendationPipelineService,
+            SchedulingInputMapper schedulingInputMapper,
             ItineraryScheduler itineraryScheduler,
             AiItineraryExplanationClient itineraryExplanationClient) {
 
-        this.tripRepository = tripRepository;
+        this.tripQueryService = tripQueryService;
         this.recommendationPipelineService = recommendationPipelineService;
-
+        this.schedulingInputMapper = schedulingInputMapper;
         this.itineraryScheduler = itineraryScheduler;
         this.itineraryExplanationClient = itineraryExplanationClient;
     }
@@ -43,19 +47,21 @@ public class ItineraryGenerationService {
     @Transactional(readOnly = true)
     public ItineraryPlan generatePlan(Long userId, UUID tripPublicId, String preferenceDescription) {
 
-        Trip trip =
-                tripRepository.findByPublicIdAndUserId(tripPublicId, userId).orElseThrow(TripNotFoundException::new);
+        Trip trip = tripQueryService.findOwnedTrip(userId, tripPublicId);
 
         List<RecommendationCandidate> candidates = recommendationPipelineService.recommend(trip, preferenceDescription);
+        PlanningContext context = schedulingInputMapper.toPlanningContext(trip);
+        List<SchedulingCandidate> schedulingCandidates =
+                schedulingInputMapper.toSchedulingCandidates(trip, candidates);
 
-        return itineraryScheduler.schedule(trip, candidates);
+        return itineraryScheduler.schedule(context, schedulingCandidates);
     }
 
     @Transactional(readOnly = true)
     public GeneratedItineraryPreview generatePreview(Long userId, UUID tripPublicId, String preferenceDescription) {
         ItineraryPlan plan = generatePlan(userId, tripPublicId, preferenceDescription);
         List<String> selectedPlaceSlugs =
-                plan.stops().stream().map(stop -> stop.place().getSlug()).toList();
+                plan.stops().stream().map(stop -> stop.place().slug()).toList();
 
         if (selectedPlaceSlugs.isEmpty()) {
             return new GeneratedItineraryPreview(plan, Map.of());

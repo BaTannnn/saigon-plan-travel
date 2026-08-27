@@ -17,11 +17,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.saigonplantravel.backend.auth.domain.UserRole;
 import com.saigonplantravel.backend.auth.security.JwtAuthenticationService;
+import com.saigonplantravel.backend.auth.security.RestAuthenticationEntryPoint;
+import com.saigonplantravel.backend.auth.security.SecurityConfig;
 import com.saigonplantravel.backend.auth.security.UserPrincipal;
+import com.saigonplantravel.backend.auth.security.jwt.JwtService;
 import com.saigonplantravel.backend.common.exception.GlobalExceptionHandler;
-import com.saigonplantravel.backend.common.security.RestAuthenticationEntryPoint;
-import com.saigonplantravel.backend.common.security.SecurityConfig;
-import com.saigonplantravel.backend.common.security.jwt.JwtService;
 import com.saigonplantravel.backend.trip.domain.EnvironmentPreference;
 import com.saigonplantravel.backend.trip.domain.TravelPace;
 import com.saigonplantravel.backend.trip.dto.SaveTripRequest;
@@ -29,6 +29,7 @@ import com.saigonplantravel.backend.trip.dto.StartLocationRequest;
 import com.saigonplantravel.backend.trip.dto.StartLocationResponse;
 import com.saigonplantravel.backend.trip.dto.TripResponse;
 import com.saigonplantravel.backend.trip.dto.TripSummaryResponse;
+import com.saigonplantravel.backend.trip.exception.TripExceptionHandler;
 import com.saigonplantravel.backend.trip.exception.TripNotFoundException;
 import com.saigonplantravel.backend.trip.service.TripService;
 import java.math.BigDecimal;
@@ -50,7 +51,12 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import tools.jackson.databind.ObjectMapper;
 
 @WebMvcTest(TripController.class)
-@Import({GlobalExceptionHandler.class, SecurityConfig.class, RestAuthenticationEntryPoint.class})
+@Import({
+    GlobalExceptionHandler.class,
+    TripExceptionHandler.class,
+    SecurityConfig.class,
+    RestAuthenticationEntryPoint.class
+})
 class TripControllerTest {
 
     @Autowired

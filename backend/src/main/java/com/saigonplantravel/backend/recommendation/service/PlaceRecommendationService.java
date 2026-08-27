@@ -4,7 +4,7 @@ import com.saigonplantravel.backend.ai.client.AiRecommendationClient;
 import com.saigonplantravel.backend.ai.client.dto.AiPlaceCandidateResponse;
 import com.saigonplantravel.backend.ai.client.dto.AiPlaceRecommendationResponse;
 import com.saigonplantravel.backend.place.entity.Place;
-import com.saigonplantravel.backend.place.repository.PlaceRepository;
+import com.saigonplantravel.backend.place.service.PlaceQueryService;
 import com.saigonplantravel.backend.recommendation.model.RecommendationCandidate;
 import com.saigonplantravel.backend.trip.entity.Trip;
 import java.util.List;
@@ -25,20 +25,20 @@ public class PlaceRecommendationService {
     private static final int SEMANTIC_CANDIDATE_LIMIT = 15;
 
     private final AiRecommendationClient aiRecommendationClient;
-    private final PlaceRepository placeRepository;
+    private final PlaceQueryService placeQueryService;
     private final CoarsePlaceEligibilityService coarsePlaceEligibilityService;
 
     public PlaceRecommendationService(
             AiRecommendationClient aiRecommendationClient,
-            PlaceRepository placeRepository,
+            PlaceQueryService placeQueryService,
             CoarsePlaceEligibilityService coarsePlaceEligibilityService) {
         this.aiRecommendationClient = aiRecommendationClient;
-        this.placeRepository = placeRepository;
+        this.placeQueryService = placeQueryService;
         this.coarsePlaceEligibilityService = coarsePlaceEligibilityService;
     }
 
     public List<RecommendationCandidate> recommend(Trip trip, String preferenceDescription) {
-        List<Place> activePlaces = placeRepository.findAllActiveForScheduling();
+        List<Place> activePlaces = placeQueryService.findAllActiveForScheduling();
         List<Place> eligiblePlaces = coarsePlaceEligibilityService.findEligiblePlaces(activePlaces, trip);
 
         log.debug("Coarse eligibility retained {} of {} active places", eligiblePlaces.size(), activePlaces.size());

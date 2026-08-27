@@ -1,4 +1,4 @@
-package com.saigonplantravel.backend.common.security;
+package com.saigonplantravel.backend.auth.security;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -25,16 +25,14 @@ import com.saigonplantravel.backend.auth.domain.UserRole;
 import com.saigonplantravel.backend.auth.dto.LoginRequest;
 import com.saigonplantravel.backend.auth.dto.RegisterRequest;
 import com.saigonplantravel.backend.auth.entity.UserAccount;
+import com.saigonplantravel.backend.auth.exception.AuthExceptionHandler;
 import com.saigonplantravel.backend.auth.exception.EmailAlreadyExistsException;
 import com.saigonplantravel.backend.auth.exception.InvalidCredentialsException;
 import com.saigonplantravel.backend.auth.repository.UserAccountRepository;
-import com.saigonplantravel.backend.auth.security.JwtAuthenticationService;
-import com.saigonplantravel.backend.auth.security.UserAccountDetailsService;
-import com.saigonplantravel.backend.auth.security.UserPrincipal;
+import com.saigonplantravel.backend.auth.security.jwt.AccessTokenClaims;
+import com.saigonplantravel.backend.auth.security.jwt.JwtService;
 import com.saigonplantravel.backend.auth.service.AuthService;
 import com.saigonplantravel.backend.common.exception.GlobalExceptionHandler;
-import com.saigonplantravel.backend.common.security.jwt.AccessTokenClaims;
-import com.saigonplantravel.backend.common.security.jwt.JwtService;
 import com.saigonplantravel.backend.place.dto.PageResponse;
 import com.saigonplantravel.backend.place.service.CategoryService;
 import com.saigonplantravel.backend.place.service.PlaceImageService;
@@ -72,6 +70,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Import({
     SecurityConfig.class,
     GlobalExceptionHandler.class,
+    AuthExceptionHandler.class,
     RestAuthenticationEntryPoint.class,
     UserAccountDetailsService.class,
     AdminSecurityConfigTest.SecurityProbeController.class

@@ -1,7 +1,7 @@
-package com.saigonplantravel.backend.common.security.jwt;
+package com.saigonplantravel.backend.auth.security.jwt;
 
 import com.saigonplantravel.backend.auth.security.JwtAuthenticationService;
-import com.saigonplantravel.backend.common.security.RestAuthenticationEntryPoint;
+import com.saigonplantravel.backend.auth.security.RestAuthenticationEntryPoint;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

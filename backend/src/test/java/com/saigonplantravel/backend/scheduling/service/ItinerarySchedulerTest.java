@@ -1,25 +1,24 @@
 package com.saigonplantravel.backend.scheduling.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import com.saigonplantravel.backend.place.entity.Place;
-import com.saigonplantravel.backend.recommendation.model.RecommendationCandidate;
+import com.saigonplantravel.backend.scheduling.model.ItineraryPlan;
+import com.saigonplantravel.backend.scheduling.model.OpeningWindow;
+import com.saigonplantravel.backend.scheduling.model.PlanningContext;
+import com.saigonplantravel.backend.scheduling.model.SchedulingCandidate;
+import com.saigonplantravel.backend.scheduling.model.SchedulingPlace;
+import com.saigonplantravel.backend.scheduling.model.TravelEstimate;
 import com.saigonplantravel.backend.scheduling.ranking.CandidateRanker;
 import com.saigonplantravel.backend.scheduling.scoring.BudgetScorer;
 import com.saigonplantravel.backend.scheduling.scoring.CandidateScorer;
 import com.saigonplantravel.backend.scheduling.scoring.EnvironmentScorer;
 import com.saigonplantravel.backend.scheduling.scoring.TravelScorer;
-import com.saigonplantravel.backend.scheduling.model.ItineraryPlan;
-import com.saigonplantravel.backend.scheduling.model.TravelEstimate;
 import com.saigonplantravel.backend.scheduling.travel.TravelEstimator;
 import com.saigonplantravel.backend.trip.domain.EnvironmentPreference;
-import com.saigonplantravel.backend.trip.domain.TravelPace;
-import com.saigonplantravel.backend.trip.entity.Trip;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.OffsetDateTime;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,10 +29,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class ItinerarySchedulerTest {
 
-    private static final short THURSDAY = 4;
-
     private static final BigDecimal ORIGIN_LATITUDE = new BigDecimal("10.7700000");
-
     private static final BigDecimal ORIGIN_LONGITUDE = new BigDecimal("106.6900000");
 
     @Mock
@@ -43,292 +39,204 @@ class ItinerarySchedulerTest {
 
     @BeforeEach
     void setUp() {
-
         CandidateScorer candidateScorer =
                 new CandidateScorer(new TravelScorer(), new BudgetScorer(), new EnvironmentScorer());
 
-        CandidateRanker candidateRanker = new CandidateRanker();
-
-        scheduler = new ItineraryScheduler(travelEstimator, candidateScorer, candidateRanker);
+        scheduler = new ItineraryScheduler(
+                new StopScheduleCalculator(travelEstimator), candidateScorer, new CandidateRanker());
     }
 
     @Test
     void schedulesFeasibleCandidate() {
+        PlanningContext context = context(new BigDecimal("500000"));
+        SchedulingPlace museum = openPlace(
+                "museum", "10.7769000", "106.7009000", 90, "50000", LocalTime.of(8, 0), LocalTime.of(17, 0));
 
-        Trip trip = trip(new BigDecimal("500000"));
-
-        Place museum =
-                openPlace("museum", "10.7769000", "106.7009000", 90, "50000", LocalTime.of(8, 0), LocalTime.of(17, 0));
-
-        RecommendationCandidate candidate = candidate(museum, 0.90);
-
-        when(travelEstimator.estimate(ORIGIN_LATITUDE, ORIGIN_LONGITUDE, museum.getLatitude(), museum.getLongitude()))
+        when(travelEstimator.estimate(ORIGIN_LATITUDE, ORIGIN_LONGITUDE, museum.latitude(), museum.longitude()))
                 .thenReturn(new TravelEstimate(2.0, 10));
 
-        ItineraryPlan result = scheduler.schedule(trip, List.of(candidate));
+        ItineraryPlan result = scheduler.schedule(context, List.of(candidate(museum, 0.90)));
 
         assertThat(result.stops()).hasSize(1);
-
         assertThat(result.stops().getFirst().place()).isEqualTo(museum);
-
         assertThat(result.stops().getFirst().arrivalTime()).isEqualTo(LocalTime.of(8, 10));
-
         assertThat(result.stops().getFirst().visitStartTime()).isEqualTo(LocalTime.of(8, 10));
-
         assertThat(result.stops().getFirst().visitEndTime()).isEqualTo(LocalTime.of(9, 40));
-
         assertThat(result.totalEstimatedCost()).isEqualByComparingTo("50000");
-
         assertThat(result.totalTravelMinutes()).isEqualTo(10);
-
         assertThat(result.totalVisitMinutes()).isEqualTo(90);
     }
 
     @Test
     void skipsClosedCandidateAndSchedulesNextFeasibleCandidate() {
+        PlanningContext context = context(new BigDecimal("500000"));
+        SchedulingPlace closedPlace = place(
+                "closed-place", "10.7750000", "106.6950000", 60, "0", OpeningWindow.closed());
+        SchedulingPlace openPlace = openPlace(
+                "open-place", "10.7760000", "106.6960000", 60, "0", LocalTime.of(8, 0), LocalTime.of(17, 0));
 
-        Trip trip = trip(new BigDecimal("500000"));
-
-        Place closedPlace = place("closed-place", "10.7750000", "106.6950000", 60, "0");
-
-        closedPlace.markClosed(THURSDAY);
-
-        Place openPlace =
-                openPlace("open-place", "10.7760000", "106.6960000", 60, "0", LocalTime.of(8, 0), LocalTime.of(17, 0));
-
-        RecommendationCandidate closedCandidate = candidate(closedPlace, 0.95);
-
-        RecommendationCandidate openCandidate = candidate(openPlace, 0.80);
-
-        when(travelEstimator.estimate(
-                        ORIGIN_LATITUDE, ORIGIN_LONGITUDE, openPlace.getLatitude(), openPlace.getLongitude()))
+        when(travelEstimator.estimate(ORIGIN_LATITUDE, ORIGIN_LONGITUDE, openPlace.latitude(), openPlace.longitude()))
                 .thenReturn(new TravelEstimate(1.5, 8));
 
-        ItineraryPlan result = scheduler.schedule(trip, List.of(closedCandidate, openCandidate));
+        ItineraryPlan result =
+                scheduler.schedule(context, List.of(candidate(closedPlace, 0.95), candidate(openPlace, 0.80)));
 
         assertThat(result.stops()).hasSize(1);
-
         assertThat(result.stops().getFirst().place()).isEqualTo(openPlace);
     }
 
     @Test
     void skipsCandidateThatExceedsRemainingBudget() {
-
-        Trip trip = trip(new BigDecimal("100000"));
-
-        Place expensivePlace = openPlace(
+        PlanningContext context = context(new BigDecimal("100000"));
+        SchedulingPlace expensivePlace = openPlace(
                 "expensive", "10.7750000", "106.6950000", 60, "150000", LocalTime.of(8, 0), LocalTime.of(17, 0));
-
-        Place affordablePlace = openPlace(
+        SchedulingPlace affordablePlace = openPlace(
                 "affordable", "10.7760000", "106.6960000", 60, "50000", LocalTime.of(8, 0), LocalTime.of(17, 0));
 
-        RecommendationCandidate expensiveCandidate = candidate(expensivePlace, 0.99);
-
-        RecommendationCandidate affordableCandidate = candidate(affordablePlace, 0.80);
-
         when(travelEstimator.estimate(
-                        ORIGIN_LATITUDE,
-                        ORIGIN_LONGITUDE,
-                        affordablePlace.getLatitude(),
-                        affordablePlace.getLongitude()))
+                        ORIGIN_LATITUDE, ORIGIN_LONGITUDE, affordablePlace.latitude(), affordablePlace.longitude()))
                 .thenReturn(new TravelEstimate(1.0, 5));
 
-        ItineraryPlan result = scheduler.schedule(trip, List.of(expensiveCandidate, affordableCandidate));
+        ItineraryPlan result = scheduler.schedule(
+                context, List.of(candidate(expensivePlace, 0.99), candidate(affordablePlace, 0.80)));
 
         assertThat(result.stops()).hasSize(1);
-
         assertThat(result.stops().getFirst().place()).isEqualTo(affordablePlace);
-
         assertThat(result.totalEstimatedCost()).isEqualByComparingTo("50000");
     }
 
     @Test
     void estimatesSecondTravelFromPreviouslySelectedPlace() {
+        PlanningContext context = context(new BigDecimal("500000"));
+        SchedulingPlace firstPlace = openPlace(
+                "first", "10.7750000", "106.6950000", 60, "0", LocalTime.of(8, 0), LocalTime.of(17, 0));
+        SchedulingPlace secondPlace = openPlace(
+                "second", "10.7800000", "106.7050000", 60, "0", LocalTime.of(8, 0), LocalTime.of(17, 0));
 
-        Trip trip = trip(new BigDecimal("500000"));
-
-        Place firstPlace =
-                openPlace("first", "10.7750000", "106.6950000", 60, "0", LocalTime.of(8, 0), LocalTime.of(17, 0));
-
-        Place secondPlace =
-                openPlace("second", "10.7800000", "106.7050000", 60, "0", LocalTime.of(8, 0), LocalTime.of(17, 0));
-
-        RecommendationCandidate firstCandidate = candidate(firstPlace, 0.95);
-
-        RecommendationCandidate secondCandidate = candidate(secondPlace, 0.85);
-
-        // Vòng 1: V2 evaluate CẢ HAI từ origin.
-        when(travelEstimator.estimate(
-                        ORIGIN_LATITUDE, ORIGIN_LONGITUDE, firstPlace.getLatitude(), firstPlace.getLongitude()))
+        when(travelEstimator.estimate(ORIGIN_LATITUDE, ORIGIN_LONGITUDE, firstPlace.latitude(), firstPlace.longitude()))
                 .thenReturn(new TravelEstimate(1.0, 10));
-
-        when(travelEstimator.estimate(
-                        ORIGIN_LATITUDE, ORIGIN_LONGITUDE, secondPlace.getLatitude(), secondPlace.getLongitude()))
+        when(travelEstimator.estimate(ORIGIN_LATITUDE, ORIGIN_LONGITUDE, secondPlace.latitude(), secondPlace.longitude()))
                 .thenReturn(new TravelEstimate(4.0, 30));
-
-        // Vòng 2: sau khi first thắng,
-        // second phải được evaluate lại từ first.
         when(travelEstimator.estimate(
-                        firstPlace.getLatitude(),
-                        firstPlace.getLongitude(),
-                        secondPlace.getLatitude(),
-                        secondPlace.getLongitude()))
+                        firstPlace.latitude(), firstPlace.longitude(), secondPlace.latitude(), secondPlace.longitude()))
                 .thenReturn(new TravelEstimate(2.0, 20));
 
-        ItineraryPlan result = scheduler.schedule(trip, List.of(firstCandidate, secondCandidate));
+        ItineraryPlan result =
+                scheduler.schedule(context, List.of(candidate(firstPlace, 0.95), candidate(secondPlace, 0.85)));
 
         assertThat(result.stops()).hasSize(2);
-
-        assertThat(result.stops()).extracting(stop -> stop.place().getSlug()).containsExactly("first", "second");
-
+        assertThat(result.stops()).extracting(stop -> stop.place().slug()).containsExactly("first", "second");
         assertThat(result.stops().get(0).visitEndTime()).isEqualTo(LocalTime.of(9, 10));
-
         assertThat(result.stops().get(1).arrivalTime()).isEqualTo(LocalTime.of(9, 30));
-
         verify(travelEstimator)
                 .estimate(
-                        firstPlace.getLatitude(),
-                        firstPlace.getLongitude(),
-                        secondPlace.getLatitude(),
-                        secondPlace.getLongitude());
+                        firstPlace.latitude(), firstPlace.longitude(), secondPlace.latitude(), secondPlace.longitude());
     }
 
     @Test
     void waitsUntilOpeningTimeWhenArrivingEarly() {
+        PlanningContext context = context(new BigDecimal("500000"));
+        SchedulingPlace museum = openPlace(
+                "museum", "10.7769000", "106.7009000", 90, "50000", LocalTime.of(9, 0), LocalTime.of(17, 0));
 
-        Trip trip = trip(new BigDecimal("500000"));
-
-        Place museum =
-                openPlace("museum", "10.7769000", "106.7009000", 90, "50000", LocalTime.of(9, 0), LocalTime.of(17, 0));
-
-        RecommendationCandidate candidate = candidate(museum, 0.90);
-
-        when(travelEstimator.estimate(ORIGIN_LATITUDE, ORIGIN_LONGITUDE, museum.getLatitude(), museum.getLongitude()))
+        when(travelEstimator.estimate(ORIGIN_LATITUDE, ORIGIN_LONGITUDE, museum.latitude(), museum.longitude()))
                 .thenReturn(new TravelEstimate(2.0, 10));
 
-        ItineraryPlan result = scheduler.schedule(trip, List.of(candidate));
+        ItineraryPlan result = scheduler.schedule(context, List.of(candidate(museum, 0.90)));
 
         assertThat(result.stops()).hasSize(1);
-
         assertThat(result.stops().getFirst().arrivalTime()).isEqualTo(LocalTime.of(8, 10));
-
         assertThat(result.stops().getFirst().visitStartTime()).isEqualTo(LocalTime.of(9, 0));
-
         assertThat(result.stops().getFirst().visitEndTime()).isEqualTo(LocalTime.of(10, 30));
     }
 
     @Test
     void skipsCandidateWhenVisitWouldEndAfterTripEndTime() {
-
-        Trip trip = trip(new BigDecimal("500000"));
-
-        Place longVisitPlace =
-                openPlace("long-visit", "10.7769000", "106.7009000", 700, "0", LocalTime.of(8, 0), LocalTime.of(22, 0));
-
-        RecommendationCandidate candidate = candidate(longVisitPlace, 0.95);
+        PlanningContext context = context(new BigDecimal("500000"));
+        SchedulingPlace longVisitPlace = openPlace(
+                "long-visit", "10.7769000", "106.7009000", 700, "0", LocalTime.of(8, 0), LocalTime.of(22, 0));
 
         when(travelEstimator.estimate(
-                        ORIGIN_LATITUDE, ORIGIN_LONGITUDE, longVisitPlace.getLatitude(), longVisitPlace.getLongitude()))
+                        ORIGIN_LATITUDE, ORIGIN_LONGITUDE, longVisitPlace.latitude(), longVisitPlace.longitude()))
                 .thenReturn(new TravelEstimate(2.0, 10));
 
-        ItineraryPlan result = scheduler.schedule(trip, List.of(candidate));
+        ItineraryPlan result = scheduler.schedule(context, List.of(candidate(longVisitPlace, 0.95)));
 
         assertThat(result.stops()).isEmpty();
-
         verify(travelEstimator)
-                .estimate(
-                        ORIGIN_LATITUDE, ORIGIN_LONGITUDE, longVisitPlace.getLatitude(), longVisitPlace.getLongitude());
+                .estimate(ORIGIN_LATITUDE, ORIGIN_LONGITUDE, longVisitPlace.latitude(), longVisitPlace.longitude());
     }
 
     @Test
     void prefersBetterCurrentTravelTradeoffOverHigherSemanticScore() {
+        PlanningContext context = context(new BigDecimal("500000"));
+        SchedulingPlace farPlace = openPlace(
+                "far", "10.8500000", "106.8000000", 60, "0", LocalTime.of(8, 0), LocalTime.of(18, 0));
+        SchedulingPlace nearPlace = openPlace(
+                "near", "10.7710000", "106.6910000", 60, "0", LocalTime.of(8, 0), LocalTime.of(18, 0));
 
-        Trip trip = trip(new BigDecimal("500000"));
-
-        Place farPlace =
-                openPlace("far", "10.8500000", "106.8000000", 60, "0", LocalTime.of(8, 0), LocalTime.of(18, 0));
-
-        Place nearPlace =
-                openPlace("near", "10.7710000", "106.6910000", 60, "0", LocalTime.of(8, 0), LocalTime.of(18, 0));
-
-        RecommendationCandidate farCandidate = candidate(farPlace, 0.95);
-
-        RecommendationCandidate nearCandidate = candidate(nearPlace, 0.90);
-
-        when(travelEstimator.estimate(
-                        ORIGIN_LATITUDE, ORIGIN_LONGITUDE, farPlace.getLatitude(), farPlace.getLongitude()))
+        when(travelEstimator.estimate(ORIGIN_LATITUDE, ORIGIN_LONGITUDE, farPlace.latitude(), farPlace.longitude()))
                 .thenReturn(new TravelEstimate(12.0, 50));
-
-        when(travelEstimator.estimate(
-                        ORIGIN_LATITUDE, ORIGIN_LONGITUDE, nearPlace.getLatitude(), nearPlace.getLongitude()))
+        when(travelEstimator.estimate(ORIGIN_LATITUDE, ORIGIN_LONGITUDE, nearPlace.latitude(), nearPlace.longitude()))
                 .thenReturn(new TravelEstimate(1.0, 5));
-
-        // Sau khi near được chọn, far vẫn còn.
-        // Scheduler sẽ evaluate far lại từ near.
         when(travelEstimator.estimate(
-                        nearPlace.getLatitude(),
-                        nearPlace.getLongitude(),
-                        farPlace.getLatitude(),
-                        farPlace.getLongitude()))
+                        nearPlace.latitude(), nearPlace.longitude(), farPlace.latitude(), farPlace.longitude()))
                 .thenReturn(new TravelEstimate(11.0, 50));
 
-        ItineraryPlan result = scheduler.schedule(trip, List.of(farCandidate, nearCandidate));
+        ItineraryPlan result =
+                scheduler.schedule(context, List.of(candidate(farPlace, 0.95), candidate(nearPlace, 0.90)));
 
         assertThat(result.stops()).isNotEmpty();
-
-        assertThat(result.stops().getFirst().place().getSlug()).isEqualTo("near");
+        assertThat(result.stops().getFirst().place().slug()).isEqualTo("near");
     }
 
-    private Trip trip(BigDecimal budget) {
-
-        return new Trip(
-                1L,
-                LocalDate.of(2026, 8, 20),
+    private PlanningContext context(BigDecimal budget) {
+        return new PlanningContext(
                 LocalTime.of(8, 0),
                 LocalTime.of(18, 0),
                 budget,
-                "Test origin",
                 ORIGIN_LATITUDE,
                 ORIGIN_LONGITUDE,
-                TravelPace.BALANCED,
-                EnvironmentPreference.MIXED,
-                OffsetDateTime.parse("2026-08-15T10:00:00+07:00"));
+                EnvironmentPreference.MIXED);
     }
 
-    private Place openPlace(
+    private SchedulingPlace openPlace(
             String slug,
             String latitude,
             String longitude,
             int visitMinutes,
-            String minCost,
+            String estimatedCost,
             LocalTime openTime,
             LocalTime closeTime) {
-
-        Place place = place(slug, latitude, longitude, visitMinutes, minCost);
-
-        place.markOpen(THURSDAY, openTime, closeTime);
-
-        return place;
+        return place(
+                slug,
+                latitude,
+                longitude,
+                visitMinutes,
+                estimatedCost,
+                OpeningWindow.open(openTime, closeTime));
     }
 
-    private Place place(String slug, String latitude, String longitude, int visitMinutes, String minCost) {
-
-        BigDecimal cost = new BigDecimal(minCost);
-
-        return new Place(
+    private SchedulingPlace place(
+            String slug,
+            String latitude,
+            String longitude,
+            int visitMinutes,
+            String estimatedCost,
+            OpeningWindow openingWindow) {
+        return new SchedulingPlace(
                 slug,
                 slug,
-                "Ho Chi Minh City",
                 new BigDecimal(latitude),
                 new BigDecimal(longitude),
                 visitMinutes,
-                cost,
-                cost,
-                true);
+                new BigDecimal(estimatedCost),
+                true,
+                null,
+                openingWindow);
     }
 
-    private RecommendationCandidate candidate(Place place, double semanticScore) {
-
-        return new RecommendationCandidate(place, semanticScore, "HIGHLIGHTS");
+    private SchedulingCandidate candidate(SchedulingPlace place, double semanticScore) {
+        return new SchedulingCandidate(place, semanticScore, "HIGHLIGHTS");
     }
 }

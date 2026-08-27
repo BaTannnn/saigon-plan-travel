@@ -13,13 +13,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.saigonplantravel.backend.auth.domain.UserRole;
 import com.saigonplantravel.backend.auth.security.JwtAuthenticationService;
+import com.saigonplantravel.backend.auth.security.RestAuthenticationEntryPoint;
+import com.saigonplantravel.backend.auth.security.SecurityConfig;
 import com.saigonplantravel.backend.auth.security.UserPrincipal;
+import com.saigonplantravel.backend.auth.security.jwt.JwtService;
 import com.saigonplantravel.backend.common.exception.GlobalExceptionHandler;
-import com.saigonplantravel.backend.common.security.RestAuthenticationEntryPoint;
-import com.saigonplantravel.backend.common.security.SecurityConfig;
-import com.saigonplantravel.backend.common.security.jwt.JwtService;
 import com.saigonplantravel.backend.location.dto.LocationSearchResponse;
 import com.saigonplantravel.backend.location.exception.GeocodingUnavailableException;
+import com.saigonplantravel.backend.location.exception.LocationExceptionHandler;
 import com.saigonplantravel.backend.location.service.LocationSearchService;
 import java.math.BigDecimal;
 import java.util.List;
@@ -34,7 +35,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 @WebMvcTest(LocationController.class)
-@Import({GlobalExceptionHandler.class, SecurityConfig.class, RestAuthenticationEntryPoint.class})
+@Import({
+    GlobalExceptionHandler.class,
+    LocationExceptionHandler.class,
+    SecurityConfig.class,
+    RestAuthenticationEntryPoint.class
+})
 class LocationControllerTest {
 
     @Autowired

@@ -9,7 +9,7 @@ import com.saigonplantravel.backend.ai.client.AiRecommendationClient;
 import com.saigonplantravel.backend.ai.client.dto.AiPlaceCandidateResponse;
 import com.saigonplantravel.backend.ai.client.dto.AiPlaceRecommendationResponse;
 import com.saigonplantravel.backend.place.entity.Place;
-import com.saigonplantravel.backend.place.repository.PlaceRepository;
+import com.saigonplantravel.backend.place.service.PlaceQueryService;
 import com.saigonplantravel.backend.recommendation.model.RecommendationCandidate;
 import java.math.BigDecimal;
 import java.util.List;
@@ -26,7 +26,7 @@ class PlaceRecommendationServiceTest {
     private AiRecommendationClient aiRecommendationClient;
 
     @Mock
-    private PlaceRepository placeRepository;
+    private PlaceQueryService placeQueryService;
 
     @Mock
     private CoarsePlaceEligibilityService coarsePlaceEligibilityService;
@@ -38,14 +38,14 @@ class PlaceRecommendationServiceTest {
 
     @BeforeEach
     void setUp() {
-        service =
-                new PlaceRecommendationService(aiRecommendationClient, placeRepository, coarsePlaceEligibilityService);
+        service = new PlaceRecommendationService(
+                aiRecommendationClient, placeQueryService, coarsePlaceEligibilityService);
     }
 
     @Test
     void trimsPreferenceAndRequestsFifteenSemanticCandidates() {
         Place eligiblePlace = place("Place A", "place-a");
-        when(placeRepository.findAllActiveForScheduling()).thenReturn(List.of(eligiblePlace));
+        when(placeQueryService.findAllActiveForScheduling()).thenReturn(List.of(eligiblePlace));
         when(coarsePlaceEligibilityService.findEligiblePlaces(List.of(eligiblePlace), trip))
                 .thenReturn(List.of(eligiblePlace));
         when(aiRecommendationClient.recommendPlaces("Tôi thích kiến trúc và mỹ thuật", 15, List.of("place-a")))
@@ -59,7 +59,7 @@ class PlaceRecommendationServiceTest {
     @Test
     void skipsAiRequestWhenNoPlaceIsCoarselyEligible() {
         Place activePlace = place("Place A", "place-a");
-        when(placeRepository.findAllActiveForScheduling()).thenReturn(List.of(activePlace));
+        when(placeQueryService.findAllActiveForScheduling()).thenReturn(List.of(activePlace));
         when(coarsePlaceEligibilityService.findEligiblePlaces(List.of(activePlace), trip))
                 .thenReturn(List.of());
 
@@ -136,7 +136,7 @@ class PlaceRecommendationServiceTest {
 
     private void stubEligiblePlaces(Place... places) {
         List<Place> activePlaces = List.of(places);
-        when(placeRepository.findAllActiveForScheduling()).thenReturn(activePlaces);
+        when(placeQueryService.findAllActiveForScheduling()).thenReturn(activePlaces);
         when(coarsePlaceEligibilityService.findEligiblePlaces(activePlaces, trip))
                 .thenReturn(activePlaces);
     }

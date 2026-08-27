@@ -1,4 +1,4 @@
-package com.saigonplantravel.backend.common.security.jwt;
+package com.saigonplantravel.backend.auth.security.jwt;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
