@@ -30,7 +30,7 @@ type AuthState = {
   expiresAt: number | null;
 };
 
-type RunAuthenticated = <T>(
+export type RunAuthenticated = <T>(
   request: (accessToken: string) => Promise<T>,
 ) => Promise<T>;
 
