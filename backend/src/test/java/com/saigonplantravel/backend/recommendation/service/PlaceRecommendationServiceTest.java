@@ -5,12 +5,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import com.saigonplantravel.backend.ai.client.AiRecommendationClient;
-import com.saigonplantravel.backend.ai.client.dto.AiPlaceCandidateResponse;
-import com.saigonplantravel.backend.ai.client.dto.AiPlaceRecommendationResponse;
 import com.saigonplantravel.backend.place.entity.Place;
 import com.saigonplantravel.backend.place.service.PlaceQueryService;
+import com.saigonplantravel.backend.recommendation.SemanticPlaceRetriever;
 import com.saigonplantravel.backend.recommendation.model.RecommendationCandidate;
+import com.saigonplantravel.backend.recommendation.model.SemanticPlaceCandidate;
 import java.math.BigDecimal;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,7 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class PlaceRecommendationServiceTest {
 
     @Mock
-    private AiRecommendationClient aiRecommendationClient;
+    private SemanticPlaceRetriever semanticPlaceRetriever;
 
     @Mock
     private PlaceQueryService placeQueryService;
@@ -39,7 +38,7 @@ class PlaceRecommendationServiceTest {
     @BeforeEach
     void setUp() {
         service = new PlaceRecommendationService(
-                aiRecommendationClient, placeQueryService, coarsePlaceEligibilityService);
+                semanticPlaceRetriever, placeQueryService, coarsePlaceEligibilityService);
     }
 
     @Test
@@ -48,12 +47,12 @@ class PlaceRecommendationServiceTest {
         when(placeQueryService.findAllActiveForScheduling()).thenReturn(List.of(eligiblePlace));
         when(coarsePlaceEligibilityService.findEligiblePlaces(List.of(eligiblePlace), trip))
                 .thenReturn(List.of(eligiblePlace));
-        when(aiRecommendationClient.recommendPlaces("Tôi thích kiến trúc và mỹ thuật", 15, List.of("place-a")))
-                .thenReturn(new AiPlaceRecommendationResponse(List.of()));
+        when(semanticPlaceRetriever.retrieve("Tôi thích kiến trúc và mỹ thuật", 15, List.of("place-a")))
+                .thenReturn(List.of());
 
         service.recommend(trip, "  Tôi thích kiến trúc và mỹ thuật  ");
 
-        verify(aiRecommendationClient).recommendPlaces("Tôi thích kiến trúc và mỹ thuật", 15, List.of("place-a"));
+        verify(semanticPlaceRetriever).retrieve("Tôi thích kiến trúc và mỹ thuật", 15, List.of("place-a"));
     }
 
     @Test
@@ -66,26 +65,25 @@ class PlaceRecommendationServiceTest {
         List<RecommendationCandidate> result = service.recommend(trip, "kiến trúc");
 
         assertThat(result).isEmpty();
-        verifyNoInteractions(aiRecommendationClient);
+        verifyNoInteractions(semanticPlaceRetriever);
     }
 
     @Test
     void returnsEmptyWhenAiReturnsNoCandidates() {
         Place eligiblePlace = place("Place A", "place-a");
         stubEligiblePlaces(eligiblePlace);
-        when(aiRecommendationClient.recommendPlaces("kiến trúc", 15, List.of("place-a")))
-                .thenReturn(new AiPlaceRecommendationResponse(List.of()));
+        when(semanticPlaceRetriever.retrieve("kiến trúc", 15, List.of("place-a"))).thenReturn(List.of());
 
         assertThat(service.recommend(trip, "kiến trúc")).isEmpty();
     }
 
     @Test
     void mapsAiCandidatesToCanonicalDatabasePlaces() {
-        AiPlaceCandidateResponse aiCandidate = candidate("place-a", "AI place name", "architecture", 0.93);
+        SemanticPlaceCandidate semanticCandidate = candidate("place-a", "architecture", 0.93);
         Place canonicalPlace = place("Canonical database name", "place-a");
         stubEligiblePlaces(canonicalPlace);
-        when(aiRecommendationClient.recommendPlaces("architecture", 15, List.of("place-a")))
-                .thenReturn(new AiPlaceRecommendationResponse(List.of(aiCandidate)));
+        when(semanticPlaceRetriever.retrieve("architecture", 15, List.of("place-a")))
+                .thenReturn(List.of(semanticCandidate));
 
         List<RecommendationCandidate> result = service.recommend(trip, "architecture");
 
@@ -99,15 +97,15 @@ class PlaceRecommendationServiceTest {
 
     @Test
     void dropsAiCandidatesNotReturnedByActivePlaceRepository() {
-        List<AiPlaceCandidateResponse> aiCandidates = List.of(
-                candidate("place-a", "AI A", "section-a", 0.95),
-                candidate("place-b", "AI B", "section-b", 0.90),
-                candidate("place-c", "AI C", "section-c", 0.85));
+        List<SemanticPlaceCandidate> semanticCandidates = List.of(
+                candidate("place-a", "section-a", 0.95),
+                candidate("place-b", "section-b", 0.90),
+                candidate("place-c", "section-c", 0.85));
         Place placeA = place("Database A", "place-a");
         Place placeC = place("Database C", "place-c");
         stubEligiblePlaces(placeA, placeC);
-        when(aiRecommendationClient.recommendPlaces("culture", 15, List.of("place-a", "place-c")))
-                .thenReturn(new AiPlaceRecommendationResponse(aiCandidates));
+        when(semanticPlaceRetriever.retrieve("culture", 15, List.of("place-a", "place-c")))
+                .thenReturn(semanticCandidates);
 
         List<RecommendationCandidate> result = service.recommend(trip, "culture");
 
@@ -116,16 +114,16 @@ class PlaceRecommendationServiceTest {
 
     @Test
     void preservesAiCandidateOrderRegardlessOfRepositoryOrder() {
-        List<AiPlaceCandidateResponse> aiCandidates = List.of(
-                candidate("place-c", "AI C", "section-c", 0.97),
-                candidate("place-a", "AI A", "section-a", 0.92),
-                candidate("place-b", "AI B", "section-b", 0.88));
+        List<SemanticPlaceCandidate> semanticCandidates = List.of(
+                candidate("place-c", "section-c", 0.97),
+                candidate("place-a", "section-a", 0.92),
+                candidate("place-b", "section-b", 0.88));
         Place placeA = place("Database A", "place-a");
         Place placeB = place("Database B", "place-b");
         Place placeC = place("Database C", "place-c");
         stubEligiblePlaces(placeA, placeB, placeC);
-        when(aiRecommendationClient.recommendPlaces("art", 15, List.of("place-a", "place-b", "place-c")))
-                .thenReturn(new AiPlaceRecommendationResponse(aiCandidates));
+        when(semanticPlaceRetriever.retrieve("art", 15, List.of("place-a", "place-b", "place-c")))
+                .thenReturn(semanticCandidates);
 
         List<RecommendationCandidate> result = service.recommend(trip, "art");
 
@@ -141,9 +139,8 @@ class PlaceRecommendationServiceTest {
                 .thenReturn(activePlaces);
     }
 
-    private static AiPlaceCandidateResponse candidate(
-            String slug, String placeName, String matchedSection, double semanticScore) {
-        return new AiPlaceCandidateResponse(slug, placeName, matchedSection, semanticScore);
+    private static SemanticPlaceCandidate candidate(String slug, String matchedSection, double semanticScore) {
+        return new SemanticPlaceCandidate(slug, semanticScore, matchedSection);
     }
 
     private static Place place(String name, String slug) {
