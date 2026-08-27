@@ -43,28 +43,32 @@ class RecommendationPipelineServiceTest {
     }
 
     @Test
-    void retrievesAndAppliesCoarseHardFilters() {
+    void retrievesAndAppliesOpeningHoursFilter() {
 
         String preference = "Tôi thích kiến trúc và mỹ thuật";
 
-        List<RecommendationCandidate> retrieved = List.of(candidateA, candidateB);
+        List<RecommendationCandidate> retrieved =
+                List.of(candidateA, candidateB);
 
-        List<RecommendationCandidate> openingFiltered = List.of(candidateA, candidateB);
+        List<RecommendationCandidate> openingFiltered =
+                List.of(candidateB);
 
-        List<RecommendationCandidate> budgetFiltered = List.of(candidateB);
+        when(placeRecommendationService.recommend(trip, preference))
+                .thenReturn(retrieved);
 
-        when(placeRecommendationService.recommend(trip, preference)).thenReturn(retrieved);
+        when(openingHoursCandidateFilter.filter(retrieved, trip))
+                .thenReturn(openingFiltered);
 
-        when(openingHoursCandidateFilter.filter(retrieved, trip)).thenReturn(openingFiltered);
-
-
-        List<RecommendationCandidate> result = service.recommend(trip, preference);
+        List<RecommendationCandidate> result =
+                service.recommend(trip, preference);
 
         assertThat(result).containsExactly(candidateB);
 
-        verify(placeRecommendationService).recommend(trip, preference);
+        verify(placeRecommendationService)
+                .recommend(trip, preference);
 
-        verify(openingHoursCandidateFilter).filter(retrieved, trip);
+        verify(openingHoursCandidateFilter)
+                .filter(retrieved, trip);
     }
 
     @Test
