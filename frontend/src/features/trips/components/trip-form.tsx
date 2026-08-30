@@ -45,6 +45,7 @@ type TripFormValues = {
 
 type TripFormProps = {
   initialTrip?: TripResponse;
+  initialDate?: string;
   submitLabel: string;
   onSubmit: (request: SaveTripRequest) => Promise<void>;
   onSearchLocations: (query: string) => Promise<LocationSearchResult[]>;
@@ -63,10 +64,13 @@ const environmentLabels: Record<EnvironmentPreference, string> = {
   MIXED: "Kết hợp",
 };
 
-function initialValues(initialTrip?: TripResponse): TripFormValues {
+function initialValues(
+  initialTrip?: TripResponse,
+  initialDate?: string,
+): TripFormValues {
   if (!initialTrip) {
     return {
-      tripDate: "",
+      tripDate: initialDate ?? "",
       startTime: "08:00",
       endTime: "18:00",
       budget: "",
@@ -119,12 +123,15 @@ function FieldError({ message }: { message?: string }) {
 
 export function TripForm({
   initialTrip,
+  initialDate,
   submitLabel,
   onSubmit,
   onSearchLocations,
   onCancel,
 }: TripFormProps) {
-  const [values, setValues] = useState(() => initialValues(initialTrip));
+  const [values, setValues] = useState(() =>
+    initialValues(initialTrip, initialDate),
+  );
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});

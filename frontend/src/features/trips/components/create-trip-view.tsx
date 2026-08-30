@@ -9,7 +9,7 @@ import { searchLocations } from "@/lib/api/location-api";
 import { createTrip } from "@/lib/api/trip-api";
 import type { SaveTripRequest } from "@/types/trip";
 
-export function CreateTripView() {
+export function CreateTripView({ initialDate }: { initialDate?: string }) {
   const router = useRouter();
   const { status, runAuthenticated } = useAuth();
 
@@ -49,6 +49,7 @@ export function CreateTripView() {
       </header>
 
       <TripForm
+        initialDate={initialDate}
         submitLabel="Lưu chuyến đi"
         onSubmit={handleCreate}
         onSearchLocations={handleLocationSearch}
