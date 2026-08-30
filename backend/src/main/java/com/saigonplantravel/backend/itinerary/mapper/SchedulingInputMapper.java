@@ -49,6 +49,7 @@ public class SchedulingInputMapper {
                 place.getLongitude(),
                 place.getEstimatedVisitMinutes(),
                 place.getMinCost(),
+                place.getMaxCost(),
                 place.getIndoor(),
                 place.getPrimaryImageUrl(),
                 toOpeningWindow(place, tripDate));

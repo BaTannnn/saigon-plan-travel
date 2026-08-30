@@ -12,6 +12,18 @@ export function formatCurrency(value: number) {
   return currencyFormatter.format(value);
 }
 
+export function formatCost(minCost: number, maxCost: number) {
+  if (minCost === 0 && maxCost === 0) {
+    return "Miễn phí";
+  }
+
+  if (minCost === maxCost) {
+    return formatCurrency(minCost);
+  }
+
+  return `${formatCurrency(minCost)} – ${formatCurrency(maxCost)}`;
+}
+
 export function formatDuration(minutes: number) {
   if (minutes < 60) {
     return `${minutes} phút`;

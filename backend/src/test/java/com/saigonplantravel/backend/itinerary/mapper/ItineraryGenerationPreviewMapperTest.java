@@ -34,6 +34,8 @@ class ItineraryGenerationPreviewMapperTest {
         ItineraryGenerationPreviewResponse response = mapper.toResponse(preview);
 
         assertThat(response.stops()).extracting(stop -> stop.place().slug()).containsExactly("place-a", "place-b");
+        assertThat(response.stops().getFirst().place().minCost()).isEqualByComparingTo("10000");
+        assertThat(response.stops().getFirst().place().maxCost()).isEqualByComparingTo("25000");
         assertThat(response.stops().get(0).reason()).isNull();
         assertThat(response.stops().get(1).reason()).isEqualTo("Lý do cho địa điểm B");
     }
@@ -45,7 +47,8 @@ class ItineraryGenerationPreviewMapperTest {
                 BigDecimal.ONE,
                 BigDecimal.ONE,
                 60,
-                BigDecimal.ZERO,
+                new BigDecimal("10000"),
+                new BigDecimal("25000"),
                 false,
                 null,
                 OpeningWindow.open(LocalTime.of(8, 0), LocalTime.of(18, 0)));

@@ -42,7 +42,7 @@ class SchedulingInputMapperTest {
     @Test
     void mapsRecommendationMetadataAndOpeningWindowForTripDay() {
         Trip trip = trip();
-        Place museum = place("museum", 90, "50000");
+        Place museum = place("museum", 90, "50000", "75000");
         museum.markClosed(WEDNESDAY);
         museum.markOpen(THURSDAY, LocalTime.of(9, 0), LocalTime.of(17, 0));
         RecommendationCandidate recommendation = new RecommendationCandidate(museum, 0.91, "HIGHLIGHTS");
@@ -55,6 +55,7 @@ class SchedulingInputMapperTest {
         assertThat(result.getFirst().place().slug()).isEqualTo("museum");
         assertThat(result.getFirst().place().estimatedVisitMinutes()).isEqualTo(90);
         assertThat(result.getFirst().place().estimatedCost()).isEqualByComparingTo("50000");
+        assertThat(result.getFirst().place().maxCost()).isEqualByComparingTo("75000");
         assertThat(result.getFirst().place().openingWindow())
                 .isEqualTo(OpeningWindow.open(LocalTime.of(9, 0), LocalTime.of(17, 0)));
     }
@@ -89,7 +90,10 @@ class SchedulingInputMapperTest {
     }
 
     private Place place(String slug, int visitMinutes, String estimatedCost) {
-        BigDecimal cost = new BigDecimal(estimatedCost);
+        return place(slug, visitMinutes, estimatedCost, estimatedCost);
+    }
+
+    private Place place(String slug, int visitMinutes, String minCost, String maxCost) {
         return new Place(
                 slug,
                 slug,
@@ -97,8 +101,8 @@ class SchedulingInputMapperTest {
                 new BigDecimal("10.7769000"),
                 new BigDecimal("106.7009000"),
                 visitMinutes,
-                cost,
-                cost,
+                new BigDecimal(minCost),
+                new BigDecimal(maxCost),
                 true);
     }
 }

@@ -140,6 +140,8 @@ class ItineraryControllerTest {
                 .andExpect(jsonPath("$.items[0].place.latitude").value(PLACE_LATITUDE.doubleValue()))
                 .andExpect(jsonPath("$.items[0].place.longitude").value(PLACE_LONGITUDE.doubleValue()))
                 .andExpect(jsonPath("$.items[0].place.primaryImageUrl").value(org.hamcrest.Matchers.nullValue()))
+                .andExpect(jsonPath("$.items[0].place.minCost").value(0))
+                .andExpect(jsonPath("$.items[0].place.maxCost").value(10000))
 
                 /*
                  * Internal database Place.id
@@ -357,8 +359,14 @@ class ItineraryControllerTest {
 
     private ItineraryDetailResponse itineraryResponse(UUID tripPublicId) {
 
-        ItineraryPlaceResponse place =
-                new ItineraryPlaceResponse(PLACE_SLUG, PLACE_NAME, PLACE_LATITUDE, PLACE_LONGITUDE);
+        ItineraryPlaceResponse place = new ItineraryPlaceResponse(
+                PLACE_SLUG,
+                PLACE_NAME,
+                PLACE_LATITUDE,
+                PLACE_LONGITUDE,
+                null,
+                BigDecimal.ZERO,
+                new BigDecimal("10000"));
 
         ItineraryScheduleResponse schedule = new ItineraryScheduleResponse(
                 LocalTime.of(8, 10), LocalTime.of(8, 10), LocalTime.of(9, 40), 10, 1.5, new BigDecimal("30000"));

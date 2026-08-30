@@ -1,18 +1,4 @@
-import { formatCurrency } from "@/lib/formatters";
-
-export { formatDuration } from "@/lib/formatters";
-
-export function formatCost(minCost: number, maxCost: number) {
-  if (minCost === 0 && maxCost === 0) {
-    return "Miễn phí";
-  }
-
-  if (minCost === maxCost) {
-    return formatCurrency(minCost);
-  }
-
-  return `${formatCurrency(minCost)} – ${formatCurrency(maxCost)}`;
-}
+export { formatCost, formatDuration } from "@/lib/formatters";
 
 export const dayNames: Record<number, string> = {
   1: "Thứ Hai",

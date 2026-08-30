@@ -4,6 +4,8 @@ export type ItineraryPlaceResponse = {
   latitude: number;
   longitude: number;
   primaryImageUrl: string | null;
+  minCost: number | null;
+  maxCost: number | null;
 };
 
 export type ItineraryScheduleResponse = {

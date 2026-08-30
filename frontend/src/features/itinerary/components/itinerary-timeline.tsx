@@ -9,7 +9,12 @@ import {
   WalletCards,
 } from "lucide-react";
 import Image from "next/image";
-import { formatCurrency, formatDistance, formatTime } from "@/lib/formatters";
+import {
+  formatCost,
+  formatCurrency,
+  formatDistance,
+  formatTime,
+} from "@/lib/formatters";
 import type { ItineraryItemResponse } from "@/types/itinerary";
 
 type ItineraryTimelineProps = {
@@ -52,6 +57,10 @@ function ItineraryItemCard({
   onDelete,
 }: ItineraryItemCardProps) {
   const hasImage = Boolean(item.place.primaryImageUrl);
+  const costLabel =
+    item.place.minCost !== null && item.place.maxCost !== null
+      ? formatCost(item.place.minCost, item.place.maxCost)
+      : formatCurrency(item.schedule.estimatedCost);
 
   return (
     <li
@@ -104,7 +113,7 @@ function ItineraryItemCard({
                   className="size-3.5 text-ochre"
                   aria-hidden="true"
                 />
-                {formatCurrency(item.schedule.estimatedCost)}
+                {costLabel}
               </span>
             </span>
           </span>

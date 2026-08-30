@@ -30,7 +30,9 @@ public class ItineraryGenerationPreviewMapper {
                                     place.name(),
                                     place.latitude(),
                                     place.longitude(),
-                                    place.primaryImageUrl()),
+                                    place.primaryImageUrl(),
+                                    place.estimatedCost(),
+                                    place.maxCost()),
                             new ItineraryScheduleResponse(
                                     stop.arrivalTime(),
                                     stop.visitStartTime(),
