@@ -1,0 +1,46 @@
+{
+  "placeSlug": "cho-tan-dinh",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Chợ Tân Định là chợ truyền thống nằm trên trục Hai Bà Trưng, gần Nhà thờ Tân Định và khu dân cư trung tâm Thành phố Hồ Chí Minh. Ngoài chức năng mua bán, chợ còn có giá trị kiến trúc và ký ức đô thị; năm 2025 công trình được xếp hạng Di tích kiến trúc nghệ thuật cấp Thành phố. Với du khách, chợ phù hợp cho trải nghiệm đời sống địa phương, tìm hiểu kiến trúc chợ, quan sát hoạt động thương mại và kết hợp nhu cầu ẩm thực hoặc mua sắm trong một lịch trình có thời lượng vừa phải.",
+      "source": {
+        "label": "Cổng TTĐT Chính phủ TP.HCM - Di sản phường Tân Định",
+        "uri": "https://tphcm.chinhphu.vn/phuong-tan-dinh-bao-ton-phat-huy-lan-toa-gia-tri-di-san-van-hoa-1012511241947396.htm",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Khu vực chợ ngày nay gắn với lịch sử thương mại lâu đời của vùng Tân Định. Theo các tư liệu về di tích, vị trí này trước đây gắn với chợ Phú Hòa, một điểm giao thương quan trọng ở phía bắc Sài Gòn xưa. Công trình chợ Tân Định hiện nay được xây dựng từ năm 1926 và khánh thành năm 1927. Hình thức kiến trúc với mặt tiền nổi bật, mái vòm và ba tháp tạo cho chợ một diện mạo dễ nhận biết trên trục Hai Bà Trưng, trong khi không gian bên trong tiếp tục phục vụ hoạt động mua bán hằng ngày. Qua gần một thế kỷ, chợ vừa duy trì chức năng kinh tế vừa trở thành một phần ký ức đô thị của nhiều thế hệ cư dân. Ngày 18 tháng 3 năm 2025, Ủy ban nhân dân Thành phố Hồ Chí Minh ban hành Quyết định số 1024/QĐ-UBND xếp hạng Chợ Tân Định là Di tích kiến trúc nghệ thuật cấp Thành phố. Việc xếp hạng cho thấy giá trị của địa điểm không chỉ nằm ở thương mại mà còn ở kiến trúc, lịch sử và mối liên hệ với quá trình hình thành khu Tân Định. Đây là loại thông tin tương đối ổn định, phù hợp lưu trong corpus RAG để giải thích lý do gợi ý địa điểm cho người quan tâm văn hóa, kiến trúc hoặc chợ truyền thống.",
+      "source": {
+        "label": "Báo Tin tức TTXVN - Chợ Tân Định, di tích kiến trúc nghệ thuật",
+        "uri": "https://baotintuc.vn/anh/cho-tan-dinh-di-tich-kien-truc-nghe-thuat-cua-thanh-pho-ho-chi-minh-20251207140623275.htm",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Mặt tiền Chợ Tân Định nổi bật với bố cục có tháp trung tâm và hai tháp phụ, tạo dấu ấn dễ nhận biết trên đường Hai Bà Trưng. Bên trong, chợ tiếp tục vận hành như một không gian thương mại truyền thống với nhiều nhóm hàng hóa và hoạt động mua bán thường nhật. Sự kết hợp giữa kiến trúc cũ và chức năng sử dụng liên tục giúp địa điểm khác với các công trình di sản chỉ phục vụ tham quan. Đối với hệ thống gợi ý, Chợ Tân Định có thể phù hợp với các sở thích như văn hóa địa phương, kiến trúc, chợ truyền thống, mua sắm và ẩm thực; đồng thời dễ ghép với Nhà thờ Tân Định để hình thành một cụm tham quan ngắn trong cùng khu vực.",
+      "source": {
+        "label": "Cổng TTĐT Chính phủ TP.HCM - Di sản phường Tân Định",
+        "uri": "https://tphcm.chinhphu.vn/phuong-tan-dinh-bao-ton-phat-huy-lan-toa-gia-tri-di-san-van-hoa-1012511241947396.htm",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Trải nghiệm tại Chợ Tân Định nên tập trung vào quan sát nhịp mua bán, khám phá các gian hàng và tìm hiểu mối liên hệ giữa công trình kiến trúc với đời sống đô thị. Người dùng có thể dành thời gian vừa phải rồi kết hợp Nhà thờ Tân Định hoặc các điểm khác trong khu trung tâm. Chi phí tại chợ phụ thuộc nhu cầu mua sắm và ăn uống nên không nên coi mức ngân sách seed là giá vé cố định. Tình trạng đông đúc, giá hàng hóa, quầy đang hoạt động và thời gian mở cửa thực tế có thể thay đổi; hệ thống nên lấy các yếu tố này từ structured data hoặc nguồn cập nhật thay vì dùng corpus tĩnh làm nguồn duy nhất.",
+      "source": {
+        "label": "Cổng TTĐT Chính phủ TP.HCM - Di sản phường Tân Định",
+        "uri": "https://tphcm.chinhphu.vn/phuong-tan-dinh-bao-ton-phat-huy-lan-toa-gia-tri-di-san-van-hoa-1012511241947396.htm",
+        "retrievedAt": "2026-08-29"
+      }
+    }
+  ]
+}

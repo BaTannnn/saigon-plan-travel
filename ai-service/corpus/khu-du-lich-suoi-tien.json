@@ -1,0 +1,46 @@
+{
+  "placeSlug": "khu-du-lich-suoi-tien",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Khu du lịch Văn hóa Suối Tiên là tổ hợp vui chơi giải trí quy mô lớn ở cửa ngõ phía đông Thành phố Hồ Chí Minh. Điểm đến kết hợp trò chơi, cảnh quan, hoạt động gia đình và nhiều hình tượng lấy cảm hứng từ văn hóa, truyền thuyết và lịch sử Việt Nam. Với thời lượng tham quan thường dài hơn các điểm trung tâm, Suối Tiên phù hợp với lịch trình nửa ngày hoặc gần trọn ngày, đồng thời là trường hợp hữu ích để scheduler cân nhắc rõ thời gian di chuyển, thời lượng lưu trú và ngân sách.",
+      "source": {
+        "label": "Suối Tiên - Giới thiệu Suối Tiên",
+        "uri": "https://suoitien.vn/gioi-thieu-suoi-tien",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Theo thông tin giới thiệu của Suối Tiên, khu vực này bắt đầu từ một vùng đất còn hoang hóa vào cuối thập niên 1980 và dần phát triển từ lâm trại thành khu du lịch văn hóa. Trong quá trình hình thành, định hướng xuyên suốt là khai thác các câu chuyện và biểu tượng văn hóa Việt Nam để tạo bản sắc riêng cho công viên. Nhiều không gian và chương trình được xây dựng dựa trên những hình tượng quen thuộc như Lạc Long Quân - Âu Cơ, Hai Bà Trưng hay Sơn Tinh - Thủy Tinh. Qua nhiều giai đoạn, Suối Tiên mở rộng thêm các loại hình vui chơi, ẩm thực và trải nghiệm nông nghiệp. Đặc điểm này giúp corpus mô tả Suối Tiên không chỉ như một công viên trò chơi mà còn như một điểm đến kết hợp giải trí với yếu tố văn hóa và trải nghiệm gia đình.",
+      "source": {
+        "label": "Suối Tiên - Hành trình phát triển và bản sắc văn hóa",
+        "uri": "https://suoitien.vn/suoi-tien-hanh-trinh-30-nam-tu-lam-trai-nuoi-tran-den-bieu-tuong-du-lich-van-hoa-viet",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Suối Tiên có ưu thế ở sự đa dạng hoạt động và khả năng phục vụ nhiều nhóm tuổi. Hệ thống trò chơi, khu tham quan, không gian văn hóa, hoạt động ẩm thực và các sản phẩm trải nghiệm tạo điều kiện để người dùng dành nhiều giờ tại cùng một điểm thay vì di chuyển liên tục. Trang chính thức mô tả Suối Tiên là công viên liên hợp vui chơi giải trí với nhiều hạng mục tham quan và trò chơi cho nhiều lứa tuổi. Trong recommendation, các thuộc tính quan trọng nên gồm vui chơi, gia đình, văn hóa, hoạt động dài và ngân sách trung bình đến cao tùy dịch vụ sử dụng.",
+      "source": {
+        "label": "Suối Tiên - Dịch vụ và trò chơi",
+        "uri": "https://suoitien.vn/dich-vu-tro-choi",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Khi lập lịch, nên dành cho Suối Tiên một block thời gian lớn thay vì xem đây là điểm ghé nhanh. Vị trí xa khu trung tâm khiến travel-time có ảnh hưởng đáng kể; tuy nhiên tuyến Metro số 1 tạo thêm lựa chọn di chuyển công cộng thuận tiện đến khu vực Suối Tiên. Với gia đình hoặc nhóm muốn nhiều hoạt động trong cùng một nơi, điểm này có thể được ưu tiên cao. Giá vé, combo trò chơi, chương trình theo mùa và giờ hoạt động có thể thay đổi, vì vậy các dữ liệu đó nên lấy từ nguồn realtime hoặc cấu hình nghiệp vụ thay vì ghi cố định trong corpus RAG.",
+      "source": {
+        "label": "Suối Tiên - Hướng dẫn di chuyển",
+        "uri": "https://suoitien.vn/suoi-tien-o-dau-huong-dan-lo-trinh-di-chuyen-nhanh-chong",
+        "retrievedAt": "2026-08-29"
+      }
+    }
+  ]
+}

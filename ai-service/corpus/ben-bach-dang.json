@@ -1,0 +1,46 @@
+{
+  "placeSlug": "ben-bach-dang",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Bến Bạch Đằng là khu bến ven sông Sài Gòn nằm ngay khu trung tâm Thành phố Hồ Chí Minh, gắn với trục Tôn Đức Thắng và không gian công viên Bến Bạch Đằng. Đây là điểm phù hợp cho lịch trình ngắn để ngắm cảnh sông, quan sát nhịp sống đô thị và kết nối với các trải nghiệm đường thủy. Do nằm gần phố đi bộ Nguyễn Huệ, khu trung tâm hành chính và nhiều công trình nổi bật, Bến Bạch Đằng có thể được xếp vào cùng một cụm tham quan để giảm thời gian di chuyển giữa các điểm.",
+      "source": {
+        "label": "Cục Du lịch Quốc gia Việt Nam - Phát triển sản phẩm du lịch đường sông TP.HCM",
+        "uri": "https://vietnamtourism.gov.vn/printer/33386?type=1",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Bến Bạch Đằng từ lâu là một đầu mối quan trọng của không gian ven sông ở khu vực trung tâm Sài Gòn. Trong định hướng phát triển du lịch đường thủy, Sở Du lịch Thành phố Hồ Chí Minh từng phối hợp với các đơn vị liên quan đưa vào khai thác các tuyến đường sông xuất phát từ khu vực Bạch Đằng để kết nối trung tâm với các khu vực khác của thành phố. Điều này làm cho Bến Bạch Đằng không chỉ có giá trị như một điểm ngắm cảnh mà còn đóng vai trò cửa ngõ cho các trải nghiệm du lịch trên sông. Việc khai thác bến cần gắn với an toàn giao thông đường thủy và tổ chức không gian công cộng ven sông.",
+      "source": {
+        "label": "Cục Du lịch Quốc gia Việt Nam - Phát triển sản phẩm du lịch đường sông TP.HCM",
+        "uri": "https://vietnamtourism.gov.vn/printer/33386?type=1",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Điểm nổi bật của Bến Bạch Đằng là tầm nhìn rộng ra sông Sài Gòn và khả năng kết nối trực tiếp với không gian trung tâm. Du khách có thể dừng chân ngắm tàu thuyền, chụp ảnh cảnh quan đô thị hoặc tiếp tục sang các hoạt động đường sông khi có tuyến phù hợp. Cục Du lịch Quốc gia Việt Nam cũng ghi nhận kế hoạch sắp xếp và nâng cấp khu vực cầu bến để phục vụ vận tải hành khách và du lịch. Trong hệ thống gợi ý, Bến Bạch Đằng phù hợp với các thuộc tính ngắm cảnh, ngoài trời, lịch trình nhẹ và kết hợp nhiều điểm lân cận.",
+      "source": {
+        "label": "Cục Du lịch Quốc gia Việt Nam - Nâng cấp công viên bến Bạch Đằng",
+        "uri": "https://vietnamtourism.gov.vn/post/50748",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Bến Bạch Đằng phù hợp nhất với một điểm dừng từ ngắn đến trung bình trong lịch trình trung tâm, đặc biệt vào buổi chiều hoặc đầu buổi tối khi thời tiết dễ chịu. Có thể kết hợp theo cụm với phố đi bộ Nguyễn Huệ, công viên Bến Bạch Đằng hoặc các điểm kiến trúc gần đó. Vì trải nghiệm chủ yếu ở ngoài trời và gắn với khu vực ven sông, module context-aware nên giảm mức ưu tiên khi mưa lớn hoặc thời tiết bất lợi. Lịch tàu, tuyến thủy và tình trạng khai thác cầu bến là dữ liệu có tính thời điểm, không nên ghi cứng vào corpus tĩnh.",
+      "source": {
+        "label": "Cục Du lịch Quốc gia Việt Nam - Nâng cấp công viên bến Bạch Đằng",
+        "uri": "https://vietnamtourism.gov.vn/post/50748",
+        "retrievedAt": "2026-08-29"
+      }
+    }
+  ]
+}

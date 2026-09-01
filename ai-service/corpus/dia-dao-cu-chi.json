@@ -1,0 +1,46 @@
+{
+  "placeSlug": "dia-dao-cu-chi",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Khu di tích lịch sử Địa đạo Củ Chi là một điểm tham quan lịch sử quan trọng của Thành phố Hồ Chí Minh, nổi bật với hệ thống công trình ngầm gắn với thời kỳ chiến tranh. Di tích được bảo tồn tại các khu Bến Dược và Bến Đình, trong đó du khách có thể tìm hiểu cấu trúc địa đạo, các không gian sinh hoạt và những khu trưng bày tái hiện điều kiện chiến đấu. Địa điểm nằm xa trung tâm nên phù hợp với lịch trình nửa ngày hoặc một ngày và là trường hợp tốt để scheduler cân nhắc travel time.",
+      "source": {
+        "label": "Khu Di tích lịch sử Địa đạo Củ Chi - Trang chính thức",
+        "uri": "https://diadaocuchi.com.vn/",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Trang chính thức cho biết hệ thống Địa đạo Củ Chi được bảo tồn tại Bến Dược và Bến Đình. Bến Dược gắn với căn cứ Khu ủy và Bộ Tư lệnh Quân khu Sài Gòn - Chợ Lớn - Gia Định, còn Bến Đình gắn với căn cứ Huyện ủy Củ Chi. Những đường hầm, hầm làm việc và khu tái hiện giúp người tham quan hình dung cách tổ chức cuộc sống và chiến đấu trong điều kiện chiến tranh. Giá trị của địa điểm vì vậy kết hợp giữa lịch sử, giáo dục, ký ức chiến tranh và trải nghiệm trực tiếp trong một không gian di tích quy mô lớn.",
+      "source": {
+        "label": "Khu Di tích lịch sử Địa đạo Củ Chi - Trang chính thức",
+        "uri": "https://diadaocuchi.com.vn/",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Ngoài tuyến tham quan địa đạo, khu di tích còn giới thiệu Đền tưởng niệm liệt sĩ Bến Dược, khu tái hiện vùng giải phóng và nhiều không gian dịch vụ, hoạt động trải nghiệm. Khách có thể quan sát các hầm, công sự, khu trưng bày và tìm hiểu cách vận hành của căn cứ ngầm. Với hệ thống gợi ý, các thuộc tính phù hợp là lịch sử, văn hóa, giáo dục và trải nghiệm ngoài trời. Đây không phải điểm dừng ngắn: quy mô khu vực cùng khoảng cách lớn từ trung tâm khiến việc dành đủ thời gian di chuyển và tham quan là ràng buộc quan trọng.",
+      "source": {
+        "label": "Du lịch Củ Chi - Website chính thức Du lịch TP.HCM",
+        "uri": "https://visithcmc.net/en/news/du-lich-huyen-cu-chi",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Địa đạo Củ Chi phù hợp với người ưu tiên lịch sử và trải nghiệm thực địa hơn là mua sắm hoặc giải trí đô thị. Trang chính thức công bố hoạt động hằng ngày từ sáng đến chiều, nhưng giá vé và dịch vụ có thể thay đổi nên scheduler nên lấy chi phí từ structured data đã được cập nhật thay vì câu chữ trong corpus. Do địa điểm cách xa khu trung tâm và phần lớn hoạt động gắn với không gian ngoài trời, hệ thống nên tăng trọng số travel time, tránh ghép quá nhiều điểm trong cùng ngày và cân nhắc thời tiết khi lập hoặc tái lập lịch.",
+      "source": {
+        "label": "Khu Di tích lịch sử Địa đạo Củ Chi - Trang chính thức",
+        "uri": "https://diadaocuchi.com.vn/",
+        "retrievedAt": "2026-08-29"
+      }
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "placeSlug": "viet-nam-quoc-tu",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Việt Nam Quốc Tự nằm tại 242-244 đường 3 Tháng 2, khu vực trung tâm phía tây của TP.HCM và hiện là một đầu mối sinh hoạt quan trọng của Giáo hội Phật giáo Việt Nam tại Thành phố. Công trình có quy mô lớn, không gian nghi lễ trang nghiêm và bảo tháp nổi bật, phù hợp với người quan tâm Phật giáo, kiến trúc và lịch sử tôn giáo đô thị. Vị trí gần nhiều tuyến giao thông lớn giúp địa điểm dễ ghép vào lịch trình Quận 10 - Quận 3 với thời lượng tham quan khoảng 60-90 phút.",
+      "source": {
+        "label": "GHPGVN TP.HCM - Trụ sở Việt Nam Quốc Tự",
+        "uri": "https://pgtphcm.vn/thay-doi-dia-diem-tru-so-van-phong-bts-ghpgvn-tp-hcm/",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Cổng thông tin Chính phủ TP.HCM cho biết Việt Nam Quốc Tự hiện diện từ năm 1963 và gắn với bối cảnh Phật giáo miền Nam trong giai đoạn biến động năm 1963. Năm 2014, công trình được khởi công xây dựng lại trên khu đất khoảng 11.000 m², định hướng trở thành trung tâm văn hóa, hành chính và tâm linh của Phật giáo Thành phố. Dữ liệu này giúp RAG giải thích địa điểm không chỉ như một ngôi chùa lớn mà còn là không gian có vai trò tổ chức và lịch sử đối với Phật giáo TP.HCM.",
+      "source": {
+        "label": "Cổng thông tin Chính phủ TP.HCM - Khởi công Việt Nam Quốc Tự",
+        "uri": "https://tphcm.chinhphu.vn/khoi-cong-xay-dung-viet-nam-quoc-tu-101543.htm",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Điểm nhận diện nổi bật của Việt Nam Quốc Tự là bảo tháp cao tầng, khu chánh điện rộng và tổng thể kiến trúc có quy mô bề thế. Hồ sơ xây dựng năm 2014 mô tả bảo tháp 13 tầng cao khoảng 63 m, mang ý nghĩa biểu tượng trong lịch sử Phật giáo. Bên cạnh giá trị kiến trúc, nơi đây thường diễn ra các hoạt động Phật sự cấp Thành phố; riêng Đại lễ Phật đản năm 2026 tiếp tục được tổ chức tại địa điểm này. Khi recommendation, nên gắn các tín hiệu tôn giáo, kiến trúc, văn hóa và lịch sử thay vì chỉ dựa vào từ khóa “chùa”.",
+      "source": {
+        "label": "GHPGVN TP.HCM - Kế hoạch Đại lễ Phật đản 2026",
+        "uri": "https://pgtphcm.vn/55074-2/",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Đây là cơ sở tôn giáo đang hoạt động nên người tham quan cần giữ trật tự, ăn mặc lịch sự và tránh ảnh hưởng các khóa lễ hoặc sinh hoạt của Tăng đoàn. Một số khu vực có thể hạn chế tiếp cận tùy thời điểm, do đó corpus chỉ cung cấp bối cảnh còn scheduler nên dùng opening-hours development trong database và cảnh báo người dùng kiểm tra trước khi đi. Chi phí tham quan cơ bản thấp, thời lượng vừa phải và địa điểm phù hợp với itinerary văn hóa - tâm linh hoặc làm phương án trong ngày nắng nóng vì nhiều hoạt động diễn ra trong công trình có mái che.",
+      "source": {
+        "label": "GHPGVN TP.HCM - Việt Nam Quốc Tự",
+        "uri": "https://pgtphcm.vn/thay-doi-dia-diem-tru-so-van-phong-bts-ghpgvn-tp-hcm/",
+        "retrievedAt": "2026-08-29"
+      }
+    }
+  ]
+}

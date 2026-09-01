@@ -1,0 +1,46 @@
+{
+  "placeSlug": "mieu-nhi-phu",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Miếu Nhị Phủ, còn gọi là Hội quán Nhị Phủ hoặc Chùa Ông Bổn, nằm tại 264 Hải Thượng Lãn Ông trong khu Chợ Lớn. Đây là di tích gắn với cộng đồng người Hoa Phúc Kiến và là một địa điểm tiêu biểu để tìm hiểu tín ngưỡng, lịch sử di dân, kiến trúc hội quán và đời sống văn hóa Hoa tại Thành phố Hồ Chí Minh. Tài liệu của Cục Di sản Văn hóa mô tả miếu như một điểm nhấn quan trọng trong hệ thống miếu và hội quán người Hoa của thành phố. Địa điểm phù hợp với hành trình văn hóa Chợ Lớn và các truy vấn về Ông Bổn, Phúc Kiến hoặc kiến trúc tín ngưỡng Hoa.",
+      "source": {
+        "label": "Cục Di sản Văn hóa - Di tích Miếu Nhị Phủ",
+        "uri": "https://dsvh.gov.vn/Upload/files/Tap%20chi%20DSVH/So%2036/3621_Di%20tich%20Mieu%20Nhi%20Phu%20Hoi%20Quan%20Nhi%20Phu.pdf",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Theo nghiên cứu đăng trên tài liệu của Cục Di sản Văn hóa, cuối thế kỷ XVII nhiều người Hoa từ hai phủ Tuyền Châu và Chương Châu của Phúc Kiến đến vùng Đề Ngạn, tức khu Chợ Lớn ngày nay, để mưu sinh và lập nghiệp. Họ xây dựng miếu như nơi thờ cúng và gặp gỡ đồng hương. Miếu thờ chính Phước Đức Chính Thần, thường gọi Ông Bổn, tạo nên điểm khác biệt so với nhiều hội quán Hoa khác thờ Thiên Hậu Thánh Mẫu hoặc Quan Thánh Đế Quân. Công trình đã trải qua các đợt trùng tu lớn, nhưng vẫn bảo lưu các yếu tố kiến trúc và trang trí truyền thống của người Hoa Phúc Kiến.",
+      "source": {
+        "label": "Cục Di sản Văn hóa - Di tích Miếu Nhị Phủ",
+        "uri": "https://dsvh.gov.vn/Upload/files/Tap%20chi%20DSVH/So%2036/3621_Di%20tich%20Mieu%20Nhi%20Phu%20Hoi%20Quan%20Nhi%20Phu.pdf",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Miếu có giá trị nổi bật ở sự kết hợp giữa chức năng tín ngưỡng, hội quán đồng hương và di sản kiến trúc. Tài liệu nghiên cứu mô tả bố cục theo phong cách người Hoa với sân rộng, các khối tiền điện, trung điện và hậu điện cùng nhiều chi tiết trang trí truyền thống. Công báo Thành phố Hồ Chí Minh ghi Miếu Nhị Phủ tại 264 Hải Thượng Lãn Ông là di tích đã được xếp hạng cấp quốc gia từ năm 1998. Các từ khóa retrieval hữu ích gồm Chợ Lớn, người Hoa Phúc Kiến, Ông Bổn, Phước Đức Chính Thần, hội quán, tín ngưỡng dân gian, kiến trúc Hoa và di tích lịch sử - văn hóa.",
+      "source": {
+        "label": "Công báo TP.HCM - Danh mục di tích",
+        "uri": "https://www.congbao.hochiminhcity.gov.vn/DKC.MFiles.CB/Gazette/DownLoadFileResult/40437",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Miếu Nhị Phủ phù hợp để ghép trong tuyến đi bộ hoặc di chuyển ngắn qua các di tích người Hoa ở Chợ Lớn như các hội quán, chợ truyền thống và tuyến Hải Thượng Lãn Ông. Khách tham quan nên ưu tiên quan sát kiến trúc, đồ thờ và cách tổ chức không gian, đồng thời giữ thái độ tôn trọng vì miếu vẫn là nơi sinh hoạt tín ngưỡng. Thời lượng khoảng 45-60 phút thường đủ cho một lượt tham quan cơ bản. Vào các ngày lễ tín ngưỡng, lượng khách và hoạt động cúng lễ có thể khác ngày thường, vì vậy scheduler nên cho phép điều chỉnh thời lượng và tránh coi giờ hoạt động phát triển trong seed là dữ liệu chính thức tuyệt đối.",
+      "source": {
+        "label": "Cục Di sản Văn hóa - Di tích Miếu Nhị Phủ",
+        "uri": "https://dsvh.gov.vn/Upload/files/Tap%20chi%20DSVH/So%2036/3621_Di%20tich%20Mieu%20Nhi%20Phu%20Hoi%20Quan%20Nhi%20Phu.pdf",
+        "retrievedAt": "2026-08-29"
+      }
+    }
+  ]
+}

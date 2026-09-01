@@ -1,0 +1,46 @@
+{
+  "placeSlug": "chua-nam-thien-nhat-tru",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Chùa Nam Thiên Nhất Trụ, thường được gọi là Chùa Một Cột Thủ Đức, là điểm đến Phật giáo tại số 100 Đặng Văn Bi, khu vực Thủ Đức. Cổng du lịch Thành phố Thủ Đức liệt kê chùa như một địa điểm tham quan tôn giáo của địa phương. Tên gọi và hình ảnh nhận diện gắn với công trình một cột giữa hồ, tạo liên tưởng đến Chùa Một Cột ở Hà Nội và giúp địa điểm có đặc trưng kiến trúc dễ phân biệt khi truy xuất ngữ nghĩa. Đây là điểm phù hợp với người quan tâm tâm linh, kiến trúc Phật giáo và các điểm tham quan nhẹ nhàng trong khu vực Thủ Đức.",
+      "source": {
+        "label": "Du lịch Thành phố Thủ Đức - Điểm đến",
+        "uri": "https://dulich-tpthuduc.hochiminhcity.gov.vn/diem-den/",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Nam Thiên Nhất Trụ là một cơ sở Phật giáo đang sinh hoạt tích cực tại Thành phố Hồ Chí Minh. Các bản tin của Báo Giác Ngộ ghi nhận chùa tổ chức nhiều hoạt động xã hội, từ thiện và phối hợp với chính quyền địa phương, cho thấy vai trò của chùa không chỉ là nơi lễ bái mà còn là một không gian cộng đồng. Trong các năm gần đây, chùa tiếp tục xuất hiện trong hoạt động Phật sự và chương trình hỗ trợ người dân. Với corpus RAG, phần lịch sử chi tiết của quá trình xây dựng không nên suy diễn nếu nguồn hiện có chưa xác nhận; thay vào đó, có thể mô tả chắc chắn về vị trí, vai trò tôn giáo và hoạt động cộng đồng đã được ghi nhận.",
+      "source": {
+        "label": "Báo Giác Ngộ - hoạt động tại Chùa Nam Thiên Nhất Trụ",
+        "uri": "https://giacngo.vn/1200-phan-qua-tet-duoc-chua-nam-thien-nhat-tru-tpthu-duc-trao-tang-den-nguoi-dan-kho-khan-post74544.html",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Điểm nhận diện nổi bật nhất là tên gọi 'Nam Thiên Nhất Trụ' và công trình chùa một cột trong khuôn viên, tạo một chủ đề kiến trúc khác với nhiều chùa lớn tại Thành phố Hồ Chí Minh. Địa điểm phù hợp với truy vấn như 'chùa có kiến trúc giống Chùa Một Cột', 'địa điểm tâm linh ở Thủ Đức', 'chùa yên tĩnh để tham quan' hoặc 'điểm văn hóa Phật giáo'. Bên cạnh yếu tố kiến trúc, các hoạt động thiện nguyện thường xuyên cũng bổ sung ngữ cảnh về sinh hoạt cộng đồng. Khi sinh câu trả lời RAG, hệ thống nên phân biệt rõ đây là Chùa Nam Thiên Nhất Trụ tại Thủ Đức, không nhầm với Chùa Một Cột ở Hà Nội.",
+      "source": {
+        "label": "Du lịch Thành phố Thủ Đức - Bản đồ du lịch",
+        "uri": "https://dulich-tpthuduc.hochiminhcity.gov.vn/bando/",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Trải nghiệm phù hợp nhất là tham quan ngắn, lễ Phật, quan sát kiến trúc và chụp ảnh trong phạm vi cho phép. Vì đây là cơ sở tôn giáo đang hoạt động, khách nên ăn mặc kín đáo, nói chuyện nhỏ và tránh ảnh hưởng nghi lễ. Địa điểm có thể ghép với các điểm khác của Thủ Đức trong lịch trình cùng ngày thay vì đi riêng từ trung tâm chỉ cho một điểm. Với scheduler, thời lượng khoảng một giờ là hợp lý cho tham quan cơ bản; nếu có sự kiện Phật giáo hoặc hoạt động từ thiện, thời gian và mức độ đông có thể khác nên phần realtime/context nên được dùng để cảnh báo thay vì đóng cứng trong corpus tĩnh.",
+      "source": {
+        "label": "Du lịch Thành phố Thủ Đức - Chùa Nam Thiên Nhất Trụ",
+        "uri": "https://dulich-tpthuduc.hochiminhcity.gov.vn/diem-den/",
+        "retrievedAt": "2026-08-29"
+      }
+    }
+  ]
+}

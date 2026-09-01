@@ -1,0 +1,46 @@
+{
+  "placeSlug": "du-lich-cong-dong-thieng-lieng",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Thiềng Liềng là ấp đảo thuộc xã Thạnh An, khu vực Cần Giờ và là điểm du lịch cộng đồng đặc trưng của TP.HCM. Khác với các điểm nội đô, trải nghiệm ở đây gắn với cảnh quan rừng ngập mặn, nghề muối, đời sống cư dân vùng biển và di chuyển bằng đường thủy. Địa điểm phù hợp với người thích thiên nhiên, cộng đồng địa phương, khám phá ngoại thành và lịch trình cả ngày. Scheduler không nên xếp Thiềng Liềng như một stop ngắn vì thời gian đi lại, chờ tàu/cano và tham gia hoạt động chiếm phần lớn ngày.",
+      "source": {
+        "label": "Cục Du lịch Quốc gia Việt Nam - Du lịch cộng đồng Thiềng Liềng",
+        "uri": "https://vietnamtourism.gov.vn/post/46836",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Ngày 28/12/2022, Sở Du lịch TP.HCM phối hợp UBND huyện Cần Giờ công bố sản phẩm du lịch cộng đồng tại ấp Thiềng Liềng. Cục Du lịch Quốc gia mô tả đây là sản phẩm khác biệt gắn với lợi thế biển, rừng ngập mặn và sinh kế của cộng đồng địa phương. Mô hình được xây dựng theo hướng người dân trực tiếp tổ chức và hưởng lợi, qua đó bổ sung nguồn thu bên cạnh các nghề truyền thống. Đây là dữ liệu quan trọng để RAG giải thích yếu tố “cộng đồng” và “bền vững”, thay vì chỉ xem Thiềng Liềng như một đảo để ngắm cảnh.",
+      "source": {
+        "label": "Trung tâm Báo chí TP.HCM - Thiềng Liềng ra mắt du lịch cộng đồng",
+        "uri": "https://ttbc-hcm.gov.vn/thieng-lieng-ra-mat-du-lich-cong-dong-1005723.html",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Các sản phẩm du lịch được giới thiệu gồm không gian nghề muối, ẩm thực và thức uống vùng biển, homestay, đờn ca tài tử, hoạt động thư giãn và trải nghiệm đời sống địa phương. Giai đoạn phát triển sau còn bổ sung các sản phẩm gắn với thiên nhiên và núi Giồng Chùa. Vì vậy semantic retrieval nên liên kết Thiềng Liềng với các ý định như “làm muối”, “du lịch cộng đồng”, “Cần Giờ ít đô thị”, “trải nghiệm người dân địa phương”, “rừng ngập mặn” và “đi đảo”, thay vì chỉ trả về khi người dùng gõ đúng tên Thiềng Liềng.",
+      "source": {
+        "label": "Thành ủy TP.HCM - Du lịch nông thôn, nông nghiệp và Thiềng Liềng",
+        "uri": "https://www.hcmcpv.org.vn/tin-tuc/du-lich-nong-thon-nong-nghiep-mo-hinh-ket-hop-giao-duc-nghe-thuat-va-di-san-mang-tinh-ben-vung-1491931066",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Di chuyển là ràng buộc quan trọng nhất của Thiềng Liềng. Các cập nhật du lịch năm 2026 cho thấy khách phải sử dụng phương tiện đường thủy, với nhiều phương án xuất phát từ trung tâm hoặc các bến ở Cần Giờ; thời gian và chi phí thay đổi theo loại tàu/cano. Vì vậy scheduler nên dành gần như cả ngày, cộng buffer lớn cho chờ phương tiện và không dùng profile mở cửa như một cam kết realtime. Mưa lớn, gió mạnh hoặc thay đổi lịch tàu là tín hiệu phù hợp để context module hạ score hoặc re-plan. Chi phí cũng cao hơn phần lớn điểm nội đô do vận chuyển và dịch vụ cộng đồng.",
+      "source": {
+        "label": "VnExpress - Đến đảo Thiềng Liềng 2026",
+        "uri": "https://vnexpress.net/den-dao-thieng-lieng-noi-co-ngon-nui-thap-nhat-viet-nam-5106115.html",
+        "retrievedAt": "2026-08-29"
+      }
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "placeSlug": "cong-vien-gia-dinh",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Công viên Gia Định là một công viên đô thị quy mô lớn nằm trên địa bàn khu vực Gò Vấp và Phú Nhuận, gần cửa ngõ sân bay Tân Sơn Nhất. Theo hồ sơ quy hoạch của Thành phố Hồ Chí Minh, khu vực được xác định với chức năng chính là công viên tập trung, mặt nước điều tiết, hạ tầng kỹ thuật và giao thông. Với nhiều khoảng xanh và tính chất không gian mở, đây là lựa chọn phù hợp cho đi bộ, nghỉ ngơi, hoạt động ngoài trời và lịch trình gia đình có chi phí thấp, đặc biệt khi cần một điểm thư giãn thay cho các điểm tham quan trong nhà.",
+      "source": {
+        "label": "Công báo TP.HCM - Quy hoạch tổng thể Công viên Gia Định",
+        "uri": "https://congbao.hochiminhcity.gov.vn/tin-tuc-tong-hop/dieu-chinh-quy-hoach-chi-tiet-ty-le-1-500-tong-the-cong-vien-gia-dinh",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Năm 2014, Ủy ban nhân dân Thành phố Hồ Chí Minh phê duyệt nhiệm vụ điều chỉnh quy hoạch chi tiết tỷ lệ 1/500 tổng thể Công viên Gia Định tại quận Gò Vấp và quận Phú Nhuận. Hồ sơ xác định khu nghiên cứu có diện tích khoảng 325.715,6 m², với ranh giới liên quan các tuyến Nguyễn Kiệm, Bạch Đằng, Phạm Văn Đồng và các khu vực lân cận. Tính chất quy hoạch gồm công viên tập trung, hồ điều tiết, công trình hạ tầng kỹ thuật và đất giao thông. Quy mô này cho thấy Công viên Gia Định không chỉ là một mảng xanh nhỏ phục vụ khu dân cư mà là một không gian công cộng cấp đô thị, có vai trò trong mạng lưới cây xanh và sinh hoạt ngoài trời của khu vực phía bắc trung tâm thành phố.",
+      "source": {
+        "label": "Công báo TP.HCM - Quy hoạch tổng thể Công viên Gia Định",
+        "uri": "https://congbao.hochiminhcity.gov.vn/tin-tuc-tong-hop/dieu-chinh-quy-hoach-chi-tiet-ty-le-1-500-tong-the-cong-vien-gia-dinh",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Điểm mạnh của Công viên Gia Định là không gian mở, diện tích lớn và khả năng phục vụ nhiều kiểu hoạt động không cần vé vào cửa cố định. Các khoảng cây xanh phù hợp với đi bộ, nghỉ ngơi, vận động nhẹ hoặc để trẻ em có thêm không gian ngoài trời. Vị trí gần các trục giao thông lớn và sân bay khiến công viên có thể trở thành một điểm dừng linh hoạt trước hoặc sau các chặng di chuyển ở khu vực phía bắc thành phố. Trong hệ thống recommendation, các thuộc tính nổi bật nên là thiên nhiên đô thị, ngoài trời, gia đình, chi phí thấp và hoạt động nhẹ. Đây cũng là lựa chọn thay thế hợp lý khi người dùng không muốn lịch trình liên tục gồm bảo tàng, chợ hoặc điểm tham quan đông người.",
+      "source": {
+        "label": "Công báo TP.HCM - Quy hoạch tổng thể Công viên Gia Định",
+        "uri": "https://congbao.hochiminhcity.gov.vn/tin-tuc-tong-hop/dieu-chinh-quy-hoach-chi-tiet-ty-le-1-500-tong-the-cong-vien-gia-dinh",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Khi lập lịch, Công viên Gia Định phù hợp với buổi sáng, chiều mát hoặc một khoảng nghỉ giữa ngày nếu điều kiện thời tiết thuận lợi. Người dùng có thể đi bộ, ngồi nghỉ hoặc dành thời gian cho hoạt động gia đình thay vì phải theo một tuyến tham quan cố định. Do đây là điểm ngoài trời, chất lượng trải nghiệm phụ thuộc khá nhiều vào mưa, nắng nóng và mức độ đông theo thời điểm. Vì vậy module context-aware nên có quyền giảm điểm hoặc đề xuất thay thế bằng địa điểm trong nhà khi thời tiết bất lợi. Các sự kiện tạm thời hoặc khu vực đang bảo trì cũng không nên được ghi cứng vào corpus dài hạn.",
+      "source": {
+        "label": "Công báo TP.HCM - Quy hoạch tổng thể Công viên Gia Định",
+        "uri": "https://congbao.hochiminhcity.gov.vn/tin-tuc-tong-hop/dieu-chinh-quy-hoach-chi-tiet-ty-le-1-500-tong-the-cong-vien-gia-dinh",
+        "retrievedAt": "2026-08-29"
+      }
+    }
+  ]
+}

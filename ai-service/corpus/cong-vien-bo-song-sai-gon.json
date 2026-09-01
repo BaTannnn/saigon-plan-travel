@@ -1,0 +1,46 @@
+{
+  "placeSlug": "cong-vien-bo-song-sai-gon",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Công viên bờ sông Sài Gòn là không gian công cộng ven sông ở khu Thủ Thiêm, phía đối diện khu trung tâm Thành phố Hồ Chí Minh. Công viên phù hợp với các hoạt động đi bộ, nghỉ ngơi, ngắm cảnh đô thị, sinh hoạt cộng đồng và chụp ảnh. Nhờ tầm nhìn qua sông hướng về khu trung tâm, địa điểm đặc biệt phù hợp cho lịch trình chiều tối và có thể kết hợp với các điểm quanh Thủ Thiêm hoặc tuyến đi bộ ven sông.",
+      "source": {
+        "label": "UBND Thành phố Thủ Đức - Khánh thành Công viên bờ sông Sài Gòn",
+        "uri": "https://tpthuduc.hochiminhcity.gov.vn/tin-tuc-su-kien/3000-hoc-sinh-dong-dien-flashmob-chao-mung-khanh-thanh-cong-vien-bo-song-sai-gon/ct/1780/14652",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Theo UBND Thành phố Thủ Đức, công viên được hình thành dọc khu vực bờ sông Thủ Thiêm từ cầu Ba Son đến khu vực đường hầm sông Sài Gòn, với quy mô gần 20 ha. Không gian được đầu tư bằng nguồn xã hội hóa và tổ chức thành nhiều hạng mục như đường dạo, mảng xanh, khu sinh hoạt cộng đồng, đài phun nước, khu cảnh quan và các tiện ích phục vụ người dân. Đây là ví dụ rõ của một điểm đến đô thị công cộng mà giá trị chính nằm ở cảnh quan và hoạt động tại chỗ, không phải một công trình thu vé tham quan.",
+      "source": {
+        "label": "UBND Thành phố Thủ Đức - Khánh thành Công viên bờ sông Sài Gòn",
+        "uri": "https://tpthuduc.hochiminhcity.gov.vn/tin-tuc-su-kien/3000-hoc-sinh-dong-dien-flashmob-chao-mung-khanh-thanh-cong-vien-bo-song-sai-gon/ct/1780/14652",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Các hạng mục được công bố gồm hệ thống cây xanh, thảm cỏ, đường dạo, ghế ngồi, chiếu sáng, khu sinh hoạt cộng đồng và khu hoa hướng dương. Từ bờ Thủ Thiêm, người tham quan có thể quan sát đường chân trời khu trung tâm qua sông, vì vậy trải nghiệm ngắm cảnh thường nổi bật hơn vào cuối chiều và buổi tối khi nhiệt độ dễ chịu và thành phố lên đèn. Với recommendation, các thuộc tính phù hợp gồm ngoài trời, ngắm cảnh, gia đình, đi bộ và chi phí thấp. Đây cũng là điểm có thể đóng vai trò khoảng nghỉ giữa các điểm tham quan có mật độ hoạt động cao.",
+      "source": {
+        "label": "UBND Thành phố Thủ Đức - Khánh thành Công viên bờ sông Sài Gòn",
+        "uri": "https://tpthuduc.hochiminhcity.gov.vn/tin-tuc-su-kien/3000-hoc-sinh-dong-dien-flashmob-chao-mung-khanh-thanh-cong-vien-bo-song-sai-gon/ct/1780/14652",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Công viên phù hợp với lịch trình linh hoạt vì người dùng có thể chỉ dừng ngắm cảnh trong thời gian ngắn hoặc ở lại lâu hơn để đi bộ và nghỉ ngơi. Phần lớn trải nghiệm diễn ra ngoài trời, do đó nhiệt độ, mưa và điều kiện thời tiết ảnh hưởng trực tiếp đến mức độ phù hợp; đây là trường hợp tốt cho module context-aware và re-planning. Chi phí tham quan cơ bản thấp, nhưng các dịch vụ ăn uống hoặc hoạt động phát sinh không nên được xem là giá cố định. Hệ thống có thể ưu tiên công viên vào cuối ngày nếu thời tiết thuận lợi và thay bằng điểm trong nhà khi mưa lớn.",
+      "source": {
+        "label": "UBND Thành phố Thủ Đức - Khánh thành Công viên bờ sông Sài Gòn",
+        "uri": "https://tpthuduc.hochiminhcity.gov.vn/tin-tuc-su-kien/3000-hoc-sinh-dong-dien-flashmob-chao-mung-khanh-thanh-cong-vien-bo-song-sai-gon/ct/1780/14652",
+        "retrievedAt": "2026-08-29"
+      }
+    }
+  ]
+}

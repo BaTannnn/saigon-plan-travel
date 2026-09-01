@@ -1,0 +1,46 @@
+{
+  "placeSlug": "khu-du-lich-sinh-thai-vam-sat",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Khu du lịch sinh thái Vàm Sát nằm trong khu vực rừng ngập mặn Cần Giờ, là điểm đến thiên về khám phá hệ sinh thái, động vật hoang dã và cảnh quan sông nước. Không gian rộng, nhiều hoạt động ngoài trời và khoảng cách xa trung tâm khiến Vàm Sát phù hợp hơn với lịch trình nửa ngày hoặc một ngày thay vì điểm dừng ngắn. Trong hệ thống gợi ý, địa điểm đặc biệt phù hợp với người yêu thiên nhiên, gia đình, nhóm học tập và người muốn trải nghiệm sinh thái khác với môi trường đô thị trung tâm.",
+      "source": {
+        "label": "Cơ sở dữ liệu ngành Du lịch - Khu Du lịch Sinh thái Vàm Sát",
+        "uri": "https://csdl.vietnamtourism.gov.vn/dest/?item=298",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Theo trang chính thức của Vàm Sát, khu vực này gắn với quá trình phục hồi rừng ngập mặn Cần Giờ sau chiến tranh. Từ cuối thập niên 1970, hoạt động trồng và phục hồi rừng được triển khai quy mô lớn; sau đó khu vực được tổ chức khai thác du lịch sinh thái gắn với nhiệm vụ bảo tồn. Vàm Sát nằm trong vùng đệm của Khu dự trữ sinh quyển rừng ngập mặn Cần Giờ, được UNESCO công nhận năm 2000. Bối cảnh này giúp RAG giải thích giá trị của điểm đến không chỉ nằm ở vui chơi mà còn ở giáo dục môi trường và quá trình phục hồi hệ sinh thái.",
+      "source": {
+        "label": "Vàm Sát Ecopark - Du lịch sinh thái Vàm Sát",
+        "uri": "https://vamsat.vn/sinh-thai-vam-sat/",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Những trải nghiệm nổi bật được đơn vị vận hành giới thiệu gồm tham quan rừng ngập mặn, đầm dơi nghệ, khu chim tự nhiên, khu cá sấu, ngắm cảnh từ tháp Tang Bồng và các hoạt động tìm hiểu động vật hoang dã. Hệ sinh thái ngập mặn và mạng lưới sông rạch tạo nên trải nghiệm khác biệt rõ với công viên đô thị. Trong recommendation, có thể gắn các tín hiệu thiên nhiên, khoa học, gia đình, ngoài trời và khám phá. Do hoạt động phân tán trên diện tích lớn, thời lượng tham quan nên được đặt cao hơn các điểm nội đô thông thường.",
+      "source": {
+        "label": "Vàm Sát Ecopark - Trang chính thức",
+        "uri": "https://vamsat.vn/",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Khi lập lịch, hệ thống nên dành quỹ thời gian lớn cho cả di chuyển và tham quan Vàm Sát. Trang chính thức cho biết khách có thể tiếp cận bằng đường bộ hoặc kết hợp đường thủy, trong khi nhiều trải nghiệm diễn ra trực tiếp ngoài trời và trên vùng sông nước. Vì vậy mưa lớn, thời tiết xấu hoặc điều kiện di chuyển bất lợi có thể làm giảm mạnh mức độ phù hợp; đây là trường hợp tốt cho context-aware scheduling và re-planning. Giá vé, gói tham quan và dịch vụ ăn uống nên được lấy từ dữ liệu structured hoặc nguồn cập nhật thay vì cố định trong corpus.",
+      "source": {
+        "label": "Vàm Sát Ecopark - Trang chính thức",
+        "uri": "https://vamsat.vn/",
+        "retrievedAt": "2026-08-29"
+      }
+    }
+  ]
+}

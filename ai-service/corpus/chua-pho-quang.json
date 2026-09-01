@@ -1,0 +1,46 @@
+{
+  "placeSlug": "chua-pho-quang",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Chùa Phổ Quang nằm trên đường Huỳnh Lan Khanh, khu vực Tân Bình, gần sân bay Tân Sơn Nhất và Bảo tàng Quân khu 7. Đây là một ngôi chùa Bắc tông có không gian tương đối yên tĩnh, phù hợp với người muốn tham quan kiến trúc Phật giáo, tìm một điểm tâm linh hoặc cân bằng lịch trình sau các hoạt động đông đúc. Vị trí của chùa giúp scheduler có thêm lựa chọn cho cụm Tân Bình thay vì luôn phải đưa người dùng về khu trung tâm.",
+      "source": {
+        "label": "Du lịch TP.HCM - Chùa Phổ Quang",
+        "uri": "https://visithcmc.net/page/ke-hoach-chuyen-di",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Theo tư liệu giới thiệu của Gia đình Phật tử Phổ Quang, chùa do Hòa thượng Nguyễn Viết Tạo, pháp danh Thanh Nhã, khởi dựng năm 1951. Đến đầu thập niên 1960, công trình được xây dựng lại với quy mô rõ ràng hơn. Bối cảnh hình thành trong thế kỷ XX giúp địa điểm khác với nhóm chùa cổ như Giác Lâm: giá trị của Phổ Quang nằm ở đời sống Phật giáo đô thị hiện đại, cảnh quan thanh tịnh và vai trò sinh hoạt tín ngưỡng của cộng đồng quanh khu Tân Bình.",
+      "source": {
+        "label": "Gia đình Phật tử Phổ Quang - Giới thiệu",
+        "uri": "https://gdptphoquang.org/about/",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Không gian chùa có chính điện, các tượng Phật, cây xanh và khuôn viên tạo cảm giác tách khỏi nhịp giao thông bên ngoài. Cổng du lịch TP.HCM giới thiệu đây là một điểm tham quan tôn giáo tại Tân Bình và công bố khung giờ theo hai buổi. Trong recommendation, các đặc trưng phù hợp gồm Phật giáo, không gian yên tĩnh, kiến trúc, văn hóa và điểm dừng gần sân bay. So với các chùa nổi tiếng ở trung tâm, Phổ Quang phù hợp hơn khi tuyến đường của người dùng đã đi qua Tân Bình.",
+      "source": {
+        "label": "Du lịch TP.HCM - Kế hoạch chuyến đi",
+        "uri": "https://visithcmc.net/en/page/ke-hoach-chuyen-di",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Người tham quan nên ăn mặc lịch sự, hạn chế gây ồn và tránh làm ảnh hưởng các thời khóa tụng niệm. Do giờ phục vụ có thể chia thành buổi sáng và chiều, scheduler cần kiểm tra opening-hours thay vì chỉ dựa vào mô tả corpus. Chi phí cơ bản thấp, thời lượng khoảng 45-75 phút. Đây cũng là phương án thay thế khá tốt trong ngày nắng nóng hoặc khi người dùng muốn giảm thời gian di chuyển nếu đang ở khu sân bay, Bảo tàng Quân khu 7 hoặc Công viên Hoàng Văn Thụ.",
+      "source": {
+        "label": "Du lịch TP.HCM - Chùa Phổ Quang",
+        "uri": "https://visithcmc.net/page/ke-hoach-chuyen-di",
+        "retrievedAt": "2026-08-29"
+      }
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "placeSlug": "artinus-3d-art-museum",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Artinus 3D Art Museum từng là không gian nghệ thuật tương tác tại khu đô thị Him Lam, Thành phố Hồ Chí Minh, tập trung vào tranh 3D và các bối cảnh tạo hiệu ứng thị giác để khách tham quan chụp ảnh. Mô hình trải nghiệm khác với bảo tàng truyền thống vì người xem trực tiếp tạo dáng và trở thành một phần của tác phẩm. Corpus này được giữ để phục vụ dữ liệu lịch sử và kiểm thử RAG; trạng thái hoạt động hiện tại cần được kiểm tra riêng trước khi dùng cho recommendation.",
+      "source": {
+        "label": "Artinus - 3D Art Painting Museum (archived introduction)",
+        "uri": "https://3dartinus.blogspot.com/",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Các tư liệu giới thiệu Artinus mô tả đây là một trong những không gian tranh 3D đầu tiên tại Thành phố Hồ Chí Minh, với diện tích lớn và nhiều khu chủ đề. Tranh được bố trí trên tường, sàn và các bề mặt nhằm tạo hiệu ứng phối cảnh khi nhìn từ góc phù hợp. Một số chủ đề từng được giới thiệu gồm đại dương, động vật, Ai Cập, thế giới khổng lồ và hình ảnh Việt Nam. Giá trị chính của điểm đến nằm ở hoạt động tương tác, nhiếp ảnh và trải nghiệm nhóm hơn là nghiên cứu hiện vật nghệ thuật theo cách của bảo tàng truyền thống.",
+      "source": {
+        "label": "Artinus - 3D Art Painting Museum (archived introduction)",
+        "uri": "https://3dartinus.blogspot.com/",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Điểm hấp dẫn của Artinus là các bối cảnh 3D cho phép khách tham quan tạo ra ảnh có cảm giác nhân vật đang đứng trong một không gian hoặc tình huống giả lập. Loại hình này phù hợp với nhóm bạn, gia đình và người ưu tiên hoạt động trong nhà, đặc biệt khi thời tiết không thuận lợi cho điểm ngoài trời. Trong hệ thống recommendation, các đặc trưng ngữ nghĩa có thể gắn với nghệ thuật, vui chơi, gia đình, chụp ảnh và trải nghiệm tương tác. Tuy nhiên các đặc trưng này chỉ mô tả loại hình từng tồn tại, không khẳng định địa điểm còn đang vận hành.",
+      "source": {
+        "label": "Artinus 3D Gallery - Foody listing",
+        "uri": "https://www.foody.vn/ho-chi-minh/artinus-3d-gallery",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Các nguồn danh bạ du lịch cập nhật gần đây báo cáo Artinus đã đóng cửa hoặc ngừng hoạt động. Vì vậy corpus không nên được dùng một mình để kết luận địa điểm có thể ghé thăm. Trong dữ liệu structured của SaigonPlanTravel, place này nên được đặt inactive để scheduler và recommendation loại khỏi danh sách ứng viên; corpus vẫn có thể tồn tại để kiểm thử truy xuất lịch sử. Nếu sau này có nguồn chính thức xác nhận mở lại, trạng thái active, giờ mở cửa và chi phí phải được cập nhật trước khi đưa trở lại lịch trình.",
+      "source": {
+        "label": "Tripadvisor - Artinus 3D Art Museum status",
+        "uri": "https://www.tripadvisor.com/Attraction_Review-g293925-d8672682-Reviews-Artinus_3D_Art_Museum-Ho_Chi_Minh_City.html",
+        "retrievedAt": "2026-08-29"
+      }
+    }
+  ]
+}
