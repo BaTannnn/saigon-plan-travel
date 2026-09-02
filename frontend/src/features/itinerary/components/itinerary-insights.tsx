@@ -169,7 +169,7 @@ export function ItineraryWarningSummary({
   return (
     <Dialog>
       <section
-        className="mt-5 flex flex-col gap-3 border-y border-ochre/30 bg-ochre-soft/75 px-3 py-3 text-ochre-foreground sm:flex-row sm:items-center sm:justify-between sm:px-4"
+        className="mt-5 flex flex-col gap-3 rounded-md border border-ochre/30 bg-ochre-soft/75 px-3 py-3 text-ochre-foreground sm:flex-row sm:items-center sm:justify-between sm:px-4"
         aria-labelledby="itinerary-warning-summary-heading"
       >
         <div className="flex min-w-0 items-start gap-3">

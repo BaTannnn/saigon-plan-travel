@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { LayoutDashboard, ListOrdered } from "lucide-react";
+import { ArrowLeftIcon } from "@/components/ui/icons";
 import { cn } from "@/lib/utils";
 
 export type TripWorkspaceSection = "overview" | "itinerary";
@@ -34,9 +35,10 @@ export function TripWorkspaceSidebar({
     <aside className="border-b border-border bg-surface/80 px-4 py-4 xl:min-h-0 xl:border-r xl:border-b-0 xl:px-3 xl:py-6">
       <Link
         href="/trips"
-        className="inline-flex items-center rounded-md px-2 py-1 text-[0.8rem] font-semibold text-text-secondary transition-colors hover:bg-primary-soft hover:text-primary-strong"
+        className="inline-flex items-center gap-1.5 text-[0.8rem] font-semibold text-text-secondary transition-colors hover:text-primary-strong"
       >
-        ← Chuyến đi của tôi
+        <ArrowLeftIcon className="size-4" />
+        Chuyến đi của tôi
       </Link>
 
       <div className="mt-5 border-t border-border pt-4 xl:mt-7 xl:pt-5">
