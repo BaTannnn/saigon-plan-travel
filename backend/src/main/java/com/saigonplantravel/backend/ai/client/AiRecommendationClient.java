@@ -35,9 +35,9 @@ public class AiRecommendationClient implements SemanticPlaceRetriever {
     }
 
     @Override
-    public List<SemanticPlaceCandidate> retrieve(String query, int topK, List<String> eligiblePlaceSlugs) {
+    public List<SemanticPlaceCandidate> retrieve(String query, int topK) {
 
-        AiPlaceRecommendationRequest request = new AiPlaceRecommendationRequest(query, topK, eligiblePlaceSlugs);
+        AiPlaceRecommendationRequest request = new AiPlaceRecommendationRequest(query, topK);
 
         AiPlaceRecommendationResponse response = restClient
                 .post()

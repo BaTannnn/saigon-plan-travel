@@ -156,21 +156,6 @@ class PlaceRepositoryTest {
     }
 
     @Test
-    void loadsOnlyActivePlacesForCoarseEligibilityInOneQuery() {
-        Statistics statistics =
-                entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
-        statistics.clear();
-
-        List<Place> places = placeRepository.findAllActiveForScheduling();
-
-        assertThat(places).isNotEmpty().allMatch(place -> Boolean.TRUE.equals(place.getActive()));
-        assertThat(places).extracting(Place::getSlug).doesNotContain("demo-temporarily-hidden-place");
-        assertThat(places)
-                .allSatisfy(place -> assertThat(place.getOpeningHours()).isNotNull());
-        assertThat(statistics.getPrepareStatementCount()).isEqualTo(1);
-    }
-
-    @Test
     @Transactional
     void administrationCanListAndOpenInactivePlaceWhilePublicQueriesStillHideIt() {
         PlaceQueryRequest request = searchRequest(null, null, null, null, 0, 100);

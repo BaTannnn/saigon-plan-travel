@@ -10,8 +10,10 @@ import com.saigonplantravel.backend.place.service.PlaceQueryService;
 import com.saigonplantravel.backend.recommendation.SemanticPlaceRetriever;
 import com.saigonplantravel.backend.recommendation.model.RecommendationCandidate;
 import com.saigonplantravel.backend.recommendation.model.SemanticPlaceCandidate;
+import com.saigonplantravel.backend.trip.entity.Trip;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,7 +33,7 @@ class PlaceRecommendationServiceTest {
     private CoarsePlaceEligibilityService coarsePlaceEligibilityService;
 
     @Mock
-    private com.saigonplantravel.backend.trip.entity.Trip trip;
+    private Trip trip;
 
     private PlaceRecommendationService service;
 
@@ -42,101 +44,98 @@ class PlaceRecommendationServiceTest {
     }
 
     @Test
-    void trimsPreferenceAndRequestsFifteenSemanticCandidates() {
-        Place eligiblePlace = place("Place A", "place-a");
-        when(placeQueryService.findAllActiveForScheduling()).thenReturn(List.of(eligiblePlace));
-        when(coarsePlaceEligibilityService.findEligiblePlaces(List.of(eligiblePlace), trip))
-                .thenReturn(List.of(eligiblePlace));
-        when(semanticPlaceRetriever.retrieve("Tôi thích kiến trúc và mỹ thuật", 15, List.of("place-a")))
+    void trimsPreferenceAndRequestsThirtySemanticCandidatesWithoutLoadingPlacesFirst() {
+        when(semanticPlaceRetriever.retrieve("Tôi thích kiến trúc và mỹ thuật", 30))
                 .thenReturn(List.of());
 
-        service.recommend(trip, "  Tôi thích kiến trúc và mỹ thuật  ");
-
-        verify(semanticPlaceRetriever).retrieve("Tôi thích kiến trúc và mỹ thuật", 15, List.of("place-a"));
-    }
-
-    @Test
-    void skipsAiRequestWhenNoPlaceIsCoarselyEligible() {
-        Place activePlace = place("Place A", "place-a");
-        when(placeQueryService.findAllActiveForScheduling()).thenReturn(List.of(activePlace));
-        when(coarsePlaceEligibilityService.findEligiblePlaces(List.of(activePlace), trip))
-                .thenReturn(List.of());
-
-        List<RecommendationCandidate> result = service.recommend(trip, "kiến trúc");
+        List<RecommendationCandidate> result = service.recommend(trip, "  Tôi thích kiến trúc và mỹ thuật  ");
 
         assertThat(result).isEmpty();
-        verifyNoInteractions(semanticPlaceRetriever);
+        verify(semanticPlaceRetriever).retrieve("Tôi thích kiến trúc và mỹ thuật", 30);
+        verifyNoInteractions(placeQueryService, coarsePlaceEligibilityService);
     }
 
     @Test
-    void returnsEmptyWhenAiReturnsNoCandidates() {
-        Place eligiblePlace = place("Place A", "place-a");
-        stubEligiblePlaces(eligiblePlace);
-        when(semanticPlaceRetriever.retrieve("kiến trúc", 15, List.of("place-a"))).thenReturn(List.of());
+    void loadsOnlyTheThirtySemanticCandidateSlugs() {
+        List<SemanticPlaceCandidate> semanticCandidates = IntStream.rangeClosed(1, 30)
+                .mapToObj(index -> candidate("place-" + index, "section-" + index, 1.0 - index / 100.0))
+                .toList();
+        List<String> candidateSlugs = semanticCandidates.stream()
+                .map(SemanticPlaceCandidate::placeSlug)
+                .toList();
+        when(semanticPlaceRetriever.retrieve("culture", 30)).thenReturn(semanticCandidates);
+        when(placeQueryService.findAllActiveBySlugsForScheduling(candidateSlugs))
+                .thenReturn(List.of());
+        when(coarsePlaceEligibilityService.findEligiblePlaces(List.of(), trip)).thenReturn(List.of());
 
-        assertThat(service.recommend(trip, "kiến trúc")).isEmpty();
+        assertThat(service.recommend(trip, "culture")).isEmpty();
+
+        verify(placeQueryService).findAllActiveBySlugsForScheduling(candidateSlugs);
+        verify(coarsePlaceEligibilityService).findEligiblePlaces(List.of(), trip);
     }
 
     @Test
-    void mapsAiCandidatesToCanonicalDatabasePlaces() {
-        SemanticPlaceCandidate semanticCandidate = candidate("place-a", "architecture", 0.93);
-        Place canonicalPlace = place("Canonical database name", "place-a");
-        stubEligiblePlaces(canonicalPlace);
-        when(semanticPlaceRetriever.retrieve("architecture", 15, List.of("place-a")))
-                .thenReturn(List.of(semanticCandidate));
+    void appliesCoarseEligibilityAfterSemanticRetrieval() {
+        List<SemanticPlaceCandidate> semanticCandidates =
+                List.of(candidate("place-a", "section-a", 0.95), candidate("place-b", "section-b", 0.90));
+        Place placeA = place("Database A", "place-a");
+        Place placeB = place("Database B", "place-b");
+        List<Place> loadedPlaces = List.of(placeA, placeB);
+        when(semanticPlaceRetriever.retrieve("culture", 30)).thenReturn(semanticCandidates);
+        when(placeQueryService.findAllActiveBySlugsForScheduling(List.of("place-a", "place-b")))
+                .thenReturn(loadedPlaces);
+        when(coarsePlaceEligibilityService.findEligiblePlaces(loadedPlaces, trip))
+                .thenReturn(List.of(placeA));
 
-        List<RecommendationCandidate> result = service.recommend(trip, "architecture");
+        List<RecommendationCandidate> result = service.recommend(trip, "culture");
 
         assertThat(result).singleElement().satisfies(recommendation -> {
-            assertThat(recommendation.place()).isSameAs(canonicalPlace);
-            assertThat(recommendation.place().getName()).isEqualTo("Canonical database name");
-            assertThat(recommendation.semanticScore()).isEqualTo(0.93);
-            assertThat(recommendation.matchedSection()).isEqualTo("architecture");
+            assertThat(recommendation.place()).isSameAs(placeA);
+            assertThat(recommendation.semanticScore()).isEqualTo(0.95);
         });
     }
 
     @Test
-    void dropsAiCandidatesNotReturnedByActivePlaceRepository() {
+    void preservesSemanticOrderScoresAndMetadataWhenRepositoryOrderDiffers() {
         List<SemanticPlaceCandidate> semanticCandidates = List.of(
-                candidate("place-a", "section-a", 0.95),
-                candidate("place-b", "section-b", 0.90),
-                candidate("place-c", "section-c", 0.85));
-        Place placeA = place("Database A", "place-a");
-        Place placeC = place("Database C", "place-c");
-        stubEligiblePlaces(placeA, placeC);
-        when(semanticPlaceRetriever.retrieve("culture", 15, List.of("place-a", "place-c")))
-                .thenReturn(semanticCandidates);
-
-        List<RecommendationCandidate> result = service.recommend(trip, "culture");
-
-        assertThat(result).extracting(candidate -> candidate.place().getSlug()).containsExactly("place-a", "place-c");
-    }
-
-    @Test
-    void preservesAiCandidateOrderRegardlessOfRepositoryOrder() {
-        List<SemanticPlaceCandidate> semanticCandidates = List.of(
-                candidate("place-c", "section-c", 0.97),
-                candidate("place-a", "section-a", 0.92),
-                candidate("place-b", "section-b", 0.88));
+                candidate("place-a", "section-a", 0.91),
+                candidate("place-b", "section-b", 0.82),
+                candidate("place-c", "section-c", 0.73));
         Place placeA = place("Database A", "place-a");
         Place placeB = place("Database B", "place-b");
         Place placeC = place("Database C", "place-c");
-        stubEligiblePlaces(placeA, placeB, placeC);
-        when(semanticPlaceRetriever.retrieve("art", 15, List.of("place-a", "place-b", "place-c")))
-                .thenReturn(semanticCandidates);
+        List<Place> repositoryOrder = List.of(placeC, placeA, placeB);
+        when(semanticPlaceRetriever.retrieve("art", 30)).thenReturn(semanticCandidates);
+        when(placeQueryService.findAllActiveBySlugsForScheduling(List.of("place-a", "place-b", "place-c")))
+                .thenReturn(repositoryOrder);
+        when(coarsePlaceEligibilityService.findEligiblePlaces(repositoryOrder, trip))
+                .thenReturn(repositoryOrder);
 
         List<RecommendationCandidate> result = service.recommend(trip, "art");
 
         assertThat(result)
                 .extracting(candidate -> candidate.place().getSlug())
-                .containsExactly("place-c", "place-a", "place-b");
+                .containsExactly("place-a", "place-b", "place-c");
+        assertThat(result).extracting(RecommendationCandidate::semanticScore).containsExactly(0.91, 0.82, 0.73);
+        assertThat(result)
+                .extracting(RecommendationCandidate::matchedSection)
+                .containsExactly("section-a", "section-b", "section-c");
     }
 
-    private void stubEligiblePlaces(Place... places) {
-        List<Place> activePlaces = List.of(places);
-        when(placeQueryService.findAllActiveForScheduling()).thenReturn(activePlaces);
-        when(coarsePlaceEligibilityService.findEligiblePlaces(activePlaces, trip))
-                .thenReturn(activePlaces);
+    @Test
+    void dropsSemanticCandidatesMissingFromActivePlaceQuery() {
+        List<SemanticPlaceCandidate> semanticCandidates =
+                List.of(candidate("place-a", "section-a", 0.95), candidate("place-b", "section-b", 0.90));
+        Place placeA = place("Database A", "place-a");
+        when(semanticPlaceRetriever.retrieve("culture", 30)).thenReturn(semanticCandidates);
+        when(placeQueryService.findAllActiveBySlugsForScheduling(List.of("place-a", "place-b")))
+                .thenReturn(List.of(placeA));
+        when(coarsePlaceEligibilityService.findEligiblePlaces(List.of(placeA), trip))
+                .thenReturn(List.of(placeA));
+
+        List<RecommendationCandidate> result = service.recommend(trip, "culture");
+
+        assertThat(result).extracting(candidate -> candidate.place().getSlug()).containsExactly("place-a");
     }
 
     private static SemanticPlaceCandidate candidate(String slug, String matchedSection, double semanticScore) {

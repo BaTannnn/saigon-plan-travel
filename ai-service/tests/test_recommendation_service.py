@@ -44,7 +44,6 @@ class RecommendationServiceTest(unittest.TestCase):
             query="preferred places",
             fetch_k=None,
             candidate_k=15,
-            eligible_place_slugs=None,
         )
 
     @patch("app.recommendation.recommendation_service.select_with_mmr")
@@ -71,7 +70,6 @@ class RecommendationServiceTest(unittest.TestCase):
             query="preferred places",
             fetch_k=None,
             candidate_k=30,
-            eligible_place_slugs=None,
         )
 
     @patch("app.recommendation.recommendation_service.select_with_mmr")
@@ -102,55 +100,6 @@ class RecommendationServiceTest(unittest.TestCase):
         )
         select_with_mmr.assert_not_called()
 
-    @patch("app.recommendation.recommendation_service.search_candidate_chunks")
-    @patch("app.recommendation.recommendation_service.embed_query")
-    def test_retrieves_inside_whitelist_to_prevent_candidate_starvation(
-        self,
-        embed_query,
-        search_candidate_chunks,
-    ):
-        eligible_slugs = ["place-d", "place-e", "place-f", "place-g", "place-h"]
-        embed_query.return_value = [1.0, 0.0]
-        search_candidate_chunks.return_value = [
-            chunk("place-d", 0.95, [1.0, 0.0]),
-            chunk("place-e", 0.94, [0.99, 0.01]),
-            chunk("place-f", 0.93, [0.98, 0.02]),
-            chunk("place-g", 0.92, [0.97, 0.03]),
-            chunk("place-h", 0.91, [0.96, 0.04]),
-        ]
-
-        candidates = recommend_places(
-            query="preferred places",
-            top_k=5,
-            eligible_place_slugs=eligible_slugs,
-        )
-
-        self.assertEqual(
-            eligible_slugs,
-            [candidate.place_slug for candidate in candidates],
-        )
-        search_candidate_chunks.assert_called_once_with(
-            query_embedding=[1.0, 0.0],
-            limit=50,
-            eligible_place_slugs=eligible_slugs,
-        )
-
-    @patch("app.recommendation.recommendation_service.search_candidate_chunks")
-    @patch("app.recommendation.recommendation_service.embed_query")
-    def test_empty_whitelist_returns_empty_without_embedding_or_database(
-        self,
-        embed_query,
-        search_candidate_chunks,
-    ):
-        candidates = recommend_places(
-            query="preferred places",
-            eligible_place_slugs=[],
-        )
-
-        self.assertEqual([], candidates)
-        embed_query.assert_not_called()
-        search_candidate_chunks.assert_not_called()
-
     @patch("app.recommendation.recommendation_service.select_with_mmr")
     @patch("app.recommendation.recommendation_service.search_candidate_chunks")
     @patch("app.recommendation.recommendation_service.embed_query")
@@ -171,7 +120,6 @@ class RecommendationServiceTest(unittest.TestCase):
         candidates = recommend_places(
             query="preferred places",
             retrieval_mode="mmr",
-            eligible_place_slugs=["place-d", "place-e"],
         )
 
         self.assertEqual(

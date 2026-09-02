@@ -21,12 +21,13 @@ class AiRecommendationClientTest {
         AiRecommendationClient client = new AiRecommendationClient(builder.build());
 
         server.expect(requestTo("https://ai.test/api/v1/recommendations/places"))
-                .andExpect(content().json(
-                                """
+                .andExpect(
+                        content()
+                                .json(
+                                        """
                                 {
                                   "query": "architecture",
-                                  "top_k": 15,
-                                  "eligible_place_slugs": ["place-a", "place-b"]
+                                  "top_k": 30
                                 }
                                 """))
                 .andRespond(withSuccess(
@@ -50,8 +51,7 @@ class AiRecommendationClientTest {
                         """,
                         MediaType.APPLICATION_JSON));
 
-        List<SemanticPlaceCandidate> result =
-                client.retrieve("architecture", 15, List.of("place-a", "place-b"));
+        List<SemanticPlaceCandidate> result = client.retrieve("architecture", 30);
 
         assertThat(result)
                 .containsExactly(
@@ -69,7 +69,7 @@ class AiRecommendationClientTest {
         server.expect(requestTo("https://ai.test/api/v1/recommendations/places"))
                 .andRespond(withSuccess());
 
-        assertThat(client.retrieve("architecture", 15, List.of("place-a"))).isEmpty();
+        assertThat(client.retrieve("architecture", 30)).isEmpty();
         server.verify();
     }
 }

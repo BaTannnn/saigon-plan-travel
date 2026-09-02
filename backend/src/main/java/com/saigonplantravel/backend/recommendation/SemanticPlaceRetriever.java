@@ -5,6 +5,5 @@ import java.util.List;
 
 public interface SemanticPlaceRetriever {
 
-    List<SemanticPlaceCandidate> retrieve(
-            String preferenceDescription, int limit, List<String> eligiblePlaceSlugs);
+    List<SemanticPlaceCandidate> retrieve(String preferenceDescription, int limit);
 }

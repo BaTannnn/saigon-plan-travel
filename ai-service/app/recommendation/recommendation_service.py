@@ -18,11 +18,7 @@ def retrieve_candidate_places(
     query: str,
     fetch_k: int | None = None,
     candidate_k: int | None = None,
-    eligible_place_slugs: list[str] | None = None,
 ) -> tuple[list[PlaceCandidate], dict[str, list[float]]]:
-    if eligible_place_slugs == []:
-        return [], {}
-
     query_embedding = embed_query(query)
 
     if query_embedding is None:
@@ -32,17 +28,10 @@ def retrieve_candidate_places(
     resolved_candidate_k = get_retrieval_candidate_k(candidate_k)
     target_unique_places = resolved_candidate_k
 
-    if eligible_place_slugs is not None:
-        target_unique_places = min(
-            target_unique_places,
-            len(eligible_place_slugs),
-        )
-
     while True:
         retrieved_chunks = search_candidate_chunks(
             query_embedding=query_embedding,
             limit=resolved_fetch_k,
-            eligible_place_slugs=eligible_place_slugs,
         )
 
         unique_chunks = deduplicate_best_chunk_by_place(
@@ -85,11 +74,7 @@ def recommend_places(
     top_k: int = 15,
     retrieval_mode: str | None = None,
     lambda_weight: float | None = None,
-    eligible_place_slugs: list[str] | None = None,
 ) -> list[PlaceCandidate]:
-    if eligible_place_slugs == []:
-        return []
-
     mode = get_retrieval_mode(retrieval_mode)
     if mode == "semantic":
         pool_size = top_k
@@ -102,7 +87,6 @@ def recommend_places(
         query=query,
         fetch_k=fetch_k,
         candidate_k=pool_size,
-        eligible_place_slugs=eligible_place_slugs,
     )
 
     if mode == "semantic":

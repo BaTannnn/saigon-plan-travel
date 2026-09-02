@@ -21,7 +21,7 @@ public class PlaceRecommendationService {
 
     private static final Logger log = LoggerFactory.getLogger(PlaceRecommendationService.class);
 
-    private static final int SEMANTIC_CANDIDATE_LIMIT = 15;
+    private static final int SEMANTIC_CANDIDATE_LIMIT = 30;
 
     private final SemanticPlaceRetriever semanticPlaceRetriever;
     private final PlaceQueryService placeQueryService;
@@ -37,29 +37,24 @@ public class PlaceRecommendationService {
     }
 
     public List<RecommendationCandidate> recommend(Trip trip, String preferenceDescription) {
-        List<Place> activePlaces = placeQueryService.findAllActiveForScheduling();
-        List<Place> eligiblePlaces = coarsePlaceEligibilityService.findEligiblePlaces(activePlaces, trip);
-
-        log.debug("Coarse eligibility retained {} of {} active places", eligiblePlaces.size(), activePlaces.size());
-
-        if (eligiblePlaces.isEmpty()) {
-            return List.of();
-        }
-
-        List<String> eligiblePlaceSlugs =
-                eligiblePlaces.stream().map(Place::getSlug).toList();
-
-        List<SemanticPlaceCandidate> semanticCandidates = semanticPlaceRetriever.retrieve(
-                preferenceDescription.trim(), SEMANTIC_CANDIDATE_LIMIT, eligiblePlaceSlugs);
-
-        log.debug(
-                "Semantic retrieval returned {} candidates from {} eligible places",
-                semanticCandidates.size(),
-                eligiblePlaces.size());
+        List<SemanticPlaceCandidate> semanticCandidates =
+                semanticPlaceRetriever.retrieve(preferenceDescription.trim(), SEMANTIC_CANDIDATE_LIMIT);
 
         if (semanticCandidates.isEmpty()) {
             return List.of();
         }
+
+        List<String> candidateSlugs = semanticCandidates.stream()
+                .map(SemanticPlaceCandidate::placeSlug)
+                .distinct()
+                .toList();
+        List<Place> candidatePlaces = placeQueryService.findAllActiveBySlugsForScheduling(candidateSlugs);
+        List<Place> eligiblePlaces = coarsePlaceEligibilityService.findEligiblePlaces(candidatePlaces, trip);
+
+        log.debug(
+                "Coarse eligibility retained {} of {} semantic candidate places",
+                eligiblePlaces.size(),
+                candidatePlaces.size());
 
         Map<String, Place> placesBySlug =
                 eligiblePlaces.stream().collect(Collectors.toMap(Place::getSlug, Function.identity()));

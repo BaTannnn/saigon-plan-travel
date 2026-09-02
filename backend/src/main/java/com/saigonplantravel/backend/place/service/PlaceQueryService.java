@@ -22,10 +22,6 @@ public class PlaceQueryService {
         return placeRepository.findById(placeId).orElseThrow(PlaceNotFoundException::new);
     }
 
-    public List<Place> findAllActiveForScheduling() {
-        return placeRepository.findAllActiveForScheduling();
-    }
-
     public List<Place> findAllActiveBySlugsForScheduling(Collection<String> slugs) {
         return placeRepository.findAllActiveBySlugsForScheduling(slugs);
     }
