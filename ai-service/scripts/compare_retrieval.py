@@ -4,7 +4,8 @@ from app.knowledge.knowledge_repository import search_candidate_chunks
 from app.recommendation.mmr import select_with_mmr
 from app.recommendation.models import PlaceCandidate
 from app.recommendation.place_retriever import (
-    select_unique_candidate_chunks,
+    deduplicate_best_chunk_by_place,
+    rank_by_semantic_similarity,
 )
 
 
@@ -21,10 +22,8 @@ def main() -> None:
         limit=30,
     )
 
-    unique_chunks = select_unique_candidate_chunks(
-        results=chunks,
-        limit=15,
-    )
+    unique_chunks = deduplicate_best_chunk_by_place(chunks)
+    ranked_chunks = rank_by_semantic_similarity(unique_chunks)[:15]
 
     candidates = [
         PlaceCandidate(
@@ -33,12 +32,12 @@ def main() -> None:
             matched_section=chunk.section,
             semantic_score=chunk.similarity,
         )
-        for chunk in unique_chunks
+        for chunk in ranked_chunks
     ]
 
     embeddings = {
         chunk.place_slug: chunk.embedding
-        for chunk in unique_chunks
+        for chunk in ranked_chunks
     }
 
     semantic_top = candidates[:5]

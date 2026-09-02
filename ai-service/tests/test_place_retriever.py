@@ -1,9 +1,10 @@
 import unittest
 
-from app.recommendation.place_retriever import select_unique_candidate_chunks
-
-
 from app.knowledge.knowledge_repository import CandidateChunk
+from app.recommendation.place_retriever import (
+    deduplicate_best_chunk_by_place,
+    rank_by_semantic_similarity,
+)
 
 
 def result(
@@ -22,8 +23,13 @@ def result(
 
 class PlaceRetrieverTest(unittest.TestCase):
 
-    def test_keeps_only_best_chunk_for_each_place(self):
-        results = [
+    def test_deduplication_keeps_best_chunk_without_sorting(self):
+        chunks = [
+            result(
+                "buu-dien-trung-tam-sai-gon",
+                "OVERVIEW",
+                0.88,
+            ),
             result(
                 "bao-tang-my-thuat-tphcm",
                 "OVERVIEW",
@@ -34,51 +40,35 @@ class PlaceRetrieverTest(unittest.TestCase):
                 "HIGHLIGHTS",
                 0.94,
             ),
-            result(
-                "buu-dien-trung-tam-sai-gon",
-                "OVERVIEW",
-                0.88,
-            ),
         ]
 
-        candidates = select_unique_candidate_chunks(
-            results=results,
-            limit=10,
-        )
+        candidates = deduplicate_best_chunk_by_place(chunks)
 
         self.assertEqual(2, len(candidates))
-
         self.assertEqual(
-            "bao-tang-my-thuat-tphcm",
-            candidates[0].place_slug,
+            ["buu-dien-trung-tam-sai-gon", "bao-tang-my-thuat-tphcm"],
+            [candidate.place_slug for candidate in candidates],
         )
-
         self.assertEqual(
             "HIGHLIGHTS",
-            candidates[0].section,
+            candidates[1].section,
         )
-
         self.assertEqual(
             0.94,
-            candidates[0].similarity,
+            candidates[1].similarity,
         )
 
-    def test_limits_number_of_unique_places(self):
-        results = [
-            result("place-a", "OVERVIEW", 0.90),
-            result("place-b", "OVERVIEW", 0.80),
-            result("place-c", "OVERVIEW", 0.70),
+    def test_semantic_ranking_sorts_descending_without_limiting(self):
+        chunks = [
+            result("place-b", "OVERVIEW", 0.83),
+            result("place-a", "OVERVIEW", 0.91),
+            result("place-c", "OVERVIEW", 0.87),
         ]
 
-        candidates = select_unique_candidate_chunks(
-            results=results,
-            limit=2,
-        )
-
-        self.assertEqual(2, len(candidates))
+        candidates = rank_by_semantic_similarity(chunks)
 
         self.assertEqual(
-            ["place-a", "place-b"],
+            ["place-a", "place-c", "place-b"],
             [candidate.place_slug for candidate in candidates],
         )
 

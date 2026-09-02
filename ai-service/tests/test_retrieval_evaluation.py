@@ -2,7 +2,9 @@ import json
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from unittest.mock import patch
 
+from app.recommendation.models import PlaceCandidate
 from app.recommendation.retrieval_evaluation import (
     RetrievalEvaluationCase,
     evaluate_rankings,
@@ -12,6 +14,45 @@ from app.recommendation.retrieval_evaluation import (
     recall_at_k,
     reciprocal_rank,
 )
+from scripts.evaluate_retrieval import build_rankings
+
+
+class RetrievalExperimentConfigurationTest(unittest.TestCase):
+
+    @patch("scripts.evaluate_retrieval.select_with_mmr")
+    @patch("scripts.evaluate_retrieval.retrieve_candidate_places")
+    def test_evaluation_still_requests_thirty_candidates_explicitly(
+        self,
+        retrieve_candidate_places,
+        select_with_mmr,
+    ):
+        candidate = PlaceCandidate(
+            place_slug="place-a",
+            place_name="Place A",
+            matched_section="OVERVIEW",
+            semantic_score=0.9,
+        )
+        retrieve_candidate_places.return_value = (
+            [candidate],
+            {"place-a": [1.0, 0.0]},
+        )
+        select_with_mmr.return_value = [candidate]
+
+        rankings, _ = build_rankings(
+            [RetrievalEvaluationCase("case-a", "query a", ["place-a"])],
+            [0.7],
+        )
+
+        retrieve_candidate_places.assert_called_once_with(
+            query="query a",
+            fetch_k=50,
+            candidate_k=30,
+        )
+        self.assertEqual(["place-a"], rankings["semantic"]["case-a"])
+        self.assertEqual(
+            ["place-a"],
+            rankings["semantic + MMR (lambda=0.7)"]["case-a"],
+        )
 
 
 class RetrievalMetricTest(unittest.TestCase):

@@ -1,22 +1,25 @@
 from app.knowledge.knowledge_repository import CandidateChunk
 
 
-def select_unique_candidate_chunks(
-    results: list[CandidateChunk],
-    limit: int,
+def deduplicate_best_chunk_by_place(
+    chunks: list[CandidateChunk],
 ) -> list[CandidateChunk]:
     best_by_place: dict[str, CandidateChunk] = {}
 
-    for result in results:
-        current = best_by_place.get(result.place_slug)
+    for chunk in chunks:
+        current = best_by_place.get(chunk.place_slug)
 
-        if current is None or result.similarity > current.similarity:
-            best_by_place[result.place_slug] = result
+        if current is None or chunk.similarity > current.similarity:
+            best_by_place[chunk.place_slug] = chunk
 
-    ranked = sorted(
-        best_by_place.values(),
-        key=lambda result: result.similarity,
+    return list(best_by_place.values())
+
+
+def rank_by_semantic_similarity(
+    chunks: list[CandidateChunk],
+) -> list[CandidateChunk]:
+    return sorted(
+        chunks,
+        key=lambda chunk: chunk.similarity,
         reverse=True,
     )
-
-    return ranked[:limit]

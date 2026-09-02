@@ -24,7 +24,7 @@ CORPUS_DIR = Path(__file__).resolve().parents[1] / "corpus"
 TOP_K_VALUES = (5, 10, 15)
 FETCH_K = 50
 CANDIDATE_K = 30
-DEFAULT_MMR_LAMBDAS = (0.7,)
+DEFAULT_MMR_LAMBDAS = (0.4, 0.5, 0.6, 0.7, 0.9)
 
 
 def build_rankings(
@@ -117,7 +117,7 @@ def parse_args() -> argparse.Namespace:
         type=_lambda_weight,
         nargs="+",
         default=list(DEFAULT_MMR_LAMBDAS),
-        help="MMR lambda values to compare (default: 0.7).",
+        help="MMR lambda values to compare (default: 0.4 0.5 0.6 0.7 0.9).",
     )
     parser.add_argument(
         "--output",
