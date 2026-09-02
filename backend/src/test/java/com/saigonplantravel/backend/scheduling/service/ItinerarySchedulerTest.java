@@ -18,6 +18,9 @@ import com.saigonplantravel.backend.scheduling.scoring.TravelScorer;
 import com.saigonplantravel.backend.scheduling.travel.TravelEstimator;
 import com.saigonplantravel.backend.trip.domain.EnvironmentPreference;
 import java.math.BigDecimal;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -168,6 +171,46 @@ class ItinerarySchedulerTest {
     }
 
     @Test
+    void skipsMidnightOverflowCandidateWithoutAdvancingSchedulerIntoFakeNewDay() {
+        PlanningContext context = context(new BigDecimal("500000"));
+        SchedulingPlace first = openPlace(
+                "first", "10.7750000", "106.6950000", 470, "0", LocalTime.of(8, 0), LocalTime.of(18, 0));
+        SchedulingPlace overflow = openPlace(
+                "overflow", "10.9000000", "106.9000000", 360, "0", LocalTime.of(8, 0), LocalTime.of(23, 59));
+        SchedulingPlace later = openPlace(
+                "later", "10.7800000", "106.7000000", 60, "0", LocalTime.of(8, 0), LocalTime.of(18, 0));
+
+        when(travelEstimator.estimate(ORIGIN_LATITUDE, ORIGIN_LONGITUDE, first.latitude(), first.longitude()))
+                .thenReturn(new TravelEstimate(1.0, 10));
+        when(travelEstimator.estimate(ORIGIN_LATITUDE, ORIGIN_LONGITUDE, overflow.latitude(), overflow.longitude()))
+                .thenReturn(new TravelEstimate(50.0, 700));
+        when(travelEstimator.estimate(ORIGIN_LATITUDE, ORIGIN_LONGITUDE, later.latitude(), later.longitude()))
+                .thenReturn(new TravelEstimate(1.0, 10));
+        when(travelEstimator.estimate(first.latitude(), first.longitude(), overflow.latitude(), overflow.longitude()))
+                .thenReturn(new TravelEstimate(45.0, 164));
+        when(travelEstimator.estimate(first.latitude(), first.longitude(), later.latitude(), later.longitude()))
+                .thenReturn(new TravelEstimate(1.0, 10));
+        when(travelEstimator.estimate(later.latitude(), later.longitude(), overflow.latitude(), overflow.longitude()))
+                .thenReturn(new TravelEstimate(44.0, 164));
+
+        ItineraryPlan result = scheduler.schedule(
+                context, List.of(candidate(first, 1.0), candidate(overflow, 0.9), candidate(later, 0.0)));
+
+        assertThat(result.stops()).extracting(stop -> stop.place().slug()).containsExactly("first", "later");
+        assertThat(result.stops()).allSatisfy(stop -> {
+            assertThat(stop.visitStartDateTime().toLocalDate()).isEqualTo(context.tripDate());
+            assertThat(stop.visitEndDateTime()).isBeforeOrEqualTo(context.endDateTime());
+            assertThat(stop.withinOpeningWindow()).isTrue();
+        });
+        assertThat(result.stops().get(1).visitStartDateTime())
+                .isAfterOrEqualTo(result.stops().get(0).visitEndDateTime());
+        assertThat(Duration.between(context.startDateTime(), result.stops().getLast().visitEndDateTime()))
+                .isLessThanOrEqualTo(Duration.ofHours(10));
+        assertThat(result.totalVisitMinutes()).isEqualTo(530);
+        assertThat(result.totalTravelMinutes()).isEqualTo(20);
+    }
+
+    @Test
     void prefersBetterCurrentTravelTradeoffOverHigherSemanticScore() {
         PlanningContext context = context(new BigDecimal("500000"));
         SchedulingPlace farPlace = openPlace(
@@ -192,6 +235,7 @@ class ItinerarySchedulerTest {
 
     private PlanningContext context(BigDecimal budget) {
         return new PlanningContext(
+                LocalDate.of(2026, 9, 2),
                 LocalTime.of(8, 0),
                 LocalTime.of(18, 0),
                 budget,

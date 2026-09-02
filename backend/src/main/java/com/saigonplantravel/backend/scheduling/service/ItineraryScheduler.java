@@ -9,7 +9,7 @@ import com.saigonplantravel.backend.scheduling.model.SchedulingPlace;
 import com.saigonplantravel.backend.scheduling.ranking.CandidateRanker;
 import com.saigonplantravel.backend.scheduling.scoring.CandidateScorer;
 import java.math.BigDecimal;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Component;
@@ -37,7 +37,7 @@ public class ItineraryScheduler {
 
         List<ScheduledStop> stops = new ArrayList<>();
 
-        LocalTime currentTime = context.startTime();
+        LocalDateTime currentDateTime = context.startDateTime();
 
         BigDecimal currentLatitude = context.startLatitude();
 
@@ -56,7 +56,7 @@ public class ItineraryScheduler {
             for (SchedulingCandidate candidate : remainingCandidates) {
 
                 CandidateEvaluation evaluation = evaluateCandidate(
-                        candidate, context, currentTime, currentLatitude, currentLongitude, remainingBudget);
+                        candidate, context, currentDateTime, currentLatitude, currentLongitude, remainingBudget);
 
                 if (evaluation != null) {
                     feasibleCandidates.add(evaluation);
@@ -89,7 +89,7 @@ public class ItineraryScheduler {
 
             stops.add(selectedStop);
 
-            currentTime = selectedStop.visitEndTime();
+            currentDateTime = selectedStop.visitEndDateTime();
 
             currentLatitude = selected.candidate().place().latitude();
 
@@ -112,7 +112,7 @@ public class ItineraryScheduler {
     private CandidateEvaluation evaluateCandidate(
             SchedulingCandidate candidate,
             PlanningContext context,
-            LocalTime currentTime,
+            LocalDateTime currentDateTime,
             BigDecimal currentLatitude,
             BigDecimal currentLongitude,
             BigDecimal remainingBudget) {
@@ -131,7 +131,7 @@ public class ItineraryScheduler {
         }
 
         ScheduledStop scheduledStop =
-                stopScheduleCalculator.calculate(context, currentTime, currentLatitude, currentLongitude, place);
+                stopScheduleCalculator.calculate(context, currentDateTime, currentLatitude, currentLongitude, place);
 
         if (!scheduledStop.temporallyFeasible()) {
 

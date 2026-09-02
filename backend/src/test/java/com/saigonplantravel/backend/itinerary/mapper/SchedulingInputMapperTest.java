@@ -31,6 +31,7 @@ class SchedulingInputMapperTest {
 
         PlanningContext result = mapper.toPlanningContext(trip);
 
+        assertThat(result.tripDate()).isEqualTo(trip.getTripDate());
         assertThat(result.startTime()).isEqualTo(trip.getStartTime());
         assertThat(result.endTime()).isEqualTo(trip.getEndTime());
         assertThat(result.budget()).isEqualByComparingTo(trip.getBudget());

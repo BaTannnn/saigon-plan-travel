@@ -12,6 +12,8 @@ import com.saigonplantravel.backend.scheduling.model.TravelEstimate;
 import com.saigonplantravel.backend.scheduling.travel.TravelEstimator;
 import com.saigonplantravel.backend.trip.domain.EnvironmentPreference;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,7 +47,7 @@ class StopScheduleCalculatorTest {
                 .thenReturn(new TravelEstimate(2.5, 10));
 
         ScheduledStop result =
-                calculator.calculate(context(LocalTime.of(18, 0)), LocalTime.of(8, 0), FROM_LATITUDE, FROM_LONGITUDE, place);
+                calculator.calculate(context(LocalTime.of(18, 0)), currentAt(8, 0), FROM_LATITUDE, FROM_LONGITUDE, place);
 
         assertThat(result.arrivalTime()).isEqualTo(LocalTime.of(8, 10));
         assertThat(result.visitStartTime()).isEqualTo(LocalTime.of(8, 10));
@@ -63,7 +65,7 @@ class StopScheduleCalculatorTest {
         stubTravel(10);
 
         ScheduledStop result =
-                calculator.calculate(context(LocalTime.of(18, 0)), LocalTime.of(8, 0), FROM_LATITUDE, FROM_LONGITUDE, place);
+                calculator.calculate(context(LocalTime.of(18, 0)), currentAt(8, 0), FROM_LATITUDE, FROM_LONGITUDE, place);
 
         assertThat(result.arrivalTime()).isEqualTo(LocalTime.of(8, 10));
         assertThat(result.visitStartTime()).isEqualTo(LocalTime.of(9, 0));
@@ -75,13 +77,13 @@ class StopScheduleCalculatorTest {
         stubTravel(10);
         ScheduledStop unknown = calculator.calculate(
                 context(LocalTime.of(18, 0)),
-                LocalTime.of(8, 0),
+                currentAt(8, 0),
                 FROM_LATITUDE,
                 FROM_LONGITUDE,
                 place(60, OpeningWindow.unknown()));
         ScheduledStop closed = calculator.calculate(
                 context(LocalTime.of(18, 0)),
-                LocalTime.of(8, 0),
+                currentAt(8, 0),
                 FROM_LATITUDE,
                 FROM_LONGITUDE,
                 place(60, OpeningWindow.closed()));
@@ -99,7 +101,7 @@ class StopScheduleCalculatorTest {
         stubTravel(10);
 
         ScheduledStop result =
-                calculator.calculate(context(LocalTime.of(9, 10)), LocalTime.of(8, 0), FROM_LATITUDE, FROM_LONGITUDE, place);
+                calculator.calculate(context(LocalTime.of(9, 10)), currentAt(8, 0), FROM_LATITUDE, FROM_LONGITUDE, place);
 
         assertThat(result.visitEndTime()).isEqualTo(LocalTime.of(9, 10));
         assertThat(result.withinOpeningWindow()).isTrue();
@@ -114,12 +116,84 @@ class StopScheduleCalculatorTest {
         stubTravel(10);
 
         ScheduledStop result =
-                calculator.calculate(context(LocalTime.of(9, 30)), LocalTime.of(8, 0), FROM_LATITUDE, FROM_LONGITUDE, place);
+                calculator.calculate(context(LocalTime.of(9, 30)), currentAt(8, 0), FROM_LATITUDE, FROM_LONGITUDE, place);
 
         assertThat(result.visitEndTime()).isEqualTo(LocalTime.of(10, 10));
         assertThat(result.withinOpeningWindow()).isFalse();
         assertThat(result.withinTripWindow()).isFalse();
         assertThat(result.temporallyFeasible()).isFalse();
+    }
+
+    @Test
+    void rejectsTravelAndVisitThatCrossMidnight() {
+        SchedulingPlace place = place(
+                360, OpeningWindow.open(LocalTime.of(8, 0), LocalTime.of(23, 59)));
+        stubTravel(164);
+
+        ScheduledStop result = calculator.calculate(
+                context(LocalTime.of(18, 0)), currentAt(16, 48), FROM_LATITUDE, FROM_LONGITUDE, place);
+
+        assertThat(result.arrivalDateTime()).isEqualTo(LocalDateTime.of(2026, 9, 2, 19, 32));
+        assertThat(result.visitEndDateTime()).isEqualTo(LocalDateTime.of(2026, 9, 3, 1, 32));
+        assertThat(result.withinTripWindow()).isFalse();
+        assertThat(result.temporallyFeasible()).isFalse();
+    }
+
+    @Test
+    void rejectsVisitThatCrossesMidnight() {
+        SchedulingPlace place = place(
+                600, OpeningWindow.open(LocalTime.of(8, 0), LocalTime.of(23, 59)));
+        stubTravel(0);
+
+        ScheduledStop result = calculator.calculate(
+                context(LocalTime.of(18, 0)), currentAt(17, 0), FROM_LATITUDE, FROM_LONGITUDE, place);
+
+        assertThat(result.visitEndDateTime()).isEqualTo(LocalDateTime.of(2026, 9, 3, 3, 0));
+        assertThat(result.withinTripWindow()).isFalse();
+        assertThat(result.temporallyFeasible()).isFalse();
+    }
+
+    @Test
+    void rejectsArrivalAlreadyAfterTripEnd() {
+        SchedulingPlace place = place(
+                30, OpeningWindow.open(LocalTime.of(8, 0), LocalTime.of(23, 59)));
+        stubTravel(60);
+
+        ScheduledStop result = calculator.calculate(
+                context(LocalTime.of(18, 0)), currentAt(17, 30), FROM_LATITUDE, FROM_LONGITUDE, place);
+
+        assertThat(result.arrivalDateTime()).isEqualTo(LocalDateTime.of(2026, 9, 2, 18, 30));
+        assertThat(result.withinTripWindow()).isFalse();
+        assertThat(result.temporallyFeasible()).isFalse();
+    }
+
+    @Test
+    void rejectsVisitEndingOneMinuteAfterClosing() {
+        SchedulingPlace place = place(
+                61, OpeningWindow.open(LocalTime.of(8, 0), LocalTime.of(17, 0)));
+        stubTravel(0);
+
+        ScheduledStop result = calculator.calculate(
+                context(LocalTime.of(18, 0)), currentAt(16, 0), FROM_LATITUDE, FROM_LONGITUDE, place);
+
+        assertThat(result.visitEndDateTime()).isEqualTo(LocalDateTime.of(2026, 9, 2, 17, 1));
+        assertThat(result.withinOpeningWindow()).isFalse();
+        assertThat(result.withinTripWindow()).isTrue();
+        assertThat(result.temporallyFeasible()).isFalse();
+    }
+
+    @Test
+    void acceptsVisitEndingExactlyAtClosing() {
+        SchedulingPlace place = place(
+                60, OpeningWindow.open(LocalTime.of(8, 0), LocalTime.of(17, 0)));
+        stubTravel(0);
+
+        ScheduledStop result = calculator.calculate(
+                context(LocalTime.of(18, 0)), currentAt(16, 0), FROM_LATITUDE, FROM_LONGITUDE, place);
+
+        assertThat(result.visitEndDateTime()).isEqualTo(LocalDateTime.of(2026, 9, 2, 17, 0));
+        assertThat(result.withinOpeningWindow()).isTrue();
+        assertThat(result.temporallyFeasible()).isTrue();
     }
 
     private void stubTravel(int minutes) {
@@ -129,12 +203,17 @@ class StopScheduleCalculatorTest {
 
     private PlanningContext context(LocalTime endTime) {
         return new PlanningContext(
+                LocalDate.of(2026, 9, 2),
                 LocalTime.of(8, 0),
                 endTime,
                 new BigDecimal("500000"),
                 FROM_LATITUDE,
                 FROM_LONGITUDE,
                 EnvironmentPreference.MIXED);
+    }
+
+    private LocalDateTime currentAt(int hour, int minute) {
+        return LocalDateTime.of(2026, 9, 2, hour, minute);
     }
 
     private SchedulingPlace place(int visitMinutes, OpeningWindow openingWindow) {

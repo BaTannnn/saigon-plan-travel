@@ -9,6 +9,8 @@ import com.saigonplantravel.backend.scheduling.model.OpeningWindow;
 import com.saigonplantravel.backend.scheduling.model.ScheduledStop;
 import com.saigonplantravel.backend.scheduling.model.SchedulingPlace;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
@@ -55,7 +57,16 @@ class ItineraryGenerationPreviewMapperTest {
     }
 
     private ScheduledStop stop(SchedulingPlace place, LocalTime start) {
+        LocalDateTime startDateTime = LocalDateTime.of(LocalDate.of(2026, 9, 2), start);
         return new ScheduledStop(
-                place, start, start, start.plusHours(1), 0, 0.0, BigDecimal.ZERO, true, true);
+                place,
+                startDateTime,
+                startDateTime,
+                startDateTime.plusHours(1),
+                0,
+                0.0,
+                BigDecimal.ZERO,
+                true,
+                true);
     }
 }

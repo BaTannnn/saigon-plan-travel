@@ -17,6 +17,7 @@ public class SchedulingInputMapper {
 
     public PlanningContext toPlanningContext(Trip trip) {
         return new PlanningContext(
+                trip.getTripDate(),
                 trip.getStartTime(),
                 trip.getEndTime(),
                 trip.getBudget(),

@@ -9,6 +9,8 @@ import com.saigonplantravel.backend.scheduling.model.ScheduledStop;
 import com.saigonplantravel.backend.scheduling.model.SchedulingPlace;
 import com.saigonplantravel.backend.trip.domain.EnvironmentPreference;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -139,6 +141,7 @@ class ItineraryIssueEvaluatorTest {
 
     private PlanningContext context(BigDecimal budget) {
         return new PlanningContext(
+                LocalDate.of(2026, 9, 2),
                 LocalTime.of(8, 0),
                 TRIP_END,
                 budget,
@@ -177,9 +180,9 @@ class ItineraryIssueEvaluatorTest {
 
         return new ScheduledStop(
                 place,
-                arrivalTime,
-                visitStartTime,
-                visitEndTime,
+                LocalDateTime.of(LocalDate.of(2026, 9, 2), arrivalTime),
+                LocalDateTime.of(LocalDate.of(2026, 9, 2), visitStartTime),
+                LocalDateTime.of(LocalDate.of(2026, 9, 2), visitEndTime),
                 10,
                 1.0,
                 place.estimatedCost(),

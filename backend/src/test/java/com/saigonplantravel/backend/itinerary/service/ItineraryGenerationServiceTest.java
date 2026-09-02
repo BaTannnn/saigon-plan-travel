@@ -25,6 +25,8 @@ import com.saigonplantravel.backend.trip.entity.Trip;
 import com.saigonplantravel.backend.trip.exception.TripNotFoundException;
 import com.saigonplantravel.backend.trip.service.TripQueryService;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
@@ -67,6 +69,7 @@ class ItineraryGenerationServiceTest {
         recommendationCandidate = new RecommendationCandidate(mock(Place.class), 0.95, "architecture");
         schedulingCandidate = new SchedulingCandidate(place("candidate", "Candidate"), 0.95, "architecture");
         planningContext = new PlanningContext(
+                LocalDate.of(2026, 9, 2),
                 LocalTime.of(8, 0),
                 LocalTime.of(18, 0),
                 new BigDecimal("500000"),
@@ -196,9 +199,9 @@ class ItineraryGenerationServiceTest {
         List<ScheduledStop> stops = Arrays.stream(places)
                 .map(place -> new ScheduledStop(
                         place,
-                        LocalTime.of(8, 0),
-                        LocalTime.of(8, 0),
-                        LocalTime.of(9, 0),
+                        LocalDateTime.of(2026, 9, 2, 8, 0),
+                        LocalDateTime.of(2026, 9, 2, 8, 0),
+                        LocalDateTime.of(2026, 9, 2, 9, 0),
                         0,
                         0.0,
                         BigDecimal.ZERO,

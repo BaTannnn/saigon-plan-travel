@@ -12,7 +12,7 @@ import com.saigonplantravel.backend.scheduling.model.SchedulingPlace;
 import com.saigonplantravel.backend.scheduling.service.StopScheduleCalculator;
 import com.saigonplantravel.backend.trip.entity.Trip;
 import java.math.BigDecimal;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Service;
@@ -49,7 +49,7 @@ public class ItineraryRecalculationService {
 
         List<ScheduledStop> stops = new ArrayList<>();
 
-        LocalTime currentTime = context.startTime();
+        LocalDateTime currentDateTime = context.startDateTime();
 
         BigDecimal currentLatitude = context.startLatitude();
 
@@ -64,11 +64,11 @@ public class ItineraryRecalculationService {
         for (SchedulingPlace place : orderedPlaces) {
 
             ScheduledStop stop =
-                    stopScheduleCalculator.calculate(context, currentTime, currentLatitude, currentLongitude, place);
+                    stopScheduleCalculator.calculate(context, currentDateTime, currentLatitude, currentLongitude, place);
 
             stops.add(stop);
 
-            currentTime = stop.visitEndTime();
+            currentDateTime = stop.visitEndDateTime();
 
             currentLatitude = place.latitude();
 

@@ -7,7 +7,7 @@ import com.saigonplantravel.backend.scheduling.model.SchedulingPlace;
 import com.saigonplantravel.backend.scheduling.model.TravelEstimate;
 import com.saigonplantravel.backend.scheduling.travel.TravelEstimator;
 import java.math.BigDecimal;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -21,7 +21,7 @@ public class StopScheduleCalculator {
 
     public ScheduledStop calculate(
             PlanningContext context,
-            LocalTime currentTime,
+            LocalDateTime currentDateTime,
             BigDecimal currentLatitude,
             BigDecimal currentLongitude,
             SchedulingPlace place) {
@@ -29,18 +29,20 @@ public class StopScheduleCalculator {
         TravelEstimate travel = travelEstimator.estimate(
                 currentLatitude, currentLongitude, place.latitude(), place.longitude());
 
-        LocalTime arrivalTime = currentTime.plusMinutes(travel.estimatedMinutes());
-        LocalTime visitStartTime = calculateVisitStartTime(arrivalTime, place.openingWindow());
-        LocalTime visitEndTime = visitStartTime.plusMinutes(place.estimatedVisitMinutes());
+        LocalDateTime arrivalDateTime = currentDateTime.plusMinutes(travel.estimatedMinutes());
+        LocalDateTime visitStartDateTime = calculateVisitStartDateTime(context, arrivalDateTime, place.openingWindow());
+        LocalDateTime visitEndDateTime = visitStartDateTime.plusMinutes(place.estimatedVisitMinutes());
 
-        boolean withinOpeningWindow = isWithinOpeningWindow(place.openingWindow(), visitEndTime);
-        boolean withinTripWindow = !visitEndTime.isAfter(context.endTime());
+        boolean withinOpeningWindow =
+                isWithinOpeningWindow(context, place.openingWindow(), visitStartDateTime, visitEndDateTime);
+        boolean withinTripWindow = !arrivalDateTime.isAfter(context.endDateTime())
+                && !visitEndDateTime.isAfter(context.endDateTime());
 
         return new ScheduledStop(
                 place,
-                arrivalTime,
-                visitStartTime,
-                visitEndTime,
+                arrivalDateTime,
+                visitStartDateTime,
+                visitEndDateTime,
                 travel.estimatedMinutes(),
                 travel.estimatedDistanceKm(),
                 place.estimatedCost(),
@@ -48,17 +50,30 @@ public class StopScheduleCalculator {
                 withinTripWindow);
     }
 
-    private LocalTime calculateVisitStartTime(LocalTime arrivalTime, OpeningWindow openingWindow) {
+    private LocalDateTime calculateVisitStartDateTime(
+            PlanningContext context, LocalDateTime arrivalDateTime, OpeningWindow openingWindow) {
         if (!openingWindow.isOpen() || openingWindow.openTime() == null) {
-            return arrivalTime;
+            return arrivalDateTime;
         }
 
-        return arrivalTime.isAfter(openingWindow.openTime()) ? arrivalTime : openingWindow.openTime();
+        LocalDateTime openDateTime = LocalDateTime.of(context.tripDate(), openingWindow.openTime());
+        return arrivalDateTime.isAfter(openDateTime) ? arrivalDateTime : openDateTime;
     }
 
-    private boolean isWithinOpeningWindow(OpeningWindow openingWindow, LocalTime visitEndTime) {
-        return openingWindow.isOpen()
-                && openingWindow.closeTime() != null
-                && !visitEndTime.isAfter(openingWindow.closeTime());
+    private boolean isWithinOpeningWindow(
+            PlanningContext context,
+            OpeningWindow openingWindow,
+            LocalDateTime visitStartDateTime,
+            LocalDateTime visitEndDateTime) {
+        if (!openingWindow.isOpen()
+                || openingWindow.openTime() == null
+                || openingWindow.closeTime() == null) {
+            return false;
+        }
+
+        LocalDateTime openDateTime = LocalDateTime.of(context.tripDate(), openingWindow.openTime());
+        LocalDateTime closeDateTime = LocalDateTime.of(context.tripDate(), openingWindow.closeTime());
+
+        return !visitStartDateTime.isBefore(openDateTime) && !visitEndDateTime.isAfter(closeDateTime);
     }
 }

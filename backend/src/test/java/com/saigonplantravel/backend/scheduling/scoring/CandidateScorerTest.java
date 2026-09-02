@@ -10,6 +10,7 @@ import com.saigonplantravel.backend.scheduling.model.SchedulingCandidate;
 import com.saigonplantravel.backend.scheduling.model.SchedulingPlace;
 import com.saigonplantravel.backend.trip.domain.EnvironmentPreference;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import org.junit.jupiter.api.Test;
 
@@ -61,6 +62,7 @@ class CandidateScorerTest {
 
     private PlanningContext context(EnvironmentPreference environmentPreference) {
         return new PlanningContext(
+                LocalDate.of(2026, 9, 2),
                 LocalTime.of(8, 0),
                 LocalTime.of(18, 0),
                 new BigDecimal("500000"),
