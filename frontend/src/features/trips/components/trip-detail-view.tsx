@@ -77,6 +77,7 @@ export function TripDetailView({ publicId }: TripDetailViewProps) {
       replaceTrip(publicId, request, token),
     );
     setTrip(updated);
+    await itineraryWorkspace.refreshIfLoaded();
     setEditing(false);
   }
 

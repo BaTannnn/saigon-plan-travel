@@ -73,6 +73,12 @@ export function useItineraryWorkspace({
     if (!loaded) void load();
   }, [load, loaded]);
 
+  const refreshIfLoaded = useCallback(async () => {
+    if (!loaded) return;
+
+    await load();
+  }, [load, loaded]);
+
   async function runMutation(
     request: (token: string) => Promise<ItineraryResponse>,
     onSuccess?: (updated: ItineraryResponse) => void,
@@ -161,6 +167,7 @@ export function useItineraryWorkspace({
     setSelectedItemPublicId,
     load,
     loadIfNeeded,
+    refreshIfLoaded,
     addPlace,
     deleteItem,
     replacePlace,
