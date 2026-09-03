@@ -23,8 +23,7 @@ def main() -> None:
             f"{index}. "
             f"{result.place_name} | "
             f"{result.section} | "
-            f"{result.similarity:.4f} | "
-            f"embedding={len(result.embedding)}"
+            f"{result.similarity:.4f}"
         )
 
 

@@ -8,7 +8,6 @@ from app.recommendation.models import PlaceCandidate
 from app.recommendation.retrieval_evaluation import (
     RetrievalEvaluationCase,
     evaluate_rankings,
-    intra_list_diversity_at_k,
     load_evaluation_cases,
     mean_reciprocal_rank,
     recall_at_k,
@@ -17,14 +16,12 @@ from app.recommendation.retrieval_evaluation import (
 from scripts.evaluate_retrieval import build_rankings
 
 
-class RetrievalExperimentConfigurationTest(unittest.TestCase):
+class RetrievalEvaluationConfigurationTest(unittest.TestCase):
 
-    @patch("scripts.evaluate_retrieval.select_with_mmr")
     @patch("scripts.evaluate_retrieval.retrieve_candidate_places")
-    def test_evaluation_still_requests_thirty_candidates_explicitly(
+    def test_evaluation_requests_largest_top_k_explicitly(
         self,
         retrieve_candidate_places,
-        select_with_mmr,
     ):
         candidate = PlaceCandidate(
             place_slug="place-a",
@@ -32,27 +29,18 @@ class RetrievalExperimentConfigurationTest(unittest.TestCase):
             matched_section="OVERVIEW",
             semantic_score=0.9,
         )
-        retrieve_candidate_places.return_value = (
-            [candidate],
-            {"place-a": [1.0, 0.0]},
-        )
-        select_with_mmr.return_value = [candidate]
+        retrieve_candidate_places.return_value = [candidate]
 
-        rankings, _ = build_rankings(
-            [RetrievalEvaluationCase("case-a", "query a", ["place-a"])],
-            [0.7],
+        rankings = build_rankings(
+            [RetrievalEvaluationCase("case-a", "query a", ["place-a"])]
         )
 
         retrieve_candidate_places.assert_called_once_with(
             query="query a",
+            top_k=15,
             fetch_k=50,
-            candidate_k=30,
         )
-        self.assertEqual(["place-a"], rankings["semantic"]["case-a"])
-        self.assertEqual(
-            ["place-a"],
-            rankings["semantic + MMR (lambda=0.7)"]["case-a"],
-        )
+        self.assertEqual(["place-a"], rankings["case-a"])
 
 
 class RetrievalMetricTest(unittest.TestCase):
@@ -99,48 +87,6 @@ class RetrievalMetricTest(unittest.TestCase):
             mean_reciprocal_rank(rankings),
         )
 
-    def test_ild_averages_pairwise_dissimilarity(self):
-        retrieved = ["a", "b", "c"]
-        embeddings = {
-            "a": [1.0, 0.0],
-            "b": [0.0, 1.0],
-            "c": [1.0, 0.0],
-        }
-
-        self.assertAlmostEqual(
-            2.0 / 3.0,
-            intra_list_diversity_at_k(
-                retrieved,
-                embeddings,
-                3,
-            ),
-        )
-
-    def test_ild_is_zero_for_fewer_than_two_items(self):
-        self.assertEqual(
-            0.0,
-            intra_list_diversity_at_k([], {}, 5),
-        )
-        self.assertEqual(
-            0.0,
-            intra_list_diversity_at_k(
-                ["a"],
-                {"a": [1.0, 0.0]},
-                5,
-            ),
-        )
-
-    def test_ild_fails_when_embedding_is_missing(self):
-        with self.assertRaisesRegex(
-            ValueError,
-            "Missing embedding for place: b",
-        ):
-            intra_list_diversity_at_k(
-                ["a", "b"],
-                {"a": [1.0, 0.0]},
-                5,
-            )
-
     def test_evaluation_summary_averages_each_query(self):
         cases = [
             RetrievalEvaluationCase("case-a", "query a", ["a"]),
@@ -154,25 +100,11 @@ class RetrievalMetricTest(unittest.TestCase):
                 "case-a": ["a", "x"],
                 "case-b": ["x", "b"],
             },
-            embeddings_by_case_id={
-                "case-a": {
-                    "a": [1.0, 0.0],
-                    "x": [0.0, 1.0],
-                },
-                "case-b": {
-                    "x": [1.0, 0.0],
-                    "b": [0.0, 1.0],
-                },
-            },
             top_k_values=(1, 2),
         )
 
         self.assertEqual({1: 0.5, 2: 1.0}, summary.recall_by_k)
         self.assertEqual(0.75, summary.mean_reciprocal_rank)
-        self.assertEqual(
-            {1: 0.0, 2: 1.0},
-            summary.intra_list_diversity_by_k,
-        )
 
 
 class RetrievalDatasetValidationTest(unittest.TestCase):

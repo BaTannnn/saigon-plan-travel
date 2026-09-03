@@ -17,7 +17,6 @@ def result(
         place_name=slug,
         section=section,
         similarity=similarity,
-        embedding=[1.0, 0.0],
     )
 
 

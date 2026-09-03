@@ -22,7 +22,6 @@ class CandidateChunk:
     place_name: str
     section: str
     similarity: float
-    embedding: list[float]
 
 
 @dataclass
@@ -288,8 +287,7 @@ def search_candidate_chunks(
             p.slug,
             p.name,
             c.section,
-            1 - (c.embedding <=> %s) AS similarity,
-            c.embedding
+            1 - (c.embedding <=> %s) AS similarity
         FROM place_knowledge_chunks c
         JOIN places p
             ON p.id = c.place_id
@@ -319,7 +317,6 @@ def search_candidate_chunks(
             place_name=row[1],
             section=row[2],
             similarity=float(row[3]),
-            embedding=row[4].to_list(),
         )
         for row in rows
     ]
