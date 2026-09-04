@@ -114,21 +114,16 @@ def generate_itinerary_reasons(
         place_slugs=unique_slugs,
         chunks_per_place=chunks_per_place,
     )
-    chunks = _bounded_requested_chunks(
-        chunks=retrieved_chunks,
-        requested_slugs=unique_slugs,
-        chunks_per_place=chunks_per_place,
-    )
-    slugs_with_context = {chunk.place_slug for chunk in chunks}
+    slugs_with_context = {chunk.place_slug for chunk in retrieved_chunks}
     llm_slugs = [
         slug for slug in unique_slugs if slug in slugs_with_context
     ]
 
-    if not chunks:
+    if not retrieved_chunks:
         return _insufficient_context_reasons(unique_slugs)
 
     reasons_by_slug: dict[str, str] = {}
-    context = build_itinerary_context(chunks)
+    context = build_itinerary_context(retrieved_chunks)
 
     structured_model = create_chat_model().with_structured_output(
         GeneratedItineraryReasons
@@ -182,30 +177,6 @@ def generate_itinerary_reasons(
         )
         for slug in unique_slugs
     ]
-
-
-def _bounded_requested_chunks(
-    *,
-    chunks: list[KnowledgeChunk],
-    requested_slugs: list[str],
-    chunks_per_place: int,
-) -> list[KnowledgeChunk]:
-    requested = set(requested_slugs)
-    counts_by_slug: dict[str, int] = {}
-    selected: list[KnowledgeChunk] = []
-
-    for chunk in chunks:
-        if chunk.place_slug not in requested:
-            continue
-
-        current_count = counts_by_slug.get(chunk.place_slug, 0)
-        if current_count >= chunks_per_place:
-            continue
-
-        selected.append(chunk)
-        counts_by_slug[chunk.place_slug] = current_count + 1
-
-    return selected
 
 
 def _insufficient_context_reasons(
