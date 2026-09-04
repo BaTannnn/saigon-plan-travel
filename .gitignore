@@ -23,6 +23,9 @@
 backend/target/
 e2e-tests/target/
 
+#E2E Tests
+e2e-tests/target/
+
 # Python
 __pycache__/
 *.py[cod]
