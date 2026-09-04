@@ -11,8 +11,13 @@ import org.testng.annotations.Test;
 public class LoginTest extends BaseTest {
     @DataProvider(name = "loginData")
     public Object[][] loginData(){
+        String email =
+                System.getenv("E2E_EMAIL");
+
+        String password =
+                System.getenv("E2E_PASSWORD");
         return new Object[][] {
-                {"nguyenbatan.2908@gmail.com", "nguyenbatan999"}
+                {email, password}
         };
     }
     @Test(groups = "smoke", dataProvider = "loginData")

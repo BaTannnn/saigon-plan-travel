@@ -1,0 +1,156 @@
+name: E2E Tests
+
+on:
+  push:
+    branches:
+      - test
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+
+    env:
+      POSTGRES_DB: saigon_plan_travel
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${{ secrets.CI_POSTGRES_PASSWORD }}
+      POSTGRES_HOST_PORT: 5432
+
+      JDBC_DB_URL: jdbc:postgresql://localhost:5432/saigon_plan_travel
+      JDBC_DB_USERNAME: postgres
+      JDBC_DB_PASSWORD: ${{ secrets.CI_POSTGRES_PASSWORD }}
+
+      JWT_SECRET: ${{ secrets.CI_JWT_SECRET }}
+
+      CORS_ALLOWED_ORIGIN: http://localhost:3000
+
+      NEXT_PUBLIC_BACKEND_API_BASE_URL: http://localhost:8080
+
+      E2E_EMAIL: ${{ secrets.E2E_EMAIL }}
+      E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      # ==============================
+      # DATABASE
+      # ==============================
+
+      - name: Start PostgreSQL
+        run: docker compose -f infra/compose.yaml up -d
+
+      - name: Wait for PostgreSQL
+        run: |
+          until [ "$(docker inspect \
+            -f '{{.State.Health.Status}}' \
+            saigon-plan-travel-postgres)" = "healthy" ]; do
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
+
+      # ==============================
+      # BACKEND
+      # ==============================
+
+      - name: Start backend
+        working-directory: backend
+        run: |
+          chmod +x mvnw
+          nohup ./mvnw spring-boot:run \
+            > backend.log 2>&1 &
+
+      - name: Wait for backend
+        run: |
+          for i in {1..60}; do
+            if curl -fsS http://localhost:8080/actuator/health; then
+              echo "Backend is ready"
+              exit 0
+            fi
+
+            echo "Waiting for backend..."
+            sleep 2
+          done
+
+          cat backend/backend.log
+          exit 1
+      - name: Create E2E test user
+        run: |
+          curl -fsS \
+            -X POST \
+            http://localhost:8080/api/v1/auth/register \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"email\": \"$E2E_EMAIL\",
+              \"password\": \"$E2E_PASSWORD\",
+              \"displayName\": \"E2E Test User\"
+            }"
+      # ==============================
+      # FRONTEND
+      # ==============================
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+
+      - name: Start frontend
+        working-directory: frontend
+        run: |
+          nohup npm run start \
+            > frontend.log 2>&1 &
+
+      - name: Wait for frontend
+        run: |
+          for i in {1..60}; do
+            if curl -fsS http://localhost:3000/login; then
+              echo "Frontend is ready"
+              exit 0
+            fi
+
+            echo "Waiting for frontend..."
+            sleep 2
+          done
+
+          cat frontend/frontend.log
+          exit 1
+
+      # ==============================
+      # E2E
+      # ==============================
+
+      - name: Run E2E tests
+        working-directory: e2e-tests
+        run: |
+          mvn clean test \
+            -Dbrowser=chrome \
+            -Dheadless=true \
+            -De2e.email="$E2E_EMAIL" \
+            -De2e.password="$E2E_PASSWORD"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-results
+          path: |
+            e2e-tests/target/surefire-reports/
+            e2e-tests/target/screenshots/
+            backend/backend.log
+            frontend/frontend.log
