@@ -167,8 +167,7 @@ public class ItineraryService {
 
         /*
          * Phase 1:
-         * Move current sequence numbers outside
-         * the active range to avoid violating
+         * Dời lịch trình hiện tại sang 1 đoạn khác để tránh trùng ràng buộc
          * UNIQUE(itinerary_id, sequence_no).
          */
         itinerary.shiftSequencesForReorder(now);
