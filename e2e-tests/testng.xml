@@ -4,10 +4,17 @@
     <listeners>
         <listener class-name="com.saigonplantravel.e2e.listeners.TestListener"/>
     </listeners>
+    <test name="Smoke Tests">
+        <groups>
+            <run>
+                <include name="smoke"/>
+            </run>
+        </groups>
+    </test>
+    
     <test name="Authentication">
         <classes>
             <class name="com.saigonplantravel.e2e.test.LoginTest"/>
         </classes>
     </test>
-
 </suite>

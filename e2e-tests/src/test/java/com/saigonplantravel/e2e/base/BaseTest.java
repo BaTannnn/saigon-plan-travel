@@ -1,6 +1,6 @@
 package com.saigonplantravel.e2e.base;
 
-import com.saigonplantravel.drivers.ChromeDriverFactory;
+import com.saigonplantravel.drivers.Browser;
 import com.saigonplantravel.drivers.DriverFactory;
 import org.openqa.selenium.WebDriver;
 import org.testng.annotations.AfterMethod;
@@ -8,13 +8,13 @@ import org.testng.annotations.BeforeMethod;
 
 public abstract class BaseTest {
     protected WebDriver driver;
-    private final DriverFactory driverFactory;
-    protected BaseTest(DriverFactory driverFactory) {
-        this.driverFactory = driverFactory;
-    }
     @BeforeMethod
     public void setUp() {
-        driver = driverFactory.initializeDriver();
+        String browser = System.getProperty("browser", "chrome");
+
+        boolean headless =
+                Boolean.parseBoolean(System.getProperty("headless", "false"));
+        driver = DriverFactory.getDriver(browser, headless);
     }
     @AfterMethod
     public void tearDown() {
