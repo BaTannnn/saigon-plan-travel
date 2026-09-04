@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from app.db.postgres import pool
 from app.knowledge.chunking import split_place_corpus
 from app.knowledge.corpus_schema import PlaceCorpus
 from app.knowledge.embedding_service import compute_document_fingerprint
@@ -47,4 +48,9 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    pool.open()
+
+    try:
+        main()
+    finally:
+        pool.close()

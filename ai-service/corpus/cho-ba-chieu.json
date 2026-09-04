@@ -1,0 +1,46 @@
+{
+  "placeSlug": "cho-ba-chieu",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Chợ Bà Chiểu là một chợ truyền thống lớn tại khu vực Gia Định - Bình Thạnh, nằm gần giao điểm Phan Đăng Lưu, Lê Quang Định và Bạch Đằng. Không gian chợ phù hợp với người muốn quan sát nhịp sống địa phương, mua sắm bình dân và thử món ăn đường phố thay vì chỉ tham quan các điểm du lịch biểu tượng ở trung tâm. Vị trí rất gần Lăng Ông Bà Chiểu giúp scheduler có thể tạo một cụm tham quan văn hóa - chợ địa phương với thời gian di chuyển thấp.",
+      "source": {
+        "label": "Vietnam Airlines - Chợ Bà Chiểu",
+        "uri": "https://www.vietnamairlines.com/go/vi/plan-book/travel/travel-guide/cho-ba-chieu",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Tài liệu Công báo TP.HCM ghi nhận Chợ Bà Chiểu là một trong các chợ truyền thống nổi tiếng của thành phố, gắn với khu vực dân cư Gia Định cũ. Vietnam Airlines giới thiệu chợ đã xuất hiện từ thế kỷ XIX và được xây dựng lại vào năm 1942, sau đó phát triển thành khu thương mại có nhiều nhóm ngành hàng. Với RAG, phần bối cảnh này giúp giải thích vì sao chợ phù hợp với người muốn tìm hiểu đời sống đô thị và thương mại truyền thống, chứ không chỉ đơn thuần là nơi mua sắm.",
+      "source": {
+        "label": "Công báo TP.HCM - hệ thống chợ truyền thống",
+        "uri": "https://www.congbao.hochiminhcity.gov.vn/cong-bao/van-ban/quyet-dinh/so/144a-2003-qd-ub/ngay/11-08-2003/tai-ve/35929",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Trải nghiệm tại Chợ Bà Chiểu tập trung vào hàng hóa đa dạng, khu đồ đã qua sử dụng, thực phẩm và ẩm thực địa phương. Theo hướng dẫn của Vietnam Airlines, chợ có nhịp hoạt động khác nhau giữa buổi sáng và buổi tối: ban ngày thiên về nhu yếu phẩm, trong khi chiều tối phù hợp hơn với ăn uống và dạo chợ. Đây là tín hiệu hữu ích cho context-aware scheduling, bởi cùng một địa điểm nhưng thời điểm ghé thăm có thể làm thay đổi đáng kể loại trải nghiệm mà người dùng nhận được.",
+      "source": {
+        "label": "Vietnam Airlines - Chợ Bà Chiểu",
+        "uri": "https://www.vietnamairlines.com/go/vi/plan-book/travel/travel-guide/cho-ba-chieu",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Scheduler nên dành khoảng một đến hai giờ cho Chợ Bà Chiểu tùy mục tiêu mua sắm hay ăn uống. Chi phí không nên cố định từ corpus vì phụ thuộc hoàn toàn vào nhu cầu mua hàng của từng người; database chỉ nên lưu khoảng ước tính phục vụ ràng buộc ngân sách. Chợ thường đông và có nhiều hoạt động thương mại, do đó hệ thống có thể giảm điểm phù hợp với người ưu tiên không gian yên tĩnh hoặc khả năng tiếp cận thoải mái. Với người thích ẩm thực và đời sống địa phương, đây lại là ứng viên tốt cho khung giờ chiều tối.",
+      "source": {
+        "label": "Vietnam Airlines - Chợ Bà Chiểu",
+        "uri": "https://www.vietnamairlines.com/go/vi/plan-book/travel/travel-guide/cho-ba-chieu",
+        "retrievedAt": "2026-08-29"
+      }
+    }
+  ]
+}

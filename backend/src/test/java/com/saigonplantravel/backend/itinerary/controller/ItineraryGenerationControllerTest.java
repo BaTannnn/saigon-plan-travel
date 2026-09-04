@@ -10,11 +10,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.saigonplantravel.backend.auth.domain.UserRole;
 import com.saigonplantravel.backend.auth.security.JwtAuthenticationService;
+import com.saigonplantravel.backend.auth.security.RestAuthenticationEntryPoint;
+import com.saigonplantravel.backend.auth.security.SecurityConfig;
 import com.saigonplantravel.backend.auth.security.UserPrincipal;
+import com.saigonplantravel.backend.auth.security.jwt.JwtService;
 import com.saigonplantravel.backend.common.exception.GlobalExceptionHandler;
-import com.saigonplantravel.backend.common.security.RestAuthenticationEntryPoint;
-import com.saigonplantravel.backend.common.security.SecurityConfig;
-import com.saigonplantravel.backend.common.security.jwt.JwtService;
 import com.saigonplantravel.backend.itinerary.dto.ApplyGeneratedItineraryRequest;
 import com.saigonplantravel.backend.itinerary.dto.GeneratedItineraryStopResponse;
 import com.saigonplantravel.backend.itinerary.dto.ItineraryDetailItemResponse;
@@ -24,6 +24,7 @@ import com.saigonplantravel.backend.itinerary.dto.ItineraryPlaceResponse;
 import com.saigonplantravel.backend.itinerary.dto.ItineraryScheduleResponse;
 import com.saigonplantravel.backend.itinerary.dto.ItinerarySummaryResponse;
 import com.saigonplantravel.backend.itinerary.exception.InvalidGeneratedItineraryException;
+import com.saigonplantravel.backend.itinerary.exception.ItineraryExceptionHandler;
 import com.saigonplantravel.backend.itinerary.mapper.ItineraryGenerationPreviewMapper;
 import com.saigonplantravel.backend.itinerary.model.GeneratedItineraryPreview;
 import com.saigonplantravel.backend.itinerary.service.ItineraryGenerationService;
@@ -46,7 +47,12 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import tools.jackson.databind.ObjectMapper;
 
 @WebMvcTest(ItineraryGenerationController.class)
-@Import({GlobalExceptionHandler.class, SecurityConfig.class, RestAuthenticationEntryPoint.class})
+@Import({
+    GlobalExceptionHandler.class,
+    ItineraryExceptionHandler.class,
+    SecurityConfig.class,
+    RestAuthenticationEntryPoint.class
+})
 class ItineraryGenerationControllerTest {
 
     @Autowired

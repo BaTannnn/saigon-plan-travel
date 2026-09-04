@@ -1,0 +1,46 @@
+{
+  "placeSlug": "mieu-noi-phu-chau",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Miếu Nổi Phù Châu là một công trình tín ngưỡng độc đáo nằm trên một cồn đất nhỏ giữa sông Vàm Thuật ở khu vực Gò Vấp. Điểm khác biệt lớn nhất là du khách phải đi đò một quãng ngắn để tiếp cận miếu, tạo trải nghiệm tách khỏi nhịp đường phố dù vẫn ở trong thành phố. Địa điểm phù hợp với người quan tâm tâm linh, kiến trúc Việt - Hoa, chụp ảnh và trải nghiệm sông nước. Scheduler nên tính thêm thời gian chờ và di chuyển bằng đò thay vì coi đây như một điểm có thể tiếp cận trực tiếp bằng đường bộ.",
+      "source": {
+        "label": "Du lịch TP.HCM - Miếu Nổi Phù Châu",
+        "uri": "https://visithcmc.net/page/ke-hoach-chuyen-di",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Cổng thông tin du lịch Gò Vấp giới thiệu Phù Châu Miếu là di tích kiến trúc nghệ thuật cấp Thành phố và là một điểm có bản sắc riêng của khu vực. Không gian thờ tự hình thành lâu đời, gắn với cộng đồng cư dân sống ven sông Vàm Thuật. Trong knowledge base, yếu tố quan trọng không chỉ là niên đại mà còn là vị trí giữa sông và sự kết hợp các lớp tín ngưỡng Việt - Hoa. Điều này giúp RAG phân biệt địa điểm với những ngôi chùa nội đô khác khi người dùng hỏi về trải nghiệm tâm linh độc đáo hoặc địa điểm ít phổ biến.",
+      "source": {
+        "label": "Du lịch TP.HCM - Du lịch Quận Gò Vấp",
+        "uri": "https://visithcmc.net/en/news/du-lich-quan-go-vap",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Miếu gây ấn tượng với hệ thống trang trí sành sứ nhiều màu, các hình tượng rồng và không gian thờ mang dấu ấn giao thoa văn hóa. Hành trình ngồi đò ra giữa sông cũng là một phần của trải nghiệm chứ không chỉ là phương tiện di chuyển. Vì vậy các tín hiệu recommendation phù hợp gồm tôn giáo, kiến trúc, văn hóa, ngắm cảnh và trải nghiệm sông nước. Với người chỉ muốn ghé một điểm rất nhanh hoặc không muốn đi đò, hệ thống nên hạ mức ưu tiên dù semantic similarity với nhu cầu tâm linh có thể cao.",
+      "source": {
+        "label": "Green SM - Phù Châu Miếu",
+        "uri": "https://www.greensm.com/vn-vi/news/phu-chau-mieu",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Khi lập lịch, nên dành thêm buffer cho việc gửi xe, chờ đò và di chuyển hai chiều. Trải nghiệm phụ thuộc một phần vào điều kiện sông nước và thời tiết, vì vậy đây là ví dụ tốt cho context-aware scheduling: mưa lớn hoặc điều kiện vận hành đò bất lợi có thể khiến re-planning chuyển sang một địa điểm tâm linh tiếp cận hoàn toàn bằng đường bộ. Người dùng nên giữ trật tự, tuân thủ hướng dẫn tại bến và trong khu thờ tự. Chi phí cơ bản thấp nhưng có thể phát sinh phí đò và gửi xe.",
+      "source": {
+        "label": "Green SM - Miếu Nổi Phù Châu",
+        "uri": "https://www.greensm.com/vn-vi/news/chua-cau-duyen-o-sai-gon",
+        "retrievedAt": "2026-08-29"
+      }
+    }
+  ]
+}

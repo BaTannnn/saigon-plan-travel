@@ -1,0 +1,46 @@
+{
+  "placeSlug": "chua-giac-lam",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Chùa Giác Lâm là một trong những ngôi chùa cổ tiêu biểu của Thành phố Hồ Chí Minh và là một địa điểm quan trọng trong lịch sử Phật giáo Nam Bộ. Chùa nằm trên đường Lạc Long Quân, nổi bật bởi kiến trúc truyền thống, hệ thống tượng thờ, bao lam, hoành phi và nhiều dấu tích văn hóa được gìn giữ qua thời gian. Địa điểm phù hợp với người quan tâm lịch sử, tôn giáo, kiến trúc cổ và di sản văn hóa hơn là các hoạt động giải trí hiện đại.",
+      "source": {
+        "label": "Cục Du lịch Quốc gia Việt Nam - Chùa Giác Lâm",
+        "uri": "https://vietnamtourism.vn/index.php/tourism/items/259",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Theo Cục Du lịch Quốc gia Việt Nam, tiền thân của chùa được cư sĩ Lý Thụy Long quyên tiền xây dựng năm 1744 trên gò Cẩm Sơn. Đến năm 1774, thiền sư Viên Quang thuộc phái Lâm Tế về trụ trì và đổi tên chùa thành Giác Lâm. Trong giai đoạn này, chùa phát triển thành một trung tâm đào tạo kinh điển và giới luật cho tăng sĩ ở Gia Định và Nam Bộ. Đến thế kỷ XIX, nơi đây còn gắn với hoạt động in ấn, sao chép kinh sách và khắc bản gỗ Phật giáo. Những chức năng này cho thấy chùa không chỉ là địa điểm tín ngưỡng mà còn từng giữ vai trò truyền bá tri thức Phật giáo trong khu vực. Chùa trải qua nhiều lần trùng tu nhưng vẫn bảo tồn được nhiều yếu tố đặc trưng của chùa cổ Nam Bộ. Năm 1988, Chùa Giác Lâm được xếp hạng di tích lịch sử - văn hóa cấp quốc gia, củng cố vị thế của công trình trong hệ thống di sản của Thành phố Hồ Chí Minh.",
+      "source": {
+        "label": "Cục Du lịch Quốc gia Việt Nam - Chùa Giác Lâm",
+        "uri": "https://vietnamtourism.vn/index.php/tourism/items/259",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Kiến trúc Chùa Giác Lâm mang đậm phong cách chùa cổ Nam Bộ với mặt bằng hình chữ tam, trong đó ba khối chính gồm chính điện, giảng đường và nhà trai được tổ chức liên tiếp. Chính điện sử dụng kết cấu gỗ truyền thống với hệ thống cột lớn, câu đối sơn son thếp vàng và nhiều cửa võng chạm khắc các đề tài như tứ linh, tứ quý và hoa điểu. Tư liệu du lịch quốc gia ghi nhận trong chính điện có số lượng lớn tượng Phật bằng gỗ và đồng, tạo nên giá trị đáng kể về điêu khắc và mỹ thuật tôn giáo. Ngoài kiến trúc, chùa còn lưu giữ hoành phi, câu đối, bao lam và nhiều hiện vật phản ánh quá trình phát triển của Phật giáo tại Nam Bộ. Việc từng là nơi đào tạo tăng sĩ, in và sao chép kinh sách khiến giá trị của Giác Lâm vượt ra ngoài một điểm thờ tự thông thường. Đối với recommendation, địa điểm có thể được ưu tiên cho người dùng chọn các sở thích “lịch sử”, “văn hóa”, “Phật giáo”, “kiến trúc truyền thống” hoặc “di sản”. Đây là loại corpus có nhiều thông tin lịch sử và kiến trúc nên section HIGHLIGHTS được giữ dài để kiểm thử việc RecursiveCharacterTextSplitter tách một semantic section thành nhiều chunk nhưng vẫn bảo toàn metadata section.",
+      "source": {
+        "label": "Cục Du lịch Quốc gia Việt Nam - Chùa Giác Lâm",
+        "uri": "https://vietnamtourism.vn/index.php/tourism/items/259/3",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Trải nghiệm tại Chùa Giác Lâm nên dành thời gian cho cả kiến trúc tổng thể và các chi tiết bên trong thay vì chỉ ghé chụp ảnh nhanh. Người quan tâm di sản có thể quan sát kết cấu gỗ, tượng thờ, hoành phi và những dấu ấn của chùa cổ Nam Bộ. Vì đây là cơ sở tôn giáo đang hoạt động, người dùng cần giữ thái độ phù hợp, hạn chế gây ồn và chú ý quy định tại các khu vực thờ tự. Vị trí của chùa không nằm trong cụm tham quan trung tâm Quận 1 nên scheduler cần tính thêm thời gian di chuyển khi ghép với các điểm trung tâm.",
+      "source": {
+        "label": "Cục Du lịch Quốc gia Việt Nam - Chùa Giác Lâm",
+        "uri": "https://vietnamtourism.vn/index.php/tourism/items/259",
+        "retrievedAt": "2026-08-29"
+      }
+    }
+  ]
+}

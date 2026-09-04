@@ -53,7 +53,9 @@ public class ItineraryDetailMapper {
                 item.getPlace().getName(),
                 item.getPlace().getLatitude(),
                 item.getPlace().getLongitude(),
-                item.getPlace().getPrimaryImageUrl());
+                item.getPlace().getPrimaryImageUrl(),
+                item.getPlace().getMinCost(),
+                item.getPlace().getMaxCost());
 
         ItineraryScheduleResponse schedule = new ItineraryScheduleResponse(
                 stop.arrivalTime(),

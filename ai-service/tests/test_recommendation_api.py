@@ -1,8 +1,6 @@
 import unittest
 from unittest.mock import patch
 
-from pydantic import ValidationError
-
 from app.api.recommendation import (
     PlaceRecommendationRequest,
     recommend_place_candidates,
@@ -11,42 +9,26 @@ from app.api.recommendation import (
 
 class PlaceRecommendationRequestTest(unittest.TestCase):
 
-    def test_accepts_empty_whitelist(self):
+    def test_request_contract_contains_only_query_and_top_k(self):
         request = PlaceRecommendationRequest(
             query="history and architecture",
-            eligible_place_slugs=[],
+            top_k=30,
         )
 
-        self.assertEqual([], request.eligible_place_slugs)
-
-    def test_normalizes_duplicate_and_padded_slugs(self):
-        request = PlaceRecommendationRequest(
-            query="history and architecture",
-            eligible_place_slugs=[
-                " dinh-doc-lap ",
-                "dinh-doc-lap",
-                "buu-dien-trung-tam-sai-gon",
-            ],
-        )
-
+        self.assertEqual("history and architecture", request.query)
+        self.assertEqual(30, request.top_k)
         self.assertEqual(
-            ["dinh-doc-lap", "buu-dien-trung-tam-sai-gon"],
-            request.eligible_place_slugs,
+            {"query", "top_k"},
+            set(PlaceRecommendationRequest.model_fields),
         )
 
-    def test_rejects_non_string_slug(self):
-        with self.assertRaises(ValidationError):
-            PlaceRecommendationRequest(
-                query="history and architecture",
-                eligible_place_slugs=[123],
-            )
+    def test_top_k_keeps_default(self):
+        request = PlaceRecommendationRequest(query="history and architecture")
 
-    def test_rejects_missing_whitelist(self):
-        with self.assertRaises(ValidationError):
-            PlaceRecommendationRequest(query="history and architecture")
+        self.assertEqual(15, request.top_k)
 
     @patch("app.api.recommendation.recommend_places")
-    def test_endpoint_passes_explicit_whitelist_to_retrieval(
+    def test_endpoint_passes_only_query_and_top_k_to_retrieval(
         self,
         recommend_places,
     ):
@@ -54,7 +36,6 @@ class PlaceRecommendationRequestTest(unittest.TestCase):
         request = PlaceRecommendationRequest(
             query="  history and architecture  ",
             top_k=10,
-            eligible_place_slugs=["dinh-doc-lap"],
         )
 
         response = recommend_place_candidates(request)
@@ -63,7 +44,6 @@ class PlaceRecommendationRequestTest(unittest.TestCase):
         recommend_places.assert_called_once_with(
             query="history and architecture",
             top_k=10,
-            eligible_place_slugs=["dinh-doc-lap"],
         )
 
 

@@ -1,0 +1,46 @@
+{
+  "placeSlug": "hoi-quan-nghia-an",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Hội quán Nghĩa An, còn được gọi là Miếu Quan Đế hoặc Chùa Ông, nằm tại 678 Nguyễn Trãi trong khu vực Chợ Lớn. Đây là một địa điểm tiêu biểu cho văn hóa cộng đồng người Triều Châu tại TP.HCM, kết hợp chức năng tín ngưỡng với giá trị kiến trúc và lịch sử. Điểm đến phù hợp với người quan tâm văn hóa Hoa, nghệ thuật trang trí, tôn giáo và hành trình khám phá Chợ Lớn; có thể ghép với Chùa Bà Thiên Hậu, Chợ Bình Tây hoặc Nhà thờ Cha Tam.",
+      "source": {
+        "label": "Hội quán Nghĩa An - Trang chính thức",
+        "uri": "https://hoiquannghiaan.com/",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Bộ thông tin du lịch cơ bản của TP.HCM ghi nhận Hội quán Nghĩa An là công trình kiến trúc nghệ thuật cổ thế kỷ XIX của cộng đồng người Triều Châu. Tư liệu xếp hạng dẫn chiếc chuông đồng niên đại 1840 và cho biết hội quán được xếp hạng Di tích kiến trúc nghệ thuật cấp Quốc gia năm 1993. Đến năm 2026, các hạng mục Tượng Nghĩa từ Triều Châu, Quan Âm các và hồ nước phong cảnh tiếp tục được trùng tu, cho thấy di tích vẫn được bảo tồn và sử dụng trong đời sống cộng đồng.",
+      "source": {
+        "label": "Bộ thông tin Du lịch TP.HCM - Hội quán Nghĩa An",
+        "uri": "https://images.hcmcpv.org.vn/Uploads/File/02072022793B169C/Bo%20thong%20tin%20Du%20lich%20Thanh%20pho%20Ho%20Chi%20Minh%20co%20ban.pdf",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Hội quán nổi bật với bố cục công trình Hoa truyền thống, mái ngói, hệ thống chạm khắc gỗ - đá và các mảng trang trí giàu màu sắc. Không gian thờ Quan Công tạo nên bản sắc riêng so với Chùa Bà Thiên Hậu ở gần đó, giúp semantic retrieval phân biệt nhu cầu “Chùa Ông”, “Quan Đế”, “người Triều Châu” và “kiến trúc Chợ Lớn”. Trung tâm Văn hóa Quận 5 cũng nhấn mạnh vai trò của hội quán như một điểm hẹn tín ngưỡng - văn hóa, nơi cộng đồng duy trì phong tục và các dịp lễ truyền thống.",
+      "source": {
+        "label": "Trung tâm Văn hóa Quận 5 - Hội quán Nghĩa An",
+        "uri": "https://ttvhq5.com.vn/hoi-quan-nghia-an/",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Trang thông tin của Trung tâm Văn hóa Quận 5 công bố giờ tham quan từ khoảng 6 giờ đến 17 giờ, nhưng scheduler vẫn nên xem đây là dữ liệu có thể thay đổi và dùng opening-hours trong development seed để kiểm thử constraint. Tham quan cơ bản không đòi hỏi thời lượng dài, khoảng 45-60 phút là đủ để quan sát kiến trúc và không gian thờ tự. Người dùng cần ăn mặc phù hợp, không cản trở hoạt động tín ngưỡng và lưu ý những ngày vía hoặc lễ lớn có thể đông hơn bình thường. Chi phí cơ bản thấp, phù hợp itinerary Chợ Lớn tiết kiệm.",
+      "source": {
+        "label": "Trung tâm Văn hóa Quận 5 - Chùa Ông",
+        "uri": "https://ttvhq5.com.vn/hoi-quan-nghia-an/",
+        "retrievedAt": "2026-08-29"
+      }
+    }
+  ]
+}

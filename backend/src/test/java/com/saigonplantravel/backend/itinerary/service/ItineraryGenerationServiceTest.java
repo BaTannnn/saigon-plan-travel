@@ -8,21 +8,29 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.saigonplantravel.backend.ai.client.AiItineraryExplanationClient;
+import com.saigonplantravel.backend.itinerary.mapper.SchedulingInputMapper;
 import com.saigonplantravel.backend.itinerary.model.GeneratedItineraryPreview;
 import com.saigonplantravel.backend.place.entity.Place;
 import com.saigonplantravel.backend.recommendation.model.RecommendationCandidate;
 import com.saigonplantravel.backend.recommendation.service.RecommendationPipelineService;
 import com.saigonplantravel.backend.scheduling.model.ItineraryPlan;
+import com.saigonplantravel.backend.scheduling.model.OpeningWindow;
+import com.saigonplantravel.backend.scheduling.model.PlanningContext;
 import com.saigonplantravel.backend.scheduling.model.ScheduledStop;
+import com.saigonplantravel.backend.scheduling.model.SchedulingCandidate;
+import com.saigonplantravel.backend.scheduling.model.SchedulingPlace;
 import com.saigonplantravel.backend.scheduling.service.ItineraryScheduler;
+import com.saigonplantravel.backend.trip.domain.EnvironmentPreference;
 import com.saigonplantravel.backend.trip.entity.Trip;
 import com.saigonplantravel.backend.trip.exception.TripNotFoundException;
-import com.saigonplantravel.backend.trip.repository.TripRepository;
+import com.saigonplantravel.backend.trip.service.TripQueryService;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,10 +42,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class ItineraryGenerationServiceTest {
 
     @Mock
-    private TripRepository tripRepository;
+    private TripQueryService tripQueryService;
 
     @Mock
     private RecommendationPipelineService recommendationPipelineService;
+
+    @Mock
+    private SchedulingInputMapper schedulingInputMapper;
 
     @Mock
     private ItineraryScheduler itineraryScheduler;
@@ -48,51 +59,59 @@ class ItineraryGenerationServiceTest {
     @Mock
     private Trip trip;
 
-    private RecommendationCandidate candidateA;
-
+    private RecommendationCandidate recommendationCandidate;
+    private SchedulingCandidate schedulingCandidate;
+    private PlanningContext planningContext;
     private ItineraryGenerationService service;
 
     @BeforeEach
     void setUp() {
-        candidateA = new RecommendationCandidate(mock(Place.class), 0.95, "architecture");
+        recommendationCandidate = new RecommendationCandidate(mock(Place.class), 0.95, "architecture");
+        schedulingCandidate = new SchedulingCandidate(place("candidate", "Candidate"), 0.95, "architecture");
+        planningContext = new PlanningContext(
+                LocalDate.of(2026, 9, 2),
+                LocalTime.of(8, 0),
+                LocalTime.of(18, 0),
+                new BigDecimal("500000"),
+                BigDecimal.ONE,
+                BigDecimal.ONE,
+                EnvironmentPreference.MIXED);
         service = new ItineraryGenerationService(
-                tripRepository, recommendationPipelineService, itineraryScheduler, itineraryExplanationClient);
+                tripQueryService,
+                recommendationPipelineService,
+                schedulingInputMapper,
+                itineraryScheduler,
+                itineraryExplanationClient);
     }
 
     @Test
     void generatesPlanFromRecommendedCandidates() {
-
         Long userId = 1L;
         UUID tripPublicId = UUID.randomUUID();
-
         String preference = "Tôi thích kiến trúc cổ và mỹ thuật";
-
-        List<RecommendationCandidate> candidates = List.of(candidateA);
-
+        List<RecommendationCandidate> recommendations = List.of(recommendationCandidate);
+        List<SchedulingCandidate> schedulingCandidates = List.of(schedulingCandidate);
         ItineraryPlan expectedPlan = new ItineraryPlan(List.of(), BigDecimal.ZERO, 0, 0, 0.0);
 
-        when(tripRepository.findByPublicIdAndUserId(tripPublicId, userId)).thenReturn(Optional.of(trip));
-
-        when(recommendationPipelineService.recommend(trip, preference)).thenReturn(candidates);
-
-        when(itineraryScheduler.schedule(trip, candidates)).thenReturn(expectedPlan);
+        when(tripQueryService.findOwnedTrip(userId, tripPublicId)).thenReturn(trip);
+        when(recommendationPipelineService.recommend(trip, preference)).thenReturn(recommendations);
+        when(schedulingInputMapper.toPlanningContext(trip)).thenReturn(planningContext);
+        when(schedulingInputMapper.toSchedulingCandidates(trip, recommendations)).thenReturn(schedulingCandidates);
+        when(itineraryScheduler.schedule(planningContext, schedulingCandidates)).thenReturn(expectedPlan);
 
         ItineraryPlan result = service.generatePlan(userId, tripPublicId, preference);
 
         assertThat(result).isSameAs(expectedPlan);
-
         verify(recommendationPipelineService).recommend(trip, preference);
-
-        verify(itineraryScheduler).schedule(trip, candidates);
+        verify(itineraryScheduler).schedule(planningContext, schedulingCandidates);
     }
 
     @Test
     void throwsWhenTripDoesNotBelongToUser() {
-
         Long userId = 1L;
         UUID tripPublicId = UUID.randomUUID();
 
-        when(tripRepository.findByPublicIdAndUserId(tripPublicId, userId)).thenReturn(Optional.empty());
+        when(tripQueryService.findOwnedTrip(userId, tripPublicId)).thenThrow(new TripNotFoundException());
 
         assertThatThrownBy(() -> service.generatePlan(userId, tripPublicId, "Tôi thích bảo tàng"))
                 .isInstanceOf(TripNotFoundException.class);
@@ -103,14 +122,9 @@ class ItineraryGenerationServiceTest {
         Long userId = 1L;
         UUID tripPublicId = UUID.randomUUID();
         String preference = "Tôi thích thiên nhiên và nghệ thuật";
-        Place firstPlace = place("place-a", "Place A");
-        Place secondPlace = place("place-b", "Place B");
-        List<RecommendationCandidate> candidates = List.of(candidateA);
-        ItineraryPlan plan = planWith(firstPlace, secondPlace);
+        ItineraryPlan plan = planWith(place("place-a", "Place A"), place("place-b", "Place B"));
 
-        when(tripRepository.findByPublicIdAndUserId(tripPublicId, userId)).thenReturn(Optional.of(trip));
-        when(recommendationPipelineService.recommend(trip, preference)).thenReturn(candidates);
-        when(itineraryScheduler.schedule(trip, candidates)).thenReturn(plan);
+        stubGeneratedPlan(userId, tripPublicId, preference, plan);
         when(itineraryExplanationClient.generateReasons(preference, List.of("place-a", "place-b")))
                 .thenReturn(Map.of("place-a", "Lý do A", "place-b", "Lý do B"));
 
@@ -130,9 +144,7 @@ class ItineraryGenerationServiceTest {
         String preference = "Tôi thích thiên nhiên";
         ItineraryPlan plan = planWith(place("place-a", "Place A"));
 
-        when(tripRepository.findByPublicIdAndUserId(tripPublicId, userId)).thenReturn(Optional.of(trip));
-        when(recommendationPipelineService.recommend(trip, preference)).thenReturn(List.of(candidateA));
-        when(itineraryScheduler.schedule(trip, List.of(candidateA))).thenReturn(plan);
+        stubGeneratedPlan(userId, tripPublicId, preference, plan);
         when(itineraryExplanationClient.generateReasons(preference, List.of("place-a")))
                 .thenThrow(new RuntimeException("AI unavailable"));
 
@@ -149,9 +161,7 @@ class ItineraryGenerationServiceTest {
         String preference = "Tôi thích thiên nhiên";
         ItineraryPlan plan = new ItineraryPlan(List.of(), BigDecimal.ZERO, 0, 0, 0.0);
 
-        when(tripRepository.findByPublicIdAndUserId(tripPublicId, userId)).thenReturn(Optional.of(trip));
-        when(recommendationPipelineService.recommend(trip, preference)).thenReturn(List.of(candidateA));
-        when(itineraryScheduler.schedule(trip, List.of(candidateA))).thenReturn(plan);
+        stubGeneratedPlan(userId, tripPublicId, preference, plan);
 
         GeneratedItineraryPreview result = service.generatePreview(userId, tripPublicId, preference);
 
@@ -160,15 +170,43 @@ class ItineraryGenerationServiceTest {
         verify(itineraryExplanationClient, never()).generateReasons(preference, List.of());
     }
 
-    private Place place(String slug, String name) {
-        return new Place(
-                name, slug, "Address", BigDecimal.ONE, BigDecimal.ONE, 60, BigDecimal.ZERO, BigDecimal.ZERO, false);
+    private void stubGeneratedPlan(
+            Long userId, UUID tripPublicId, String preference, ItineraryPlan plan) {
+        List<RecommendationCandidate> recommendations = List.of(recommendationCandidate);
+        List<SchedulingCandidate> schedulingCandidates = List.of(schedulingCandidate);
+
+        when(tripQueryService.findOwnedTrip(userId, tripPublicId)).thenReturn(trip);
+        when(recommendationPipelineService.recommend(trip, preference)).thenReturn(recommendations);
+        when(schedulingInputMapper.toPlanningContext(trip)).thenReturn(planningContext);
+        when(schedulingInputMapper.toSchedulingCandidates(trip, recommendations)).thenReturn(schedulingCandidates);
+        when(itineraryScheduler.schedule(planningContext, schedulingCandidates)).thenReturn(plan);
     }
 
-    private ItineraryPlan planWith(Place... places) {
-        List<ScheduledStop> stops = java.util.Arrays.stream(places)
+    private SchedulingPlace place(String slug, String name) {
+        return new SchedulingPlace(
+                slug,
+                name,
+                BigDecimal.ONE,
+                BigDecimal.ONE,
+                60,
+                BigDecimal.ZERO,
+                false,
+                null,
+                OpeningWindow.open(LocalTime.of(8, 0), LocalTime.of(18, 0)));
+    }
+
+    private ItineraryPlan planWith(SchedulingPlace... places) {
+        List<ScheduledStop> stops = Arrays.stream(places)
                 .map(place -> new ScheduledStop(
-                        place, LocalTime.of(8, 0), LocalTime.of(8, 0), LocalTime.of(9, 0), 0, 0.0, BigDecimal.ZERO))
+                        place,
+                        LocalDateTime.of(2026, 9, 2, 8, 0),
+                        LocalDateTime.of(2026, 9, 2, 8, 0),
+                        LocalDateTime.of(2026, 9, 2, 9, 0),
+                        0,
+                        0.0,
+                        BigDecimal.ZERO,
+                        true,
+                        true))
                 .toList();
         return new ItineraryPlan(stops, BigDecimal.ZERO, 0, stops.size() * 60, 0.0);
     }

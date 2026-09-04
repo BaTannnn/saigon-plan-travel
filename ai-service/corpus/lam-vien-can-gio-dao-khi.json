@@ -1,0 +1,46 @@
+{
+  "placeSlug": "lam-vien-can-gio-dao-khi",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Lâm viên Cần Giờ, thường được du khách nhắc đến cùng khu vực Đảo Khỉ, là một điểm trải nghiệm sinh thái trong rừng ngập mặn Cần Giờ. Điểm đặc trưng là quần thể khỉ sống tự nhiên, cảnh quan rừng đước và khả năng kết hợp với các tuyến tham quan Rừng Sác. Đây là lựa chọn phù hợp với người yêu thiên nhiên, gia đình và nhóm muốn quan sát động vật trong môi trường gần tự nhiên. Vì nằm xa trung tâm, scheduler nên xem đây là điểm ngoại thành có travel time lớn.",
+      "source": {
+        "label": "HCMC Travel Guide - Cần Giờ",
+        "uri": "https://hef.gov.vn/vi/ho-chi-minh-city-travel-guide.html",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Quy hoạch phát triển Cần Giờ của Thành phố xác định định hướng bảo tồn và phát triển Khu du lịch sinh thái Lâm viên Cần Giờ, trong đó có khu vực Đảo Khỉ. Không gian này nằm trong hệ sinh thái rừng ngập mặn Cần Giờ, khu vực có giá trị lớn về đa dạng sinh học và bảo tồn thiên nhiên. Khi đưa vào knowledge base, phần bối cảnh giúp hệ thống phân biệt Lâm viên Cần Giờ với những điểm vui chơi có động vật nuôi nhốt trong nội đô: giá trị chính nằm ở môi trường rừng ngập mặn và trải nghiệm sinh thái ngoài trời.",
+      "source": {
+        "label": "Công báo TP.HCM - Quy hoạch chung xây dựng huyện Cần Giờ",
+        "uri": "https://congbao.hochiminhcity.gov.vn/DKC.MFiles.CB/Gazette/DownLoadFileResult/32766",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Hướng dẫn du lịch Thành phố mô tả Cần Giờ có đàn khỉ tự nhiên với số lượng lớn tại khu Lâm viên, đồng thời có thể kết hợp đi ca nô trong rừng đước và tham quan các điểm gắn với căn cứ Rừng Sác. Trải nghiệm phù hợp với nhu cầu quan sát động vật, chụp ảnh thiên nhiên và học tập về hệ sinh thái ngập mặn. Trong recommendation, nên ưu tiên các thuộc tính thiên nhiên, gia đình, khoa học, ngoài trời và khám phá; tránh xếp địa điểm này cho người chỉ có quỹ thời gian ngắn quanh khu trung tâm.",
+      "source": {
+        "label": "HCMC Travel Guide - Cần Giờ",
+        "uri": "https://hef.gov.vn/vi/ho-chi-minh-city-travel-guide.html",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Do khỉ sống gần môi trường tự nhiên và thường xuyên tiếp xúc với khách tham quan, người dùng cần tuân thủ hướng dẫn tại chỗ, bảo quản tư trang và không chủ động trêu chọc hoặc cho động vật ăn nếu khu quản lý không cho phép. Hầu hết trải nghiệm diễn ra ngoài trời nên mưa, nắng nóng và điều kiện đường đến Cần Giờ ảnh hưởng trực tiếp tới chất lượng chuyến đi. Scheduler có thể ghép Đảo Khỉ với các điểm Cần Giờ khác trong cùng ngày, nhưng không nên ghép với quá nhiều địa điểm trung tâm vì chi phí di chuyển sẽ cao.",
+      "source": {
+        "label": "HCMC Travel Guide - Cần Giờ",
+        "uri": "https://hef.gov.vn/vi/ho-chi-minh-city-travel-guide.html",
+        "retrievedAt": "2026-08-29"
+      }
+    }
+  ]
+}

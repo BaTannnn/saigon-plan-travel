@@ -18,7 +18,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatCurrency, formatTime } from "@/lib/formatters";
 import { cn } from "@/lib/utils";
 import type { TripSummaryResponse } from "@/types/trip";
-import { CalendarDays, MoreHorizontal, Trash2 } from "lucide-react";
+import { CalendarDays, MoreHorizontal, Plus, Trash2 } from "lucide-react";
 
 type TripMonthBoardProps = {
   year: number;
@@ -197,6 +197,11 @@ export function TripMonthBoard({
   }
 
   const today = new Date();
+  const startOfToday = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate(),
+  );
   const isCurrentMonth =
     today.getFullYear() === year && today.getMonth() + 1 === month;
 
@@ -211,6 +216,8 @@ export function TripMonthBoard({
           const dayTrips = tripsByDay.get(day) ?? [];
           const date = new Date(year, month - 1, day);
           const isToday = isCurrentMonth && today.getDate() === day;
+          const isPastDate = date < startOfToday;
+          const dateValue = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
           return (
             <article
@@ -228,7 +235,7 @@ export function TripMonthBoard({
                     {weekdayFormatter.format(date)}
                   </p>
                   <time
-                    dateTime={`${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`}
+                    dateTime={dateValue}
                     className="mt-2 block text-5xl leading-none font-bold tracking-[-0.07em] text-primary-strong"
                   >
                     {day}
@@ -237,10 +244,27 @@ export function TripMonthBoard({
                     Tháng {month}
                   </p>
                 </div>
-                {isToday ? (
-                  <span className="rounded-full bg-primary-soft px-2 py-1 text-[0.625rem] font-bold text-primary-strong">
-                    Hôm nay
-                  </span>
+                {!isPastDate ? (
+                  <div className="flex shrink-0 flex-col items-end gap-2">
+                    <Button
+                      asChild
+                      variant="ghost"
+                      size="icon-sm"
+                      className="rounded-full text-primary-strong hover:bg-accent-soft hover:text-accent-strong"
+                    >
+                      <Link
+                        href={`/trips/new?date=${dateValue}`}
+                        aria-label={`Tạo chuyến đi ngày ${day} tháng ${month} năm ${year}`}
+                      >
+                        <Plus aria-hidden="true" />
+                      </Link>
+                    </Button>
+                    {isToday ? (
+                      <span className="rounded-full bg-primary-soft px-2 py-1 text-[0.625rem] font-bold text-primary-strong">
+                        Hôm nay
+                      </span>
+                    ) : null}
+                  </div>
                 ) : null}
               </div>
 

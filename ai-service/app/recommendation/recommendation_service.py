@@ -1,36 +1,48 @@
+from app.config import get_retrieval_fetch_k
 from app.knowledge.embedding_service import embed_query
 from app.knowledge.knowledge_repository import search_candidate_chunks
-from app.recommendation.mmr import select_with_mmr
 from app.recommendation.models import PlaceCandidate
 from app.recommendation.place_retriever import (
-    select_unique_candidate_chunks,
+    deduplicate_best_chunk_by_place,
+    rank_by_semantic_similarity,
 )
 
 
 def retrieve_candidate_places(
     query: str,
-    fetch_k: int = 50,
-    candidate_k: int = 30,
-    eligible_place_slugs: list[str] | None = None,
-) -> tuple[list[PlaceCandidate], dict[str, list[float]]]:
-    if eligible_place_slugs == []:
-        return [], {}
-
+    top_k: int,
+    fetch_k: int | None = None,
+) -> list[PlaceCandidate]:
     query_embedding = embed_query(query)
 
     if query_embedding is None:
         raise RuntimeError("Could not create query embedding")
 
-    retrieved_chunks = search_candidate_chunks(
-        query_embedding=query_embedding,
-        limit=fetch_k,
-        eligible_place_slugs=eligible_place_slugs,
-    )
+    if top_k <= 0:
+        raise ValueError("top_k must be greater than zero")
 
-    unique_chunks = select_unique_candidate_chunks(
-        results=retrieved_chunks,
-        limit=candidate_k,
-    )
+    resolved_fetch_k = get_retrieval_fetch_k(fetch_k)
+
+    while True:
+        retrieved_chunks = search_candidate_chunks(
+            query_embedding=query_embedding,
+            limit=resolved_fetch_k,
+        )
+
+        unique_chunks = deduplicate_best_chunk_by_place(
+            retrieved_chunks,
+        )
+
+        if (
+            len(unique_chunks) >= top_k
+            or len(retrieved_chunks) < resolved_fetch_k
+        ):
+            break
+
+        resolved_fetch_k *= 2
+
+    ranked_chunks = rank_by_semantic_similarity(unique_chunks)
+    limited_chunks = ranked_chunks[:top_k]
 
     candidates = [
         PlaceCandidate(
@@ -39,38 +51,20 @@ def retrieve_candidate_places(
             matched_section=chunk.section,
             semantic_score=chunk.similarity,
         )
-        for chunk in unique_chunks
+        for chunk in limited_chunks
     ]
 
-    embeddings_by_slug = {
-        chunk.place_slug: chunk.embedding
-        for chunk in unique_chunks
-    }
-
-    return candidates, embeddings_by_slug
+    return candidates
 
 
 def recommend_places(
     query: str,
-    fetch_k: int = 50,
-    candidate_k: int = 30,
+    fetch_k: int | None = None,
     top_k: int = 15,
-    lambda_weight: float = 0.9,
-    eligible_place_slugs: list[str] | None = None,
 ) -> list[PlaceCandidate]:
-    if eligible_place_slugs == []:
-        return []
-
-    candidates, embeddings_by_slug = retrieve_candidate_places(
+    candidates = retrieve_candidate_places(
         query=query,
+        top_k=top_k,
         fetch_k=fetch_k,
-        candidate_k=candidate_k,
-        eligible_place_slugs=eligible_place_slugs,
     )
-
-    return select_with_mmr(
-        candidates=candidates,
-        embeddings_by_slug=embeddings_by_slug,
-        limit=top_k,
-        lambda_weight=lambda_weight,
-    )
+    return candidates[:top_k]

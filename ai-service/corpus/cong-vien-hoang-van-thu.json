@@ -1,0 +1,46 @@
+{
+  "placeSlug": "cong-vien-hoang-van-thu",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Công viên Hoàng Văn Thụ là không gian xanh công cộng tại khu vực Tân Bình, gần sân bay Tân Sơn Nhất và được bao quanh bởi các trục Hoàng Văn Thụ, Phan Đình Giót và khu vực Trần Quốc Hoàn. Công viên phù hợp với đi bộ, nghỉ chân, hoạt động nhẹ ngoài trời và gia đình. Trong itinerary, đây không phải điểm cần dành nửa ngày nhưng có giá trị như một khoảng nghỉ giữa các điểm tham quan dày đặc, đặc biệt khi người dùng ưu tiên chi phí thấp, không gian thoáng và ít hoạt động thương mại.",
+      "source": {
+        "label": "HĐND TP.HCM - Công viên Hoàng Văn Thụ",
+        "uri": "https://hdnd.hochiminhcity.gov.vn/tin-tuc/tin-hoat-dong-hdnd-cap-xa/phuong-tan-son-hoa-to-chuc-hoi-nghi-trao-doi-ve-cong-tac-phoi-hop-bo-tri-trat-tu-vien-giu-gin-an-ninh-trat-tu-an-toan-giao-thong",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Công báo TP.HCM ghi nhận Công viên Hoàng Văn Thụ là một khu công viên văn hóa của quận Tân Bình và từng có dự án cải tạo, nâng cấp trong kế hoạch đầu tư đô thị. Hiện công viên tiếp tục được các cơ quan địa phương nhắc đến trong công tác quản lý trật tự và an toàn giao thông khu vực. Với corpus của đồ án, không cần mô tả quá sâu lịch sử hình thành; thông tin quan trọng hơn là vai trò của một không gian công cộng ổn định, có thể kết hợp với các điểm ở Tân Bình và gần sân bay.",
+      "source": {
+        "label": "Công báo TP.HCM - Công viên Hoàng Văn Thụ",
+        "uri": "https://congbao.hochiminhcity.gov.vn/cong-bao/van-ban/quyet-dinh/so/03-2008-qd-ubnd/ngay/10-01-2008/tai-ve/30045?cbid=32792",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Giá trị chính của Công viên Hoàng Văn Thụ nằm ở mảng xanh, đường đi bộ, khoảng không mở và khả năng phục vụ hoạt động cộng đồng. So với Công viên Tao Đàn hoặc Gia Định đã có trong corpus, địa điểm này bổ sung một lựa chọn ở cụm Tân Bình, giúp retrieval không luôn thiên về trung tâm quận 1. Các tín hiệu semantic nên tập trung vào thiên nhiên đô thị, ngoài trời, gia đình, đi bộ và nghỉ ngơi. Đây cũng là điểm có chi phí gần như bằng không nên hữu ích cho người dùng đặt ràng buộc ngân sách thấp.",
+      "source": {
+        "label": "HĐND TP.HCM - Công viên Hoàng Văn Thụ",
+        "uri": "https://hdnd.hochiminhcity.gov.vn/tin-tuc/tin-hoat-dong-hdnd-cap-xa/phuong-tan-son-hoa-to-chuc-hoi-nghi-trao-doi-ve-cong-tac-phoi-hop-bo-tri-trat-tu-vien-giu-gin-an-ninh-trat-tu-an-toan-giao-thong",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Vì toàn bộ trải nghiệm chính diễn ra ngoài trời, mức độ phù hợp của công viên thay đổi mạnh theo mưa, nắng nóng và chất lượng không khí. Đây là ví dụ tốt cho module context-aware: khi thời tiết thuận lợi, scheduler có thể dùng công viên làm điểm nghỉ hoặc hoạt động nhẹ; khi mưa lớn, hệ thống nên thay bằng Bảo tàng Quân khu 7 hoặc một điểm trong nhà gần đó. Khu vực quanh sân bay cũng có thể chịu ảnh hưởng giao thông vào giờ cao điểm, vì vậy travel-time realtime nên có quyền điều chỉnh thứ tự lịch trình thay vì chỉ dựa trên khoảng cách địa lý.",
+      "source": {
+        "label": "Phòng CSGT TP.HCM - lưu ý giao thông khu vực Công viên Hoàng Văn Thụ",
+        "uri": "https://csgt-congan.hochiminhcity.gov.vn/wps/portal/Home/trang-chu/noi-dung-chi-tiet/tin-tuc-hoat-dong/tsn_luuy",
+        "retrievedAt": "2026-08-29"
+      }
+    }
+  ]
+}

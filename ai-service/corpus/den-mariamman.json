@@ -1,0 +1,46 @@
+{
+  "placeSlug": "den-mariamman",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Đền Mariamman, thường được gọi là Đền Bà Ấn, nằm tại số 45 Trương Định ở khu vực trung tâm TP.HCM. Đây là một công trình Ấn Độ giáo hiếm gặp trong không gian đô thị Sài Gòn, thờ nữ thần Mariamman và vẫn được sử dụng cho hoạt động tín ngưỡng. Vị trí gần Chợ Bến Thành và Dinh Độc Lập giúp địa điểm phù hợp với một điểm dừng ngắn trong itinerary trung tâm. Khi recommendation, hệ thống có thể ưu tiên các sở thích về tôn giáo, kiến trúc, văn hóa đa cộng đồng và trải nghiệm khác biệt.",
+      "source": {
+        "label": "Du lịch TP.HCM - Mariamman Temple",
+        "uri": "https://visithcmc.net/en/news/nhung-dia-diem-du-lich-it-nguoi-biet-o-sai-gon-dang-can-ban-kham-pha",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Tư liệu du lịch TP.HCM cho biết đền gắn với cộng đồng người Ấn từng sinh sống và buôn bán quanh khu vực Bến Thành. Công trình hình thành từ cuối thế kỷ XIX và là một trong số ít dấu tích Ấn Độ giáo còn hiện diện rõ trong thành phố. Việc bảo tồn không gian thờ tự giữa khu thương mại trung tâm tạo nên giá trị văn hóa đặc biệt: du khách không chỉ quan sát một kiến trúc lạ mắt mà còn có thể tìm hiểu sự đa dạng tôn giáo và quá trình giao lưu cộng đồng tại Sài Gòn.",
+      "source": {
+        "label": "Du lịch TP.HCM - Các điểm ít người biết ở Sài Gòn",
+        "uri": "https://visithcmc.net/en/news/nhung-dia-diem-du-lich-it-nguoi-biet-o-sai-gon-dang-can-ban-kham-pha",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Điểm nhấn dễ nhận biết của đền là mặt tiền nhiều màu sắc, hệ thống tượng thần và phong cách trang trí gợi đặc trưng đền Hindu Nam Ấn. Không gian bên trong tập trung quanh điện thờ nữ thần Mariamman cùng các tượng thần liên quan. Với RAG, các đặc trưng nên được nhấn mạnh là kiến trúc Hindu, văn hóa Ấn Độ, tín ngưỡng đang hoạt động và vị trí trung tâm. Đây là điểm phù hợp cho người muốn tìm trải nghiệm văn hóa khác với nhóm chùa Phật giáo hoặc nhà thờ Công giáo vốn phổ biến hơn trong catalog.",
+      "source": {
+        "label": "Vietnam Airlines - Mariamman Hindu Temple",
+        "uri": "https://www.vietnamairlines.com/go/en/plan-book/travel/travel-guide/mariamman-hindu-temple",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Đây là cơ sở thờ tự đang hoạt động nên người tham quan cần giữ trật tự, trang phục phù hợp và tôn trọng khu vực hành lễ. Cổng du lịch TP.HCM công bố khung giờ theo hai buổi, còn các nguồn cập nhật khác cho thấy giờ phục vụ có thể thay đổi theo ngày lễ; vì vậy scheduler nên dùng opening-hours trong database như dữ liệu phát triển và không xem corpus là nguồn realtime. Điểm tham quan có chi phí cơ bản thấp, thời lượng khoảng 30-60 phút và dễ ghép với Chợ Bến Thành, Dinh Độc Lập hoặc Bảo tàng TP.HCM.",
+      "source": {
+        "label": "Du lịch TP.HCM - Kế hoạch chuyến đi",
+        "uri": "https://visithcmc.net/en/page/ke-hoach-chuyen-di",
+        "retrievedAt": "2026-08-29"
+      }
+    }
+  ]
+}

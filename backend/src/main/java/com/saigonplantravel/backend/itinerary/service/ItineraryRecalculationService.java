@@ -1,17 +1,18 @@
 package com.saigonplantravel.backend.itinerary.service;
 
+import com.saigonplantravel.backend.itinerary.mapper.SchedulingInputMapper;
 import com.saigonplantravel.backend.itinerary.model.CalculatedItinerary;
 import com.saigonplantravel.backend.itinerary.validation.ItineraryIssue;
 import com.saigonplantravel.backend.itinerary.validation.ItineraryIssueEvaluator;
-import com.saigonplantravel.backend.place.entity.OpeningHour;
 import com.saigonplantravel.backend.place.entity.Place;
 import com.saigonplantravel.backend.scheduling.model.ItineraryPlan;
+import com.saigonplantravel.backend.scheduling.model.PlanningContext;
 import com.saigonplantravel.backend.scheduling.model.ScheduledStop;
-import com.saigonplantravel.backend.scheduling.model.TravelEstimate;
-import com.saigonplantravel.backend.scheduling.travel.TravelEstimator;
+import com.saigonplantravel.backend.scheduling.model.SchedulingPlace;
+import com.saigonplantravel.backend.scheduling.service.StopScheduleCalculator;
 import com.saigonplantravel.backend.trip.entity.Trip;
 import java.math.BigDecimal;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Service;
@@ -19,33 +20,40 @@ import org.springframework.stereotype.Service;
 @Service
 public class ItineraryRecalculationService {
 
-    private final TravelEstimator travelEstimator;
+    private final SchedulingInputMapper schedulingInputMapper;
+    private final StopScheduleCalculator stopScheduleCalculator;
     private final ItineraryIssueEvaluator issueEvaluator;
 
-    public ItineraryRecalculationService(TravelEstimator travelEstimator, ItineraryIssueEvaluator issueEvaluator) {
+    public ItineraryRecalculationService(
+            SchedulingInputMapper schedulingInputMapper,
+            StopScheduleCalculator stopScheduleCalculator,
+            ItineraryIssueEvaluator issueEvaluator) {
 
-        this.travelEstimator = travelEstimator;
+        this.schedulingInputMapper = schedulingInputMapper;
+        this.stopScheduleCalculator = stopScheduleCalculator;
         this.issueEvaluator = issueEvaluator;
     }
 
     public CalculatedItinerary recalculate(Trip trip, List<Place> orderedPlaces) {
 
-        ItineraryPlan plan = calculatePlan(trip, orderedPlaces);
+        PlanningContext context = schedulingInputMapper.toPlanningContext(trip);
+        List<SchedulingPlace> schedulingPlaces = schedulingInputMapper.toSchedulingPlaces(trip, orderedPlaces);
+        ItineraryPlan plan = calculatePlan(context, schedulingPlaces);
 
-        List<ItineraryIssue> issues = issueEvaluator.evaluate(trip, plan);
+        List<ItineraryIssue> issues = issueEvaluator.evaluate(context, plan);
 
         return new CalculatedItinerary(plan, issues);
     }
 
-    private ItineraryPlan calculatePlan(Trip trip, List<Place> orderedPlaces) {
+    private ItineraryPlan calculatePlan(PlanningContext context, List<SchedulingPlace> orderedPlaces) {
 
         List<ScheduledStop> stops = new ArrayList<>();
 
-        LocalTime currentTime = trip.getStartTime();
+        LocalDateTime currentDateTime = context.startDateTime();
 
-        BigDecimal currentLatitude = trip.getStartLatitude();
+        BigDecimal currentLatitude = context.startLatitude();
 
-        BigDecimal currentLongitude = trip.getStartLongitude();
+        BigDecimal currentLongitude = context.startLongitude();
 
         BigDecimal totalEstimatedCost = BigDecimal.ZERO;
 
@@ -53,65 +61,28 @@ public class ItineraryRecalculationService {
         int totalVisitMinutes = 0;
         double totalDistanceKm = 0.0;
 
-        for (Place place : orderedPlaces) {
+        for (SchedulingPlace place : orderedPlaces) {
 
-            TravelEstimate travel = travelEstimator.estimate(
-                    currentLatitude, currentLongitude, place.getLatitude(), place.getLongitude());
-
-            LocalTime arrivalTime = currentTime.plusMinutes(travel.estimatedMinutes());
-
-            OpeningHour openingHour = findOpeningHour(place, trip);
-
-            LocalTime visitStartTime = calculateVisitStartTime(arrivalTime, openingHour);
-
-            LocalTime visitEndTime = visitStartTime.plusMinutes(place.getEstimatedVisitMinutes());
-
-            ScheduledStop stop = new ScheduledStop(
-                    place,
-                    arrivalTime,
-                    visitStartTime,
-                    visitEndTime,
-                    travel.estimatedMinutes(),
-                    travel.estimatedDistanceKm(),
-                    place.getMinCost());
+            ScheduledStop stop =
+                    stopScheduleCalculator.calculate(context, currentDateTime, currentLatitude, currentLongitude, place);
 
             stops.add(stop);
 
-            currentTime = visitEndTime;
+            currentDateTime = stop.visitEndDateTime();
 
-            currentLatitude = place.getLatitude();
+            currentLatitude = place.latitude();
 
-            currentLongitude = place.getLongitude();
+            currentLongitude = place.longitude();
 
-            totalEstimatedCost = totalEstimatedCost.add(place.getMinCost());
+            totalEstimatedCost = totalEstimatedCost.add(place.estimatedCost());
 
-            totalTravelMinutes += travel.estimatedMinutes();
+            totalTravelMinutes += stop.travelMinutes();
 
-            totalVisitMinutes += place.getEstimatedVisitMinutes();
+            totalVisitMinutes += place.estimatedVisitMinutes();
 
-            totalDistanceKm += travel.estimatedDistanceKm();
+            totalDistanceKm += stop.travelDistanceKm();
         }
 
         return new ItineraryPlan(stops, totalEstimatedCost, totalTravelMinutes, totalVisitMinutes, totalDistanceKm);
-    }
-
-    private OpeningHour findOpeningHour(Place place, Trip trip) {
-
-        short dayOfWeek = (short) trip.getTripDate().getDayOfWeek().getValue();
-
-        return place.getOpeningHours().stream()
-                .filter(openingHour -> openingHour.getDayOfWeek() == dayOfWeek)
-                .findFirst()
-                .orElse(null);
-    }
-
-    private LocalTime calculateVisitStartTime(LocalTime arrivalTime, OpeningHour openingHour) {
-
-        if (openingHour == null || Boolean.TRUE.equals(openingHour.getClosed()) || openingHour.getOpenTime() == null) {
-
-            return arrivalTime;
-        }
-
-        return arrivalTime.isAfter(openingHour.getOpenTime()) ? arrivalTime : openingHour.getOpenTime();
     }
 }

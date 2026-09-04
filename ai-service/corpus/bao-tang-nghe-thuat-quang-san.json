@@ -1,0 +1,46 @@
+{
+  "placeSlug": "bao-tang-nghe-thuat-quang-san",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Bảo tàng Nghệ thuật Quang San là bảo tàng ngoài công lập tại khu vực Thảo Điền, Thành phố Hồ Chí Minh, tập trung vào mỹ thuật Việt Nam. Website chính thức giới thiệu bảo tàng đang bảo tồn và trưng bày hơn 1.500 tác phẩm có giá trị lịch sử và văn hóa, với mục tiêu tạo không gian thưởng lãm và đối thoại về nghệ thuật. Đây là lựa chọn phù hợp cho người yêu hội họa, mỹ thuật hiện đại, không gian triển lãm trong nhà hoặc cần một địa điểm thay thế khi thời tiết không thuận lợi. Vị trí tại Thảo Điền cũng giúp dễ kết hợp với các trải nghiệm ẩm thực và đô thị ở khu vực phía đông thành phố.",
+      "source": {
+        "label": "Quang San Art Museum - trang chính thức",
+        "uri": "https://quangsanartmuseum.com.vn/",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Theo kết luận thanh tra của Sở Văn hóa và Thể thao Thành phố Hồ Chí Minh, Bảo tàng Nghệ thuật Quang San được thành lập theo quyết định của Sở vào tháng 2/2023 và đặt tại 189B/3 Nguyễn Văn Hưởng. Tài liệu của bảo tàng cho biết dự án hình thành từ bộ sưu tập mỹ thuật Việt Nam được gia đình sáng lập gây dựng trong nhiều năm và chính thức mở cửa trong năm 2023. Bảo tàng được xác định là bảo tàng ngoài công lập, có tư cách pháp nhân, cơ sở vật chất và hoạt động sưu tập, bảo quản, kiểm kê hiện vật. Những dữ kiện này giúp corpus phân biệt Quang San với phòng tranh thương mại hoặc không gian triển lãm tạm thời.",
+      "source": {
+        "label": "Sở Văn hóa và Thể thao TP.HCM - Kết luận thanh tra Bảo tàng Nghệ thuật Quang San",
+        "uri": "https://svhtt.hochiminhcity.gov.vn/documents/10184/407194/06%2BKLTT%2B%281%29.pdf/387e65a6-b1b8-4c10-8cdf-8ea4ed4a981a",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Điểm mạnh của Quang San là bộ sưu tập hội họa Việt Nam có chiều sâu lịch sử, cùng các triển lãm và hoạt động nghệ thuật chuyên đề. Website bảo tàng giới thiệu nhiều tác phẩm tiêu biểu và các sự kiện, triển lãm được tổ chức theo từng giai đoạn. Công trình nằm bên sông Sài Gòn và được thiết kế như một không gian văn hóa kết hợp yếu tố truyền thống với tinh thần hiện đại. Trong semantic retrieval, các tín hiệu nên gắn với mỹ thuật Việt Nam, hội họa, bảo tàng tư nhân, triển lãm, nghệ thuật hiện đại, trải nghiệm trong nhà, Thảo Điền và không gian văn hóa. Đây là ứng viên tốt khi người dùng ưu tiên nghệ thuật hơn lịch sử chiến tranh hoặc di tích kiến trúc cổ.",
+      "source": {
+        "label": "Quang San Art Museum - giới thiệu và hoạt động",
+        "uri": "https://quangsanartmuseum.com.vn/",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Website chính thức công bố giờ mở cửa 9:00-16:30 từ thứ Ba đến Chủ Nhật và đóng cửa thứ Hai. Đây là thông tin hữu ích để hard constraint loại lịch trình rơi vào ngày đóng cửa, nhưng khi triển khai production vẫn cần cơ chế cập nhật giờ hoạt động thay vì phụ thuộc vĩnh viễn vào corpus. Thời lượng 90-120 phút phù hợp cho người muốn xem triển lãm với nhịp độ vừa phải. Vì phần lớn trải nghiệm diễn ra trong nhà, bảo tàng là phương án thay thế tốt khi mưa hoặc nắng gắt. Người dùng quan tâm sâu đến mỹ thuật có thể cần nhiều thời gian hơn, còn lịch trình phổ thông có thể ghép bảo tàng với các điểm Thảo Điền hoặc ven sông lân cận.",
+      "source": {
+        "label": "Quang San Art Museum - thông tin tham quan",
+        "uri": "https://quangsanartmuseum.com.vn/",
+        "retrievedAt": "2026-08-29"
+      }
+    }
+  ]
+}

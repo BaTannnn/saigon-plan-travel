@@ -26,11 +26,13 @@ public class ItineraryGenerationPreviewMapper {
                     return new GeneratedItineraryStopResponse(
                             index + 1,
                             new ItineraryPlaceResponse(
-                                    place.getSlug(),
-                                    place.getName(),
-                                    place.getLatitude(),
-                                    place.getLongitude(),
-                                    place.getPrimaryImageUrl()),
+                                    place.slug(),
+                                    place.name(),
+                                    place.latitude(),
+                                    place.longitude(),
+                                    place.primaryImageUrl(),
+                                    place.estimatedCost(),
+                                    place.maxCost()),
                             new ItineraryScheduleResponse(
                                     stop.arrivalTime(),
                                     stop.visitStartTime(),
@@ -38,7 +40,7 @@ public class ItineraryGenerationPreviewMapper {
                                     stop.travelMinutes(),
                                     stop.travelDistanceKm(),
                                     stop.estimatedCost()),
-                            preview.reasonsByPlaceSlug().get(place.getSlug()));
+                            preview.reasonsByPlaceSlug().get(place.slug()));
                 })
                 .toList();
 

@@ -167,26 +167,26 @@ export function TripsHubView() {
   return (
     <main className="mx-auto w-[min(1440px,calc(100%_-_32px))] py-8 pb-16 max-md:py-6">
       <header className="mb-6 grid gap-4">
-        <div className="flex items-center justify-between gap-5 max-sm:items-start">
-          <h1 className="m-0 text-3xl leading-tight font-bold tracking-[-0.04em] max-md:text-2xl">
-            Chuyến đi của tôi
-          </h1>
+        <h1 className="m-0 text-3xl leading-tight font-bold tracking-[-0.04em] max-md:text-2xl">
+          Chuyến đi của tôi
+        </h1>
+
+        <div className="flex items-center justify-between gap-4 max-sm:flex-col max-sm:items-stretch">
+          <TripMonthToolbar
+            month={selectedMonth}
+            year={selectedYear}
+            years={years}
+            previousDisabled={previousDisabled}
+            nextDisabled={nextDisabled}
+            onMonthChange={selectMonth}
+            onYearChange={selectYear}
+            onPreviousMonth={() => moveMonth(-1)}
+            onNextMonth={() => moveMonth(1)}
+          />
           <Button asChild variant="accent" className="shrink-0">
             <Link href="/trips/new">Tạo chuyến đi</Link>
           </Button>
         </div>
-
-        <TripMonthToolbar
-          month={selectedMonth}
-          year={selectedYear}
-          years={years}
-          previousDisabled={previousDisabled}
-          nextDisabled={nextDisabled}
-          onMonthChange={selectMonth}
-          onYearChange={selectYear}
-          onPreviousMonth={() => moveMonth(-1)}
-          onNextMonth={() => moveMonth(1)}
-        />
       </header>
 
       <AlertDialog

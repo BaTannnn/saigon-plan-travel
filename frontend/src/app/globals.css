@@ -41,8 +41,8 @@
 }
 
 @theme inline {
-  --font-heading: var(--font-geist-sans);
-  --font-sans: var(--font-geist-sans);
+  --font-heading: Arial, Helvetica, sans-serif;
+  --font-sans: Arial, Helvetica, sans-serif;
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);

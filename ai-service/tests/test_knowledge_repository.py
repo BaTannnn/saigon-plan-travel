@@ -192,7 +192,7 @@ class KnowledgeRepositoryTest(unittest.TestCase):
         get_connection.assert_not_called()
 
     @patch("app.knowledge.knowledge_repository.get_connection")
-    def test_candidate_search_filters_whitelist_before_ranking_and_limit(
+    def test_candidate_search_ranks_active_places_before_limit(
         self,
         get_connection: MagicMock,
     ):
@@ -205,31 +205,17 @@ class KnowledgeRepositoryTest(unittest.TestCase):
         search_candidate_chunks(
             query_embedding=[0.1, 0.2],
             limit=15,
-            eligible_place_slugs=["place-d", "place-e"],
         )
 
         query, parameters = cursor.execute.call_args.args
-        whitelist_position = query.index("p.slug = ANY(%s)")
         order_position = query.index("ORDER BY c.embedding <=> %s")
         limit_position = query.index("LIMIT %s")
-        self.assertLess(whitelist_position, order_position)
+        active_position = query.index("p.active = TRUE")
+        self.assertLess(active_position, order_position)
         self.assertLess(order_position, limit_position)
-        self.assertEqual(["place-d", "place-e"], parameters[1])
-        self.assertEqual(15, parameters[3])
-
-    @patch("app.knowledge.knowledge_repository.get_connection")
-    def test_empty_candidate_whitelist_does_not_query_database(
-        self,
-        get_connection: MagicMock,
-    ):
-        chunks = search_candidate_chunks(
-            query_embedding=[0.1, 0.2],
-            limit=15,
-            eligible_place_slugs=[],
-        )
-
-        self.assertEqual([], chunks)
-        get_connection.assert_not_called()
+        self.assertNotIn("p.slug = ANY(%s)", query)
+        self.assertEqual(3, len(parameters))
+        self.assertEqual(15, parameters[2])
 
 
 if __name__ == "__main__":

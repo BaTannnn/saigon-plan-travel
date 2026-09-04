@@ -1,11 +1,10 @@
 package com.saigonplantravel.backend.recommendation.service;
 
-import com.saigonplantravel.backend.ai.client.AiRecommendationClient;
-import com.saigonplantravel.backend.ai.client.dto.AiPlaceCandidateResponse;
-import com.saigonplantravel.backend.ai.client.dto.AiPlaceRecommendationResponse;
 import com.saigonplantravel.backend.place.entity.Place;
-import com.saigonplantravel.backend.place.repository.PlaceRepository;
+import com.saigonplantravel.backend.place.service.PlaceQueryService;
+import com.saigonplantravel.backend.recommendation.SemanticPlaceRetriever;
 import com.saigonplantravel.backend.recommendation.model.RecommendationCandidate;
+import com.saigonplantravel.backend.recommendation.model.SemanticPlaceCandidate;
 import com.saigonplantravel.backend.trip.entity.Trip;
 import java.util.List;
 import java.util.Map;
@@ -22,49 +21,45 @@ public class PlaceRecommendationService {
 
     private static final Logger log = LoggerFactory.getLogger(PlaceRecommendationService.class);
 
-    private static final int SEMANTIC_CANDIDATE_LIMIT = 15;
+    private static final int SEMANTIC_CANDIDATE_LIMIT = 30;
 
-    private final AiRecommendationClient aiRecommendationClient;
-    private final PlaceRepository placeRepository;
+    private final SemanticPlaceRetriever semanticPlaceRetriever;
+    private final PlaceQueryService placeQueryService;
     private final CoarsePlaceEligibilityService coarsePlaceEligibilityService;
 
     public PlaceRecommendationService(
-            AiRecommendationClient aiRecommendationClient,
-            PlaceRepository placeRepository,
+            SemanticPlaceRetriever semanticPlaceRetriever,
+            PlaceQueryService placeQueryService,
             CoarsePlaceEligibilityService coarsePlaceEligibilityService) {
-        this.aiRecommendationClient = aiRecommendationClient;
-        this.placeRepository = placeRepository;
+        this.semanticPlaceRetriever = semanticPlaceRetriever;
+        this.placeQueryService = placeQueryService;
         this.coarsePlaceEligibilityService = coarsePlaceEligibilityService;
     }
 
     public List<RecommendationCandidate> recommend(Trip trip, String preferenceDescription) {
-        List<Place> activePlaces = placeRepository.findAllActiveForScheduling();
-        List<Place> eligiblePlaces = coarsePlaceEligibilityService.findEligiblePlaces(activePlaces, trip);
+        List<SemanticPlaceCandidate> semanticCandidates =
+                semanticPlaceRetriever.retrieve(preferenceDescription.trim(), SEMANTIC_CANDIDATE_LIMIT);
 
-        log.debug("Coarse eligibility retained {} of {} active places", eligiblePlaces.size(), activePlaces.size());
-
-        if (eligiblePlaces.isEmpty()) {
+        if (semanticCandidates.isEmpty()) {
             return List.of();
         }
 
-        List<String> eligiblePlaceSlugs =
-                eligiblePlaces.stream().map(Place::getSlug).toList();
+        List<String> candidateSlugs = semanticCandidates.stream()
+                .map(SemanticPlaceCandidate::placeSlug)
+                .distinct()
+                .toList();
+        List<Place> candidatePlaces = placeQueryService.findAllActiveBySlugsForScheduling(candidateSlugs);
+        List<Place> eligiblePlaces = coarsePlaceEligibilityService.findEligiblePlaces(candidatePlaces, trip);
 
-        AiPlaceRecommendationResponse aiResponse = aiRecommendationClient.recommendPlaces(
-                preferenceDescription.trim(), SEMANTIC_CANDIDATE_LIMIT, eligiblePlaceSlugs);
-
-        List<AiPlaceCandidateResponse> aiCandidates = aiResponse.candidates();
-
-        log.debug("AI returned {} candidates from {} eligible places", aiCandidates.size(), eligiblePlaces.size());
-
-        if (aiCandidates.isEmpty()) {
-            return List.of();
-        }
+        log.debug(
+                "Coarse eligibility retained {} of {} semantic candidate places",
+                eligiblePlaces.size(),
+                candidatePlaces.size());
 
         Map<String, Place> placesBySlug =
                 eligiblePlaces.stream().collect(Collectors.toMap(Place::getSlug, Function.identity()));
 
-        return aiCandidates.stream()
+        return semanticCandidates.stream()
                 .filter(candidate -> placesBySlug.containsKey(candidate.placeSlug()))
                 .map(candidate -> new RecommendationCandidate(
                         placesBySlug.get(candidate.placeSlug()), candidate.semanticScore(), candidate.matchedSection()))

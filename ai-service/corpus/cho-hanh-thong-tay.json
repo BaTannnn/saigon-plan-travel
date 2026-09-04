@@ -1,0 +1,46 @@
+{
+  "placeSlug": "cho-hanh-thong-tay",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Chợ Hạnh Thông Tây là khu chợ lớn tại khu vực Gò Vấp, nổi bật với hoạt động mua sắm bình dân và nhịp chợ sôi động vào chiều tối. Địa điểm phù hợp với người muốn trải nghiệm mua sắm địa phương, tìm quần áo và kết hợp ăn vặt thay vì tham quan theo kiểu di tích hoặc bảo tàng. Trong recommendation, chợ có thể đại diện cho nhóm mua sắm - ẩm thực ngoài khu trung tâm và đặc biệt phù hợp với lịch trình buổi tối.",
+      "source": {
+        "label": "Công báo TP.HCM - Quy hoạch mạng lưới chợ khu vực Gò Vấp",
+        "uri": "https://congbao.hochiminhcity.gov.vn/cong-bao/van-ban/quyet-dinh/so/144-2003-qd-ub/ngay/11-08-2003/tai-ve/35928",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Tài liệu quy hoạch thương mại của Thành phố ghi nhận Chợ Hạnh Thông Tây trong mạng lưới chợ của khu vực Gò Vấp. Qua quá trình hoạt động, chợ trở thành điểm mua sắm quen thuộc với lượng lớn gian hàng và hàng hóa phổ thông. Với knowledge base du lịch, giá trị của chợ không nằm ở lịch sử kiến trúc mà ở trải nghiệm thương mại địa phương, mật độ người mua bán và khả năng quan sát nhịp sống đô thị ngoài các khu du lịch trung tâm.",
+      "source": {
+        "label": "Công báo TP.HCM - Quy hoạch mạng lưới chợ khu vực Gò Vấp",
+        "uri": "https://congbao.hochiminhcity.gov.vn/cong-bao/van-ban/quyet-dinh/so/144-2003-qd-ub/ngay/11-08-2003/tai-ve/35928",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Các nguồn du lịch cập nhật mô tả Hạnh Thông Tây nổi bật với quần áo, phụ kiện và nhiều mặt hàng giá phổ thông, trong đó khu chợ chiều tối thường thu hút người mua trẻ. Xung quanh chợ cũng có các lựa chọn ăn vặt, tạo điều kiện kết hợp mua sắm và ẩm thực trong một điểm dừng. Trong recommendation, các đặc trưng phù hợp gồm mua sắm, ẩm thực, địa phương, đông vui và buổi tối. Chi phí rất linh hoạt vì phụ thuộc nhu cầu mua hàng, do đó không nên dùng một mức giá vé cố định.",
+      "source": {
+        "label": "Mytour - Chợ Hạnh Thông Tây",
+        "uri": "https://mytour.vn/vi/blog/bai-viet/cho-hanh-thong-tay-thien-duong-mua-sam-voi-gia-ca-phai-chang-cho-gioi-tre-mytour.html",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Chợ phù hợp hơn vào chiều tối khi hoạt động mua sắm sôi động, nhưng scheduler nên tránh xếp thời lượng quá ngắn nếu người dùng thực sự muốn mua hàng vì việc đi qua nhiều khu bán có thể mất thời gian. Đây cũng là nơi có mật độ người cao, nên context module có thể dùng mức độ đông đúc như tín hiệu để thay đổi thời điểm ghé. Người dùng cần tự quản lý tư trang ở khu vực đông người và kiểm tra giá trước khi mua. Nếu mục tiêu chỉ là tham quan nhanh, hệ thống có thể ưu tiên các chợ gần tuyến hiện tại hơn để giảm travel time.",
+      "source": {
+        "label": "Mytour - Chợ Hạnh Thông Tây",
+        "uri": "https://mytour.vn/vi/blog/bai-viet/cho-hanh-thong-tay-thien-duong-mua-sam-voi-gia-ca-phai-chang-cho-gioi-tre-mytour.html",
+        "retrievedAt": "2026-08-29"
+      }
+    }
+  ]
+}

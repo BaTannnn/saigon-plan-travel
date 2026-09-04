@@ -1,9 +1,7 @@
 package com.saigonplantravel.backend.scheduling.model;
 
-import com.saigonplantravel.backend.place.entity.Place;
-
 public record ScoredCandidate(
-        Place place,
+        SchedulingPlace place,
         String matchedSection,
         double semanticScore,
         double travelDistanceKm,

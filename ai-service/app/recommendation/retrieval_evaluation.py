@@ -2,8 +2,6 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
-from app.recommendation.mmr import cosine_similarity
-
 
 @dataclass(frozen=True)
 class RetrievalEvaluationCase:
@@ -18,7 +16,6 @@ class QueryEvaluation:
     retrieved_place_slugs: list[str]
     recall_by_k: dict[int, float]
     reciprocal_rank: float
-    intra_list_diversity_by_k: dict[int, float]
 
 
 @dataclass(frozen=True)
@@ -27,7 +24,6 @@ class EvaluationSummary:
     query_evaluations: list[QueryEvaluation]
     recall_by_k: dict[int, float]
     mean_reciprocal_rank: float
-    intra_list_diversity_by_k: dict[int, float]
 
 
 def recall_at_k(
@@ -72,40 +68,6 @@ def mean_reciprocal_rank(
         reciprocal_rank(relevant, retrieved)
         for relevant, retrieved in rankings
     ) / len(rankings)
-
-
-def intra_list_diversity_at_k(
-    retrieved_place_slugs: list[str],
-    embeddings_by_slug: dict[str, list[float]],
-    k: int,
-) -> float:
-    if k <= 0:
-        raise ValueError("k must be greater than zero")
-
-    selected_place_slugs = retrieved_place_slugs[:k]
-
-    for place_slug in selected_place_slugs:
-        if place_slug not in embeddings_by_slug:
-            raise ValueError(
-                f"Missing embedding for place: {place_slug}"
-            )
-
-    if len(selected_place_slugs) < 2:
-        return 0.0
-
-    total_dissimilarity = 0.0
-    pair_count = 0
-
-    for left_index, left_slug in enumerate(selected_place_slugs):
-        for right_slug in selected_place_slugs[left_index + 1:]:
-            similarity = cosine_similarity(
-                embeddings_by_slug[left_slug],
-                embeddings_by_slug[right_slug],
-            )
-            total_dissimilarity += 1.0 - similarity
-            pair_count += 1
-
-    return total_dissimilarity / pair_count
 
 
 def load_evaluation_cases(
@@ -175,7 +137,6 @@ def evaluate_rankings(
     configuration_name: str,
     cases: list[RetrievalEvaluationCase],
     rankings_by_case_id: dict[str, list[str]],
-    embeddings_by_case_id: dict[str, dict[str, list[float]]],
     top_k_values: tuple[int, ...],
 ) -> EvaluationSummary:
     if not cases:
@@ -192,13 +153,7 @@ def evaluate_rankings(
                 f"Missing retrieval ranking for case: {case.case_id}"
             )
 
-        if case.case_id not in embeddings_by_case_id:
-            raise ValueError(
-                f"Missing retrieval embeddings for case: {case.case_id}"
-            )
-
         retrieved = rankings_by_case_id[case.case_id]
-        embeddings = embeddings_by_case_id[case.case_id]
         recalls = {
             k: recall_at_k(
                 case.relevant_place_slugs,
@@ -207,15 +162,6 @@ def evaluate_rankings(
             )
             for k in top_k_values
         }
-        diversity_by_k = {
-            k: intra_list_diversity_at_k(
-                retrieved,
-                embeddings,
-                k,
-            )
-            for k in top_k_values
-        }
-
         query_evaluations.append(
             QueryEvaluation(
                 case=case,
@@ -225,7 +171,6 @@ def evaluate_rankings(
                     case.relevant_place_slugs,
                     retrieved,
                 ),
-                intra_list_diversity_by_k=diversity_by_k,
             )
         )
 
@@ -248,21 +193,11 @@ def evaluate_rankings(
         ]
     )
 
-    average_diversity_by_k = {
-        k: sum(
-            query_evaluation.intra_list_diversity_by_k[k]
-            for query_evaluation in query_evaluations
-        )
-        / len(query_evaluations)
-        for k in top_k_values
-    }
-
     return EvaluationSummary(
         configuration_name=configuration_name,
         query_evaluations=query_evaluations,
         recall_by_k=average_recall_by_k,
         mean_reciprocal_rank=mrr,
-        intra_list_diversity_by_k=average_diversity_by_k,
     )
 
 

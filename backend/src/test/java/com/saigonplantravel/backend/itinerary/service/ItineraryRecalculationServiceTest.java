@@ -8,13 +8,16 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import com.saigonplantravel.backend.itinerary.mapper.SchedulingInputMapper;
 import com.saigonplantravel.backend.itinerary.model.CalculatedItinerary;
 import com.saigonplantravel.backend.itinerary.validation.ItineraryIssue;
 import com.saigonplantravel.backend.itinerary.validation.ItineraryIssueEvaluator;
 import com.saigonplantravel.backend.itinerary.validation.ItineraryIssueType;
 import com.saigonplantravel.backend.place.entity.Place;
 import com.saigonplantravel.backend.scheduling.model.ItineraryPlan;
+import com.saigonplantravel.backend.scheduling.model.PlanningContext;
 import com.saigonplantravel.backend.scheduling.model.TravelEstimate;
+import com.saigonplantravel.backend.scheduling.service.StopScheduleCalculator;
 import com.saigonplantravel.backend.scheduling.travel.TravelEstimator;
 import com.saigonplantravel.backend.trip.domain.EnvironmentPreference;
 import com.saigonplantravel.backend.trip.domain.TravelPace;
@@ -50,7 +53,8 @@ class ItineraryRecalculationServiceTest {
     @BeforeEach
     void setUp() {
 
-        service = new ItineraryRecalculationService(travelEstimator, issueEvaluator);
+        service = new ItineraryRecalculationService(
+                new SchedulingInputMapper(), new StopScheduleCalculator(travelEstimator), issueEvaluator);
     }
 
     @Test
@@ -71,7 +75,7 @@ class ItineraryRecalculationServiceTest {
                         first.getLatitude(), first.getLongitude(), second.getLatitude(), second.getLongitude()))
                 .thenReturn(new TravelEstimate(2.0, 20));
 
-        when(issueEvaluator.evaluate(eq(trip), any(ItineraryPlan.class))).thenReturn(List.of());
+        when(issueEvaluator.evaluate(any(PlanningContext.class), any(ItineraryPlan.class))).thenReturn(List.of());
 
         CalculatedItinerary result = service.recalculate(trip, List.of(first, second));
 
@@ -79,7 +83,7 @@ class ItineraryRecalculationServiceTest {
 
         assertThat(plan.stops()).hasSize(2);
 
-        assertThat(plan.stops()).extracting(stop -> stop.place().getSlug()).containsExactly("first", "second");
+        assertThat(plan.stops()).extracting(stop -> stop.place().slug()).containsExactly("first", "second");
 
         assertThat(plan.stops().get(0).arrivalTime()).isEqualTo(LocalTime.of(8, 10));
 
@@ -106,7 +110,7 @@ class ItineraryRecalculationServiceTest {
         verify(travelEstimator)
                 .estimate(first.getLatitude(), first.getLongitude(), second.getLatitude(), second.getLongitude());
 
-        verify(issueEvaluator).evaluate(eq(trip), eq(plan));
+        verify(issueEvaluator).evaluate(any(PlanningContext.class), eq(plan));
     }
 
     @Test
@@ -120,7 +124,7 @@ class ItineraryRecalculationServiceTest {
         when(travelEstimator.estimate(ORIGIN_LATITUDE, ORIGIN_LONGITUDE, museum.getLatitude(), museum.getLongitude()))
                 .thenReturn(new TravelEstimate(2.0, 10));
 
-        when(issueEvaluator.evaluate(eq(trip), any(ItineraryPlan.class))).thenReturn(List.of());
+        when(issueEvaluator.evaluate(any(PlanningContext.class), any(ItineraryPlan.class))).thenReturn(List.of());
 
         CalculatedItinerary result = service.recalculate(trip, List.of(museum));
 
@@ -154,12 +158,12 @@ class ItineraryRecalculationServiceTest {
                         first.getLatitude(), first.getLongitude(), second.getLatitude(), second.getLongitude()))
                 .thenReturn(new TravelEstimate(1.0, 5));
 
-        when(issueEvaluator.evaluate(eq(trip), any(ItineraryPlan.class))).thenReturn(List.of());
+        when(issueEvaluator.evaluate(any(PlanningContext.class), any(ItineraryPlan.class))).thenReturn(List.of());
 
         CalculatedItinerary result = service.recalculate(trip, List.of(first, second));
 
         assertThat(result.plan().stops())
-                .extracting(stop -> stop.place().getSlug())
+                .extracting(stop -> stop.place().slug())
                 .containsExactly("first", "second");
     }
 
@@ -176,13 +180,14 @@ class ItineraryRecalculationServiceTest {
 
         ItineraryIssue overBudget = ItineraryIssue.forPlan(ItineraryIssueType.OVER_BUDGET);
 
-        when(issueEvaluator.evaluate(eq(trip), any(ItineraryPlan.class))).thenReturn(List.of(overBudget));
+        when(issueEvaluator.evaluate(any(PlanningContext.class), any(ItineraryPlan.class)))
+                .thenReturn(List.of(overBudget));
 
         CalculatedItinerary result = service.recalculate(trip, List.of(museum));
 
         assertThat(result.plan().stops()).hasSize(1);
 
-        assertThat(result.plan().stops().getFirst().place()).isEqualTo(museum);
+        assertThat(result.plan().stops().getFirst().place().slug()).isEqualTo("museum");
 
         assertThat(result.plan().totalEstimatedCost()).isEqualByComparingTo("150000");
 
@@ -204,13 +209,14 @@ class ItineraryRecalculationServiceTest {
 
         ItineraryIssue closed = ItineraryIssue.forPlace(ItineraryIssueType.PLACE_CLOSED, "museum");
 
-        when(issueEvaluator.evaluate(eq(trip), any(ItineraryPlan.class))).thenReturn(List.of(overBudget, closed));
+        when(issueEvaluator.evaluate(any(PlanningContext.class), any(ItineraryPlan.class)))
+                .thenReturn(List.of(overBudget, closed));
 
         CalculatedItinerary result = service.recalculate(trip, List.of(museum));
 
         assertThat(result.plan().stops()).hasSize(1);
 
-        assertThat(result.plan().stops().getFirst().place().getSlug()).isEqualTo("museum");
+        assertThat(result.plan().stops().getFirst().place().slug()).isEqualTo("museum");
 
         assertThat(result.issues()).containsExactly(overBudget, closed);
     }
@@ -220,7 +226,7 @@ class ItineraryRecalculationServiceTest {
 
         Trip trip = trip(new BigDecimal("500000"));
 
-        when(issueEvaluator.evaluate(eq(trip), any(ItineraryPlan.class))).thenReturn(List.of());
+        when(issueEvaluator.evaluate(any(PlanningContext.class), any(ItineraryPlan.class))).thenReturn(List.of());
 
         CalculatedItinerary result = service.recalculate(trip, List.of());
 
@@ -240,7 +246,7 @@ class ItineraryRecalculationServiceTest {
 
         verifyNoInteractions(travelEstimator);
 
-        verify(issueEvaluator).evaluate(eq(trip), eq(plan));
+        verify(issueEvaluator).evaluate(any(PlanningContext.class), eq(plan));
     }
 
     private Trip trip(BigDecimal budget) {

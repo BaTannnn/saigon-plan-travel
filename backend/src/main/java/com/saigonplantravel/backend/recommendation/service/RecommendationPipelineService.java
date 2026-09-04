@@ -1,6 +1,5 @@
 package com.saigonplantravel.backend.recommendation.service;
 
-import com.saigonplantravel.backend.recommendation.filter.BudgetCandidateFilter;
 import com.saigonplantravel.backend.recommendation.filter.OpeningHoursCandidateFilter;
 import com.saigonplantravel.backend.recommendation.model.RecommendationCandidate;
 import com.saigonplantravel.backend.trip.entity.Trip;
@@ -14,16 +13,14 @@ public class RecommendationPipelineService {
 
     private final PlaceRecommendationService placeRecommendationService;
     private final OpeningHoursCandidateFilter openingHoursCandidateFilter;
-    private final BudgetCandidateFilter budgetCandidateFilter;
 
     public RecommendationPipelineService(
             PlaceRecommendationService placeRecommendationService,
-            OpeningHoursCandidateFilter openingHoursCandidateFilter,
-            BudgetCandidateFilter budgetCandidateFilter) {
+            OpeningHoursCandidateFilter openingHoursCandidateFilter
+            ) {
 
         this.placeRecommendationService = placeRecommendationService;
         this.openingHoursCandidateFilter = openingHoursCandidateFilter;
-        this.budgetCandidateFilter = budgetCandidateFilter;
     }
 
     public List<RecommendationCandidate> recommend(Trip trip, String preferenceDescription) {
@@ -32,7 +29,6 @@ public class RecommendationPipelineService {
 
         candidates = openingHoursCandidateFilter.filter(candidates, trip);
 
-        candidates = budgetCandidateFilter.filter(candidates, trip);
 
         return candidates;
     }

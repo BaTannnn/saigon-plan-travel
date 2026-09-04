@@ -1,8 +1,8 @@
 package com.saigonplantravel.backend.scheduling.scoring;
 
-import com.saigonplantravel.backend.recommendation.model.RecommendationCandidate;
+import com.saigonplantravel.backend.scheduling.model.PlanningContext;
 import com.saigonplantravel.backend.scheduling.model.ScoredCandidate;
-import com.saigonplantravel.backend.trip.entity.Trip;
+import com.saigonplantravel.backend.scheduling.model.SchedulingCandidate;
 import java.math.BigDecimal;
 import org.springframework.stereotype.Component;
 
@@ -26,18 +26,18 @@ public class CandidateScorer {
     }
 
     public ScoredCandidate score(
-            RecommendationCandidate candidate,
-            Trip trip,
+            SchedulingCandidate candidate,
+            PlanningContext context,
             BigDecimal availableBudget,
             double travelDistanceKm,
             int travelMinutes) {
 
         double travelScore = travelScorer.score(travelMinutes);
 
-        double budgetScore = budgetScorer.score(candidate.place().getMinCost(), availableBudget);
+        double budgetScore = budgetScorer.score(candidate.place().estimatedCost(), availableBudget);
 
-        double environmentScore = environmentScorer.score(
-                trip.getEnvironmentPreference(), candidate.place().getIndoor());
+        double environmentScore =
+                environmentScorer.score(context.environmentPreference(), candidate.place().indoor());
 
         double finalScore = SEMANTIC_WEIGHT * candidate.semanticScore()
                 + TRAVEL_WEIGHT * travelScore

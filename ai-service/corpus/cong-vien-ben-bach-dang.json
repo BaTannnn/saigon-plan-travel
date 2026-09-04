@@ -1,0 +1,46 @@
+{
+  "placeSlug": "cong-vien-ben-bach-dang",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Công viên Bến Bạch Đằng là không gian công cộng ven sông Sài Gòn nằm trên trục Tôn Đức Thắng ở khu vực trung tâm Thành phố Hồ Chí Minh. Sau đợt chỉnh trang lớn hoàn thành năm 2022, công viên trở thành điểm dạo bộ, nghỉ chân, chụp ảnh và ngắm cảnh sông thuận tiện cho cả người dân lẫn du khách. Không gian mở, tầm nhìn hướng ra mặt nước và vị trí gần Nguyễn Huệ, Nhà hát Thành phố, khu Đồng Khởi giúp công viên phù hợp để cân bằng một lịch trình có nhiều điểm tham quan trong nhà.",
+      "source": {
+        "label": "Trung tâm Báo chí TP.HCM - Khánh thành Công viên Bến Bạch Đằng",
+        "uri": "https://ttbc-hcm.gov.vn/khanh-thanh-cong-vien-ben-bach-dang-va-cong-vien-me-linh-1008061.html",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Khu vực Bến Bạch Đằng có lịch sử gắn với hoạt động ven sông và giao thông đường thủy của Sài Gòn. Trong giai đoạn hiện đại, thành phố đã thực hiện dự án chỉnh trang công viên nhằm nâng cấp cảnh quan và không gian công cộng ở bờ sông trung tâm. Dự án hoàn thành và được khánh thành vào tháng 3 năm 2022 với quy mô chỉnh trang khoảng 1,6 ha. Theo thông tin từ Trung tâm Báo chí Thành phố Hồ Chí Minh, công trình bao gồm khoảng 8.700 m² đường dạo và sân sinh hoạt lát đá cùng khoảng 7.000 m² mảng xanh, đồng thời bổ sung hệ thống tưới, chiếu sáng và chiếu sáng mỹ thuật. Việc cải tạo giúp tăng tính kết nối giữa cảnh quan ven sông, Công viên Mê Linh, khu vực Cột cờ Thủ Ngữ và các điểm tham quan của trung tâm thành phố.",
+      "source": {
+        "label": "Trung tâm Báo chí TP.HCM - Khánh thành Công viên Bến Bạch Đằng",
+        "uri": "https://ttbc-hcm.gov.vn/khanh-thanh-cong-vien-ben-bach-dang-va-cong-vien-me-linh-1008061.html",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Giá trị chính của công viên nằm ở cảnh quan ven sông và khả năng tạo một khoảng nghỉ giữa các điểm tham quan có mật độ cao ở trung tâm. Lối đi rộng, mảng xanh, khu vực ngồi nghỉ và hệ thống chiếu sáng giúp nơi đây phù hợp với hoạt động đi bộ, ngắm sông và chụp ảnh, đặc biệt vào buổi chiều hoặc buổi tối khi thời tiết dễ chịu hơn. Không giống bảo tàng hay công trình tôn giáo, trải nghiệm tại công viên không yêu cầu người dùng theo một tuyến tham quan cố định. Trong recommendation, các đặc trưng như “ngoài trời”, “ngắm cảnh”, “đi bộ”, “ven sông”, “miễn phí” và “gần trung tâm” có thể giúp hệ thống chọn công viên làm điểm đệm giữa hai hoạt động chính hoặc thay cho một điểm trong nhà khi người dùng muốn lịch trình thư thả hơn.",
+      "source": {
+        "label": "Báo Điện tử Chính phủ tại TP.HCM - Công viên Bến Bạch Đằng",
+        "uri": "https://tphcm.baochinhphu.vn/dien-mao-moi-cong-vien-ben-bach-dang-thu-hut-du-khach-101220221185527255.htm",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Công viên phù hợp với một điểm dừng ngắn hoặc trung bình để đi bộ, nghỉ chân và quan sát hoạt động trên sông. Vì đây là không gian ngoài trời, mức độ thoải mái chịu ảnh hưởng rõ rệt bởi mưa, nắng và nhiệt độ; đây là ví dụ tốt để module context-aware điều chỉnh lịch trình dựa trên thời tiết. Hệ thống có thể ưu tiên công viên vào cuối buổi chiều, sau một điểm tham quan trong nhà hoặc trước khi người dùng chuyển sang hoạt động buổi tối ở Nguyễn Huệ. Nếu trời mưa lớn hoặc nắng gắt, scheduler có thể giảm thời lượng hoặc thay bằng địa điểm trong nhà gần đó.",
+      "source": {
+        "label": "Báo Điện tử Chính phủ tại TP.HCM - Công viên Bến Bạch Đằng",
+        "uri": "https://tphcm.baochinhphu.vn/dien-mao-moi-cong-vien-ben-bach-dang-thu-hut-du-khach-101220221185527255.htm",
+        "retrievedAt": "2026-08-29"
+      }
+    }
+  ]
+}

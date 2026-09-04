@@ -33,8 +33,6 @@ public class CoarsePlaceEligibilityService {
     private boolean hasFeasibleOpeningWindow(Place place, Trip trip) {
         OpeningHoursFeasibility feasibility =
                 openingHoursEvaluator.evaluate(place, trip.getTripDate(), trip.getStartTime(), trip.getEndTime());
-
-        // Coarse filtering excludes only known-impossible places; unknown data remains eligible.
         return feasibility != OpeningHoursFeasibility.INFEASIBLE;
     }
 }

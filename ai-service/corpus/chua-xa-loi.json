@@ -1,0 +1,46 @@
+{
+  "placeSlug": "chua-xa-loi",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Chùa Xá Lợi nằm tại số 89 Bà Huyện Thanh Quan, là một địa điểm Phật giáo nổi bật ở khu vực trung tâm TP.HCM. Không gian chùa kết hợp chức năng tín ngưỡng, sinh hoạt Phật học và giá trị tham quan kiến trúc - lịch sử. Với vị trí tương đối gần nhiều điểm trung tâm, địa điểm phù hợp cho một điểm dừng khoảng một giờ trong lịch trình văn hóa, tâm linh hoặc kiến trúc. Khi recommendation, có thể ưu tiên các sở thích về tôn giáo, lịch sử, không gian yên tĩnh và công trình văn hóa.",
+      "source": {
+        "label": "Chùa Phật học Xá Lợi - Liên hệ",
+        "uri": "https://xaloipagoda.com/lien-he/",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Theo Cục Du lịch Quốc gia Việt Nam, chùa được khởi công xây dựng năm 1956 và khánh thành năm 1958, do Hội Phật học Nam Việt tổ chức xây dựng để thờ Xá lợi Phật. Chùa còn gắn với nhiều dấu mốc của Phật giáo ở miền Nam trong thế kỷ XX. Tư liệu giới thiệu du lịch TP.HCM cho biết công trình được xếp hạng di tích lịch sử cấp Thành phố năm 2005. Đây là phần thông tin hữu ích để RAG giải thích lý do địa điểm phù hợp với người quan tâm lịch sử tôn giáo chứ không chỉ dựa trên độ tương đồng tên gọi.",
+      "source": {
+        "label": "Cục Du lịch Quốc gia Việt Nam - Chùa Xá Lợi",
+        "uri": "https://vietnamtourism.vn/index.php/tourism/items/258",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Điểm nhấn dễ nhận biết của Chùa Xá Lợi là chính điện, tháp chuông nhiều tầng và hệ thống không gian phục vụ sinh hoạt Phật học. Cục Du lịch Quốc gia mô tả tượng Đức Phật Thích Ca tại điện thờ cùng ngọc Xá lợi Phật và tháp chuông được xây dựng đầu thập niên 1960. Trải nghiệm ở đây thiên về quan sát kiến trúc, tìm hiểu lịch sử Phật giáo và cảm nhận không gian tĩnh hơn là vui chơi giải trí. Vì vậy hệ thống nên xếp chùa vào nhóm trải nghiệm văn hóa - tâm linh có thời lượng vừa phải.",
+      "source": {
+        "label": "Cục Du lịch Quốc gia Việt Nam - Chùa Xá Lợi",
+        "uri": "https://vietnamtourism.vn/index.php/tourism/items/258/2",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Trang chính thức của chùa công bố khung giờ đón khách theo hai buổi sáng và chiều. Khi lập lịch, hệ thống nên tránh coi đây như điểm tham quan tự do cả ngày và cần tôn trọng các hoạt động nghi lễ đang diễn ra. Chi phí tham quan cơ bản thấp, nhưng người dùng có thể phát sinh chi phí gửi xe hoặc công đức. Đây là điểm khá phù hợp cho itinerary trung tâm trong ngày nắng nóng vì phần lớn trải nghiệm diễn ra trong khuôn viên có mái che, song hành vi ứng xử và trang phục lịch sự nên được nhắc trong phần giải thích cho người dùng.",
+      "source": {
+        "label": "Chùa Phật học Xá Lợi - Liên hệ",
+        "uri": "https://xaloipagoda.com/lien-he/",
+        "retrievedAt": "2026-08-29"
+      }
+    }
+  ]
+}

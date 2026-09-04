@@ -13,11 +13,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.saigonplantravel.backend.auth.domain.UserRole;
 import com.saigonplantravel.backend.auth.security.JwtAuthenticationService;
+import com.saigonplantravel.backend.auth.security.RestAuthenticationEntryPoint;
+import com.saigonplantravel.backend.auth.security.SecurityConfig;
 import com.saigonplantravel.backend.auth.security.UserPrincipal;
+import com.saigonplantravel.backend.auth.security.jwt.JwtService;
 import com.saigonplantravel.backend.common.exception.GlobalExceptionHandler;
-import com.saigonplantravel.backend.common.security.RestAuthenticationEntryPoint;
-import com.saigonplantravel.backend.common.security.SecurityConfig;
-import com.saigonplantravel.backend.common.security.jwt.JwtService;
 import com.saigonplantravel.backend.itinerary.dto.ItineraryDetailItemResponse;
 import com.saigonplantravel.backend.itinerary.dto.ItineraryDetailResponse;
 import com.saigonplantravel.backend.itinerary.dto.ItineraryPlaceResponse;
@@ -27,6 +27,7 @@ import com.saigonplantravel.backend.itinerary.dto.ReorderItineraryItemsRequest;
 import com.saigonplantravel.backend.itinerary.dto.SaveItineraryItemRequest;
 import com.saigonplantravel.backend.itinerary.exception.DuplicateItineraryPlaceException;
 import com.saigonplantravel.backend.itinerary.exception.InvalidItineraryOrderException;
+import com.saigonplantravel.backend.itinerary.exception.ItineraryExceptionHandler;
 import com.saigonplantravel.backend.itinerary.exception.ItineraryItemNotFoundException;
 import com.saigonplantravel.backend.itinerary.service.ItineraryService;
 import java.math.BigDecimal;
@@ -45,7 +46,12 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import tools.jackson.databind.ObjectMapper;
 
 @WebMvcTest(ItineraryController.class)
-@Import({GlobalExceptionHandler.class, SecurityConfig.class, RestAuthenticationEntryPoint.class})
+@Import({
+    GlobalExceptionHandler.class,
+    ItineraryExceptionHandler.class,
+    SecurityConfig.class,
+    RestAuthenticationEntryPoint.class
+})
 class ItineraryControllerTest {
 
     private static final String PLACE_SLUG = "cho-ben-thanh";
@@ -134,6 +140,8 @@ class ItineraryControllerTest {
                 .andExpect(jsonPath("$.items[0].place.latitude").value(PLACE_LATITUDE.doubleValue()))
                 .andExpect(jsonPath("$.items[0].place.longitude").value(PLACE_LONGITUDE.doubleValue()))
                 .andExpect(jsonPath("$.items[0].place.primaryImageUrl").value(org.hamcrest.Matchers.nullValue()))
+                .andExpect(jsonPath("$.items[0].place.minCost").value(0))
+                .andExpect(jsonPath("$.items[0].place.maxCost").value(10000))
 
                 /*
                  * Internal database Place.id
@@ -351,8 +359,14 @@ class ItineraryControllerTest {
 
     private ItineraryDetailResponse itineraryResponse(UUID tripPublicId) {
 
-        ItineraryPlaceResponse place =
-                new ItineraryPlaceResponse(PLACE_SLUG, PLACE_NAME, PLACE_LATITUDE, PLACE_LONGITUDE);
+        ItineraryPlaceResponse place = new ItineraryPlaceResponse(
+                PLACE_SLUG,
+                PLACE_NAME,
+                PLACE_LATITUDE,
+                PLACE_LONGITUDE,
+                null,
+                BigDecimal.ZERO,
+                new BigDecimal("10000"));
 
         ItineraryScheduleResponse schedule = new ItineraryScheduleResponse(
                 LocalTime.of(8, 10), LocalTime.of(8, 10), LocalTime.of(9, 40), 10, 1.5, new BigDecimal("30000"));

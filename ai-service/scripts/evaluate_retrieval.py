@@ -3,7 +3,6 @@ import json
 from pathlib import Path
 
 from app.db.postgres import pool
-from app.recommendation.mmr import select_with_mmr
 from app.recommendation.recommendation_service import (
     retrieve_candidate_places,
 )
@@ -23,55 +22,26 @@ DATASET_PATH = (
 CORPUS_DIR = Path(__file__).resolve().parents[1] / "corpus"
 TOP_K_VALUES = (5, 10, 15)
 FETCH_K = 50
-CANDIDATE_K = 30
-DEFAULT_MMR_LAMBDAS = (0.7,)
 
 
 def build_rankings(
     cases: list[RetrievalEvaluationCase],
-    mmr_lambdas: list[float],
-) -> tuple[
-    dict[str, dict[str, list[str]]],
-    dict[str, dict[str, list[float]]],
-]:
+) -> dict[str, list[str]]:
     maximum_top_k = max(TOP_K_VALUES)
-    rankings: dict[str, dict[str, list[str]]] = {
-        "semantic": {},
-        **{
-            _mmr_configuration_name(lambda_weight): {}
-            for lambda_weight in mmr_lambdas
-        },
-    }
-    embeddings_by_case_id: dict[str, dict[str, list[float]]] = {}
+    rankings: dict[str, list[str]] = {}
 
     for case in cases:
-        candidates, embeddings_by_slug = retrieve_candidate_places(
+        candidates = retrieve_candidate_places(
             query=case.query,
+            top_k=maximum_top_k,
             fetch_k=FETCH_K,
-            candidate_k=CANDIDATE_K,
         )
-        embeddings_by_case_id[case.case_id] = embeddings_by_slug
-
-        rankings["semantic"][case.case_id] = [
+        rankings[case.case_id] = [
             candidate.place_slug
             for candidate in candidates[:maximum_top_k]
         ]
 
-        for lambda_weight in mmr_lambdas:
-            selected = select_with_mmr(
-                candidates=candidates,
-                embeddings_by_slug=embeddings_by_slug,
-                limit=maximum_top_k,
-                lambda_weight=lambda_weight,
-            )
-            rankings[
-                _mmr_configuration_name(lambda_weight)
-            ][case.case_id] = [
-                candidate.place_slug
-                for candidate in selected
-            ]
-
-    return rankings, embeddings_by_case_id
+    return rankings
 
 
 def print_summary(
@@ -86,9 +56,6 @@ def print_summary(
         print(f"Recall@{k}:  {recall:.4f}")
 
     print(f"MRR:        {summary.mean_reciprocal_rank:.4f}")
-
-    for k, diversity in summary.intra_list_diversity_by_k.items():
-        print(f"ILD@{k}:     {diversity:.4f}")
 
     if not show_cases:
         return
@@ -110,14 +77,7 @@ def print_summary(
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Evaluate dense retrieval with and without MMR.",
-    )
-    parser.add_argument(
-        "--mmr-lambdas",
-        type=_lambda_weight,
-        nargs="+",
-        default=list(DEFAULT_MMR_LAMBDAS),
-        help="MMR lambda values to compare (default: 0.7).",
+        description="Evaluate semantic retrieval.",
     )
     parser.add_argument(
         "--output",
@@ -146,22 +106,17 @@ def main() -> None:
     pool.open()
 
     try:
-        rankings, embeddings_by_case_id = build_rankings(
-            cases,
-            args.mmr_lambdas,
-        )
+        rankings = build_rankings(cases)
     finally:
         pool.close()
 
     summaries = [
         evaluate_rankings(
-            configuration_name=configuration_name,
+            configuration_name="semantic",
             cases=cases,
-            rankings_by_case_id=configuration_rankings,
-            embeddings_by_case_id=embeddings_by_case_id,
+            rankings_by_case_id=rankings,
             top_k_values=TOP_K_VALUES,
         )
-        for configuration_name, configuration_rankings in rankings.items()
     ]
 
     for summary in summaries:
@@ -186,7 +141,6 @@ def write_json_result(
                 "configuration": summary.configuration_name,
                 "Recall@K": summary.recall_by_k,
                 "MRR": summary.mean_reciprocal_rank,
-                "ILD@K": summary.intra_list_diversity_by_k,
                 "cases": [
                     {
                         "id": query_evaluation.case.case_id,
@@ -207,21 +161,6 @@ def write_json_result(
     )
     print()
     print(f"Wrote JSON result: {output_path}")
-
-
-def _mmr_configuration_name(lambda_weight: float) -> str:
-    return f"semantic + MMR (lambda={lambda_weight:g})"
-
-
-def _lambda_weight(value: str) -> float:
-    lambda_weight = float(value)
-
-    if not 0.0 <= lambda_weight <= 1.0:
-        raise argparse.ArgumentTypeError(
-            "MMR lambda must be between 0 and 1"
-        )
-
-    return lambda_weight
 
 
 if __name__ == "__main__":

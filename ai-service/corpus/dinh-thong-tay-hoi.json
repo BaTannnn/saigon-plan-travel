@@ -1,0 +1,46 @@
+{
+  "placeSlug": "dinh-thong-tay-hoi",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Đình Thông Tây Hội nằm tại khu vực Gò Vấp và là một trong những đình làng cổ tiêu biểu còn tồn tại tại TP.HCM. Địa điểm phù hợp với người quan tâm lịch sử hình thành vùng Gia Định, tín ngưỡng Thành hoàng, kiến trúc truyền thống Nam Bộ và các di sản nằm ngoài lõi du lịch trung tâm. Không gian không thiên về vui chơi mà phù hợp với một điểm tham quan văn hóa khoảng một giờ. Có thể kết hợp với Miếu Nổi Phù Châu hoặc các điểm Gò Vấp để giảm quãng đường di chuyển.",
+      "source": {
+        "label": "Du lịch TP.HCM - Du lịch Quận Gò Vấp",
+        "uri": "https://visithcmc.net/en/news/du-lich-quan-go-vap",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Tư liệu giới thiệu du lịch Gò Vấp xác định Đình Thông Tây Hội là di tích kiến trúc nghệ thuật cấp Quốc gia và là ngôi đình có lịch sử hơn 300 năm. Các tư liệu báo chí về di sản cho biết đình gắn với lớp cư dân khai phá vùng Gia Định từ cuối thế kỷ XVII; công trình hiện nay được hình thành qua nhiều lần xây dựng và tu bổ. Đây là dữ liệu có giá trị cho RAG khi cần giải thích vì sao địa điểm phù hợp với nhu cầu tìm hiểu văn hóa Nam Bộ, lịch sử đô thị và tín ngưỡng làng xã.",
+      "source": {
+        "label": "Sài Gòn Tiếp Thị - Đình Thông Tây Hội hơn 300 năm tuổi",
+        "uri": "https://sgtt.thesaigontimes.vn/ghe-tham-ngoi-dinh-hon-300-nam-tuoi-lau-doi-nhat-sai-gon/",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Điểm nổi bật của đình nằm ở bố cục kiến trúc truyền thống, hệ khung gỗ, các gian võ ca - tiền điện - chính điện và nhiều chi tiết trang trí cổ. Không gian đình còn gắn với hoạt động tế lễ, trong đó lễ Kỳ Yên là một sinh hoạt cộng đồng quan trọng. Khi recommendation, nên gắn địa điểm với lịch sử, kiến trúc, văn hóa và tín ngưỡng hơn là chỉ gắn nhãn tôn giáo. Đây cũng là một corpus hữu ích để semantic retrieval nhận ra các truy vấn như “đình làng cổ”, “kiến trúc Nam Bộ” hoặc “văn hóa Gia Định”.",
+      "source": {
+        "label": "Tuổi Trẻ/Phụ Nữ - Hành trình khám phá vùng đất Gò Môn xưa",
+        "uri": "https://tuoitre.vn/phunuonline/hanh-trinh-ve-coi-nguon-kham-pha-vung-dat-go-mon-xua-1101537000.htm",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Đình là cơ sở tín ngưỡng cộng đồng nên khách tham quan cần giữ thái độ phù hợp, đặc biệt khi có lễ cúng hoặc hoạt động địa phương. Các listing hiện tại cho thấy giờ mở cửa thường chia thành buổi sáng và buổi chiều, vì vậy lịch trình nên có khoảng an toàn thay vì xếp sát giờ đóng cửa. Chi phí tham quan cơ bản thấp và thời lượng vừa phải. Nếu itinerary đã có nhiều điểm ở trung tâm, scheduler nên cân nhắc khoảng cách; ngược lại khi đi Gò Vấp, có thể ghép đình với Miếu Nổi để tạo một cụm văn hóa - tín ngưỡng rõ ràng.",
+      "source": {
+        "label": "Du lịch TP.HCM - Kế hoạch chuyến đi",
+        "uri": "https://visithcmc.net/page/ke-hoach-chuyen-di",
+        "retrievedAt": "2026-08-29"
+      }
+    }
+  ]
+}

@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ItineraryGenerationSheet } from "@/features/itinerary/components/itinerary-generation-sheet";
 import {
-  ItineraryIssues,
   ItinerarySummary,
+  ItineraryWarningSummary,
 } from "@/features/itinerary/components/itinerary-insights";
 import { ItineraryTimeline } from "@/features/itinerary/components/itinerary-timeline";
 import {
@@ -185,10 +185,9 @@ export function ItineraryView({
             headingId="itinerary-summary-heading"
           />
 
-          <ItineraryIssues
+          <ItineraryWarningSummary
             issues={itinerary.issues}
             places={items.map((item) => item.place)}
-            headingId="itinerary-issues-heading"
           />
 
           <section className="mt-7" aria-labelledby="itinerary-items-heading">

@@ -22,7 +22,6 @@ class CandidateChunk:
     place_name: str
     section: str
     similarity: float
-    embedding: list[float]
 
 
 @dataclass
@@ -282,51 +281,33 @@ def search_similar_chunks(
 def search_candidate_chunks(
     query_embedding: list[float],
     limit: int = 30,
-    eligible_place_slugs: list[str] | None = None,
 ) -> list[CandidateChunk]:
-    if eligible_place_slugs == []:
-        return []
-
-    eligibility_clause = ""
-    if eligible_place_slugs is not None:
-        eligibility_clause = "AND p.slug = ANY(%s)"
-
-    query = f"""
+    query = """
         SELECT
             p.slug,
             p.name,
             c.section,
-            1 - (c.embedding <=> %s) AS similarity,
-            c.embedding
+            1 - (c.embedding <=> %s) AS similarity
         FROM place_knowledge_chunks c
         JOIN places p
             ON p.id = c.place_id
         WHERE p.active = TRUE
-          {eligibility_clause}
         ORDER BY c.embedding <=> %s
         LIMIT %s
     """
 
     vector = Vector(query_embedding)
-    parameters: tuple[object, ...]
-
-    if eligible_place_slugs is None:
-        parameters = (
-            vector,
-            vector,
-            limit,
-        )
-    else:
-        parameters = (
-            vector,
-            eligible_place_slugs,
-            vector,
-            limit,
-        )
 
     with get_connection() as connection:
         with connection.cursor() as cursor:
-            cursor.execute(query, parameters)
+            cursor.execute(
+                query,
+                (
+                    vector,
+                    vector,
+                    limit,
+                ),
+            )
 
             rows = cursor.fetchall()
 
@@ -336,7 +317,6 @@ def search_candidate_chunks(
             place_name=row[1],
             section=row[2],
             similarity=float(row[3]),
-            embedding=row[4].to_list(),
         )
         for row in rows
     ]

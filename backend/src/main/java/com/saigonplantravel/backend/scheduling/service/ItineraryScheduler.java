@@ -1,18 +1,15 @@
 package com.saigonplantravel.backend.scheduling.service;
 
-import com.saigonplantravel.backend.place.entity.OpeningHour;
-import com.saigonplantravel.backend.place.entity.Place;
-import com.saigonplantravel.backend.recommendation.model.RecommendationCandidate;
 import com.saigonplantravel.backend.scheduling.model.ItineraryPlan;
+import com.saigonplantravel.backend.scheduling.model.PlanningContext;
 import com.saigonplantravel.backend.scheduling.model.ScheduledStop;
 import com.saigonplantravel.backend.scheduling.model.ScoredCandidate;
-import com.saigonplantravel.backend.scheduling.model.TravelEstimate;
+import com.saigonplantravel.backend.scheduling.model.SchedulingCandidate;
+import com.saigonplantravel.backend.scheduling.model.SchedulingPlace;
 import com.saigonplantravel.backend.scheduling.ranking.CandidateRanker;
 import com.saigonplantravel.backend.scheduling.scoring.CandidateScorer;
-import com.saigonplantravel.backend.scheduling.travel.TravelEstimator;
-import com.saigonplantravel.backend.trip.entity.Trip;
 import java.math.BigDecimal;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Component;
@@ -20,31 +17,33 @@ import org.springframework.stereotype.Component;
 @Component
 public class ItineraryScheduler {
 
-    private final TravelEstimator travelEstimator;
+    private final StopScheduleCalculator stopScheduleCalculator;
     private final CandidateScorer candidateScorer;
     private final CandidateRanker candidateRanker;
 
     public ItineraryScheduler(
-            TravelEstimator travelEstimator, CandidateScorer candidateScorer, CandidateRanker candidateRanker) {
+            StopScheduleCalculator stopScheduleCalculator,
+            CandidateScorer candidateScorer,
+            CandidateRanker candidateRanker) {
 
-        this.travelEstimator = travelEstimator;
+        this.stopScheduleCalculator = stopScheduleCalculator;
         this.candidateScorer = candidateScorer;
         this.candidateRanker = candidateRanker;
     }
 
-    public ItineraryPlan schedule(Trip trip, List<RecommendationCandidate> candidates) {
+    public ItineraryPlan schedule(PlanningContext context, List<SchedulingCandidate> candidates) {
 
-        List<RecommendationCandidate> remainingCandidates = new ArrayList<>(candidates);
+        List<SchedulingCandidate> remainingCandidates = new ArrayList<>(candidates);
 
         List<ScheduledStop> stops = new ArrayList<>();
 
-        LocalTime currentTime = trip.getStartTime();
+        LocalDateTime currentDateTime = context.startDateTime();
 
-        BigDecimal currentLatitude = trip.getStartLatitude();
+        BigDecimal currentLatitude = context.startLatitude();
 
-        BigDecimal currentLongitude = trip.getStartLongitude();
+        BigDecimal currentLongitude = context.startLongitude();
 
-        BigDecimal remainingBudget = trip.getBudget();
+        BigDecimal remainingBudget = context.budget();
 
         int totalTravelMinutes = 0;
         int totalVisitMinutes = 0;
@@ -54,10 +53,10 @@ public class ItineraryScheduler {
 
             List<CandidateEvaluation> feasibleCandidates = new ArrayList<>();
 
-            for (RecommendationCandidate candidate : remainingCandidates) {
+            for (SchedulingCandidate candidate : remainingCandidates) {
 
                 CandidateEvaluation evaluation = evaluateCandidate(
-                        candidate, trip, currentTime, currentLatitude, currentLongitude, remainingBudget);
+                        candidate, context, currentDateTime, currentLatitude, currentLongitude, remainingBudget);
 
                 if (evaluation != null) {
                     feasibleCandidates.add(evaluation);
@@ -79,8 +78,8 @@ public class ItineraryScheduler {
                     .filter(evaluation -> evaluation
                             .scoredCandidate()
                             .place()
-                            .getSlug()
-                            .equals(bestCandidate.place().getSlug()))
+                            .slug()
+                            .equals(bestCandidate.place().slug()))
                     .findFirst()
                     .orElseThrow();
 
@@ -90,98 +89,65 @@ public class ItineraryScheduler {
 
             stops.add(selectedStop);
 
-            currentTime = selectedStop.visitEndTime();
+            currentDateTime = selectedStop.visitEndDateTime();
 
-            currentLatitude = selected.candidate().place().getLatitude();
+            currentLatitude = selected.candidate().place().latitude();
 
-            currentLongitude = selected.candidate().place().getLongitude();
+            currentLongitude = selected.candidate().place().longitude();
 
             remainingBudget = remainingBudget.subtract(selectedStop.estimatedCost());
 
             totalTravelMinutes += selectedStop.travelMinutes();
 
-            totalVisitMinutes += selected.candidate().place().getEstimatedVisitMinutes();
+            totalVisitMinutes += selected.candidate().place().estimatedVisitMinutes();
 
             totalDistanceKm += selectedStop.travelDistanceKm();
         }
 
-        BigDecimal totalEstimatedCost = trip.getBudget().subtract(remainingBudget);
+        BigDecimal totalEstimatedCost = context.budget().subtract(remainingBudget);
 
         return new ItineraryPlan(stops, totalEstimatedCost, totalTravelMinutes, totalVisitMinutes, totalDistanceKm);
     }
 
     private CandidateEvaluation evaluateCandidate(
-            RecommendationCandidate candidate,
-            Trip trip,
-            LocalTime currentTime,
+            SchedulingCandidate candidate,
+            PlanningContext context,
+            LocalDateTime currentDateTime,
             BigDecimal currentLatitude,
             BigDecimal currentLongitude,
             BigDecimal remainingBudget) {
 
-        Place place = candidate.place();
+        SchedulingPlace place = candidate.place();
 
         // Cheap hard constraint first
-        if (place.getMinCost().compareTo(remainingBudget) > 0) {
+        if (place.estimatedCost().compareTo(remainingBudget) > 0) {
 
             return null;
         }
 
-        OpeningHour openingHour = findOpeningHour(place, trip);
-
-        if (openingHour == null || Boolean.TRUE.equals(openingHour.getClosed())) {
+        if (!place.openingWindow().isOpen()) {
 
             return null;
         }
 
-        TravelEstimate travel =
-                travelEstimator.estimate(currentLatitude, currentLongitude, place.getLatitude(), place.getLongitude());
+        ScheduledStop scheduledStop =
+                stopScheduleCalculator.calculate(context, currentDateTime, currentLatitude, currentLongitude, place);
 
-        LocalTime arrivalTime = currentTime.plusMinutes(travel.estimatedMinutes());
-
-        LocalTime visitStartTime = laterOf(arrivalTime, openingHour.getOpenTime());
-
-        LocalTime visitEndTime = visitStartTime.plusMinutes(place.getEstimatedVisitMinutes());
-
-        if (visitEndTime.isAfter(openingHour.getCloseTime())) {
-
-            return null;
-        }
-
-        if (visitEndTime.isAfter(trip.getEndTime())) {
+        if (!scheduledStop.temporallyFeasible()) {
 
             return null;
         }
 
         ScoredCandidate scoredCandidate = candidateScorer.score(
-                candidate, trip, remainingBudget, travel.estimatedDistanceKm(), travel.estimatedMinutes());
-
-        ScheduledStop scheduledStop = new ScheduledStop(
-                place,
-                arrivalTime,
-                visitStartTime,
-                visitEndTime,
-                travel.estimatedMinutes(),
-                travel.estimatedDistanceKm(),
-                place.getMinCost());
+                candidate,
+                context,
+                remainingBudget,
+                scheduledStop.travelDistanceKm(),
+                scheduledStop.travelMinutes());
 
         return new CandidateEvaluation(candidate, scoredCandidate, scheduledStop);
     }
 
-    private OpeningHour findOpeningHour(Place place, Trip trip) {
-
-        short dayOfWeek = (short) trip.getTripDate().getDayOfWeek().getValue();
-
-        return place.getOpeningHours().stream()
-                .filter(openingHour -> openingHour.getDayOfWeek() == dayOfWeek)
-                .findFirst()
-                .orElse(null);
-    }
-
-    private LocalTime laterOf(LocalTime first, LocalTime second) {
-
-        return first.isAfter(second) ? first : second;
-    }
-
     private record CandidateEvaluation(
-            RecommendationCandidate candidate, ScoredCandidate scoredCandidate, ScheduledStop scheduledStop) {}
+            SchedulingCandidate candidate, ScoredCandidate scoredCandidate, ScheduledStop scheduledStop) {}
 }

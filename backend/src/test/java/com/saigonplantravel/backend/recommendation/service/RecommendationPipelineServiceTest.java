@@ -6,7 +6,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.saigonplantravel.backend.place.entity.Place;
-import com.saigonplantravel.backend.recommendation.filter.BudgetCandidateFilter;
 import com.saigonplantravel.backend.recommendation.filter.OpeningHoursCandidateFilter;
 import com.saigonplantravel.backend.recommendation.model.RecommendationCandidate;
 import com.saigonplantravel.backend.trip.entity.Trip;
@@ -27,9 +26,6 @@ class RecommendationPipelineServiceTest {
     private OpeningHoursCandidateFilter openingHoursCandidateFilter;
 
     @Mock
-    private BudgetCandidateFilter budgetCandidateFilter;
-
-    @Mock
     private Trip trip;
 
     private RecommendationCandidate candidateA;
@@ -43,35 +39,36 @@ class RecommendationPipelineServiceTest {
         candidateA = new RecommendationCandidate(mock(Place.class), 0.95, "architecture");
         candidateB = new RecommendationCandidate(mock(Place.class), 0.90, "art");
         service = new RecommendationPipelineService(
-                placeRecommendationService, openingHoursCandidateFilter, budgetCandidateFilter);
+                placeRecommendationService, openingHoursCandidateFilter);
     }
 
     @Test
-    void retrievesAndAppliesCoarseHardFilters() {
+    void retrievesAndAppliesOpeningHoursFilter() {
 
         String preference = "Tôi thích kiến trúc và mỹ thuật";
 
-        List<RecommendationCandidate> retrieved = List.of(candidateA, candidateB);
+        List<RecommendationCandidate> retrieved =
+                List.of(candidateA, candidateB);
 
-        List<RecommendationCandidate> openingFiltered = List.of(candidateA, candidateB);
+        List<RecommendationCandidate> openingFiltered =
+                List.of(candidateB);
 
-        List<RecommendationCandidate> budgetFiltered = List.of(candidateB);
+        when(placeRecommendationService.recommend(trip, preference))
+                .thenReturn(retrieved);
 
-        when(placeRecommendationService.recommend(trip, preference)).thenReturn(retrieved);
+        when(openingHoursCandidateFilter.filter(retrieved, trip))
+                .thenReturn(openingFiltered);
 
-        when(openingHoursCandidateFilter.filter(retrieved, trip)).thenReturn(openingFiltered);
-
-        when(budgetCandidateFilter.filter(openingFiltered, trip)).thenReturn(budgetFiltered);
-
-        List<RecommendationCandidate> result = service.recommend(trip, preference);
+        List<RecommendationCandidate> result =
+                service.recommend(trip, preference);
 
         assertThat(result).containsExactly(candidateB);
 
-        verify(placeRecommendationService).recommend(trip, preference);
+        verify(placeRecommendationService)
+                .recommend(trip, preference);
 
-        verify(openingHoursCandidateFilter).filter(retrieved, trip);
-
-        verify(budgetCandidateFilter).filter(openingFiltered, trip);
+        verify(openingHoursCandidateFilter)
+                .filter(retrieved, trip);
     }
 
     @Test
@@ -84,8 +81,6 @@ class RecommendationPipelineServiceTest {
         when(placeRecommendationService.recommend(trip, preference)).thenReturn(retrieved);
 
         when(openingHoursCandidateFilter.filter(retrieved, trip)).thenReturn(List.of());
-
-        when(budgetCandidateFilter.filter(List.of(), trip)).thenReturn(List.of());
 
         List<RecommendationCandidate> result = service.recommend(trip, preference);
 

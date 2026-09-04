@@ -1,0 +1,46 @@
+{
+  "placeSlug": "khu-du-lich-binh-quoi-1",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Khu du lịch Bình Quới 1 là điểm nghỉ ngơi và ẩm thực ven sông tại khu vực Bình Quới - Thanh Đa, Thành phố Hồ Chí Minh. Không gian được tổ chức theo phong cách làng quê Nam Bộ với nhiều cây xanh, thảm cỏ, ao cá và khu vực sinh hoạt ngoài trời. Đây là lựa chọn phù hợp cho gia đình, nhóm bạn hoặc người muốn tạm rời nhịp đô thị trung tâm để nghỉ ngơi, ăn uống và tham gia các hoạt động nhẹ trong một không gian xanh.",
+      "source": {
+        "label": "Làng Du lịch Bình Quới - Khu du lịch Bình Quới 1",
+        "uri": "https://binhquoi.vn/overview/kdl-binh-quoi-1/",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Theo giới thiệu của Làng Du lịch Bình Quới, Bình Quới 1 có diện tích hơn 3 ha và nằm giáp sông Sài Gòn. Khu vực được phát triển với cảnh quan gồm hàng dừa, vườn cây, thảm cỏ và ao cá, tạo cảm giác gần với không gian làng quê Nam Bộ dù vẫn nằm trong địa bàn đô thị. Hướng khai thác này làm cho Bình Quới 1 khác với các điểm tham quan bảo tàng hoặc công trình kiến trúc: trọng tâm không phải xem hiện vật mà là dành thời gian thư giãn, ăn uống, sinh hoạt nhóm và trải nghiệm cảnh quan.",
+      "source": {
+        "label": "Làng Du lịch Bình Quới - Tổng quan các khu du lịch",
+        "uri": "https://binhquoi.vn/tong-quan/",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Bình Quới 1 kết hợp nhiều loại hình dịch vụ trong cùng một khuôn viên như ẩm thực Nam Bộ, khu sân vườn, hoạt động dã ngoại, câu cá và trò chơi dân gian. Trang chính thức cũng giới thiệu buffet theo chủ đề ẩm thực Khẩn hoang Nam Bộ cùng các chương trình mang màu sắc văn hóa miền Nam. Không gian rộng và nhiều cây xanh khiến địa điểm phù hợp cho lịch trình kéo dài vài giờ, đặc biệt với gia đình hoặc nhóm đông người. Trong recommendation, các thuộc tính phù hợp là thiên nhiên, ẩm thực, gia đình, ngoài trời và trải nghiệm văn hóa Nam Bộ.",
+      "source": {
+        "label": "Làng Du lịch Bình Quới - Khu du lịch Bình Quới 1",
+        "uri": "https://binhquoi.vn/overview/kdl-binh-quoi-1/",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Khi lập lịch, Bình Quới 1 nên được xem như một điểm trải nghiệm trung bình đến dài vì người dùng có thể vừa nghỉ ngơi vừa ăn uống hoặc tham gia hoạt động tại chỗ. Nếu mục tiêu chỉ là ngắm cảnh, thời lượng có thể ngắn hơn; nếu dùng buffet hoặc sinh hoạt nhóm thì cần dành nhiều thời gian hơn. Giá dịch vụ và lịch buffet có thể thay đổi, vì vậy không nên ghi cố định vào corpus tĩnh. Do một phần lớn trải nghiệm ở sân vườn và không gian mở, thời tiết cũng nên được dùng làm tín hiệu để re-planning khi mưa lớn.",
+      "source": {
+        "label": "Làng Du lịch Bình Quới - Dịch vụ",
+        "uri": "https://binhquoi.vn/dich-vu/",
+        "retrievedAt": "2026-08-29"
+      }
+    }
+  ]
+}

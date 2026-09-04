@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/features/auth/auth-provider";
 import { ItineraryView } from "@/features/itinerary/components/itinerary-view";
+import { useItineraryWorkspace } from "@/features/itinerary/hooks/use-itinerary-workspace";
 import { ItineraryMapShell } from "@/features/itinerary/map/itinerary-map-shell";
 import { TripForm } from "@/features/trips/components/trip-form";
 import { TripReview } from "@/features/trips/components/trip-review";
@@ -19,43 +20,12 @@ import { getTripLoadErrorMessage } from "@/features/trips/trip-errors";
 import { TripOriginMapShell } from "@/features/trips/map/trip-origin-map-shell";
 import { ApiError } from "@/lib/api/api-client";
 import { searchLocations } from "@/lib/api/location-api";
-import {
-  addItineraryItem,
-  applyGeneratedItinerary,
-  deleteItineraryItem,
-  generateItineraryPreview,
-  getItinerary,
-  reorderItineraryItems,
-  replaceItineraryItem,
-} from "@/lib/api/itinerary-api";
 import { getTrip, replaceTrip } from "@/lib/api/trip-api";
-import type {
-  ItineraryGenerationPreviewResponse,
-  ItineraryResponse,
-} from "@/types/itinerary";
-import type { PlaceSummary } from "@/types/place";
 import type { SaveTripRequest, TripResponse } from "@/types/trip";
 
 type TripDetailViewProps = {
   publicId: string;
 };
-
-function getItineraryErrorMessage(error: unknown) {
-  if (error instanceof ApiError) {
-    if (error.status === 404) {
-      return "Không tìm thấy chuyến đi hoặc hành trình này.";
-    }
-    if (error.status === 409) {
-      return error.problem?.detail ?? "Hành trình không thể cập nhật lúc này.";
-    }
-    if (error.status === 0) {
-      return "Không thể kết nối đến máy chủ.";
-    }
-    return error.problem?.detail ?? "Không thể tải hành trình.";
-  }
-
-  return "Đã xảy ra lỗi khi xử lý hành trình.";
-}
 
 export function TripDetailView({ publicId }: TripDetailViewProps) {
   const router = useRouter();
@@ -65,14 +35,11 @@ export function TripDetailView({ publicId }: TripDetailViewProps) {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [section, setSection] = useState<TripWorkspaceSection>("overview");
-  const [itinerary, setItinerary] = useState<ItineraryResponse | null>(null);
-  const [itineraryLoading, setItineraryLoading] = useState(false);
-  const [itineraryError, setItineraryError] = useState<string | null>(null);
-  const [itineraryLoaded, setItineraryLoaded] = useState(false);
-  const [itineraryMutating, setItineraryMutating] = useState(false);
-  const [selectedItemPublicId, setSelectedItemPublicId] = useState<
-    string | null
-  >(null);
+  const itineraryWorkspace = useItineraryWorkspace({
+    tripPublicId: publicId,
+    authenticated: status === "authenticated",
+    runAuthenticated,
+  });
 
   useEffect(() => {
     if (status === "guest") {
@@ -105,30 +72,12 @@ export function TripDetailView({ publicId }: TripDetailViewProps) {
     };
   }, [publicId, router, runAuthenticated, status]);
 
-  const loadItinerary = useCallback(async () => {
-    if (status !== "authenticated") return;
-
-    setItineraryLoading(true);
-    setItineraryError(null);
-
-    try {
-      const response = await runAuthenticated((token) =>
-        getItinerary(publicId, token),
-      );
-      setItinerary(response);
-      setItineraryLoaded(true);
-    } catch (error) {
-      setItineraryError(getItineraryErrorMessage(error));
-    } finally {
-      setItineraryLoading(false);
-    }
-  }, [publicId, runAuthenticated, status]);
-
   async function handleReplace(request: SaveTripRequest) {
     const updated = await runAuthenticated((token) =>
       replaceTrip(publicId, request, token),
     );
     setTrip(updated);
+    await itineraryWorkspace.refreshIfLoaded();
     setEditing(false);
   }
 
@@ -136,114 +85,16 @@ export function TripDetailView({ publicId }: TripDetailViewProps) {
     return runAuthenticated((token) => searchLocations(query, token));
   }
 
-  async function handleAddPlace(place: PlaceSummary) {
-    setItineraryMutating(true);
-    setItineraryError(null);
-
-    try {
-      const updated = await runAuthenticated((token) =>
-        addItineraryItem(publicId, { placeId: place.id }, token),
-      );
-      setItinerary(updated);
-      const addedItem = updated.items.find(
-        (item) => item.place.slug === place.slug,
-      );
-      setSelectedItemPublicId(addedItem?.publicId ?? null);
-    } catch (error) {
-      setItineraryError(getItineraryErrorMessage(error));
-      throw error;
-    } finally {
-      setItineraryMutating(false);
-    }
-  }
-
-  async function handleDeleteItem(itemPublicId: string) {
-    setItineraryMutating(true);
-    setItineraryError(null);
-
-    try {
-      const updated = await runAuthenticated((token) =>
-        deleteItineraryItem(publicId, itemPublicId, token),
-      );
-      setItinerary(updated);
-      if (selectedItemPublicId === itemPublicId) {
-        setSelectedItemPublicId(null);
-      }
-    } catch (error) {
-      setItineraryError(getItineraryErrorMessage(error));
-      throw error;
-    } finally {
-      setItineraryMutating(false);
-    }
-  }
-
-  async function handleReplacePlace(itemPublicId: string, place: PlaceSummary) {
-    setItineraryMutating(true);
-    setItineraryError(null);
-
-    try {
-      const updated = await runAuthenticated((token) =>
-        replaceItineraryItem(
-          publicId,
-          itemPublicId,
-          { placeId: place.id },
-          token,
-        ),
-      );
-      setItinerary(updated);
-      setSelectedItemPublicId(itemPublicId);
-    } catch (error) {
-      setItineraryError(getItineraryErrorMessage(error));
-      throw error;
-    } finally {
-      setItineraryMutating(false);
-    }
-  }
-
-  async function handleReorderItems(itemPublicIds: string[]) {
-    setItineraryMutating(true);
-    setItineraryError(null);
-
-    try {
-      const updated = await runAuthenticated((token) =>
-        reorderItineraryItems(publicId, { itemPublicIds }, token),
-      );
-      setItinerary(updated);
-    } catch (error) {
-      setItineraryError(getItineraryErrorMessage(error));
-      throw error;
-    } finally {
-      setItineraryMutating(false);
-    }
-  }
-
-  function handleGeneratePreview(
-    preferenceDescription: string,
-  ): Promise<ItineraryGenerationPreviewResponse> {
-    return runAuthenticated((token) =>
-      generateItineraryPreview(publicId, { preferenceDescription }, token),
-    );
-  }
-
-  async function handleApplyPreview(placeSlugs: string[]) {
-    const updated = await runAuthenticated((token) =>
-      applyGeneratedItinerary(publicId, { placeSlugs }, token),
-    );
-    setItinerary(updated);
-  }
-
   function handleSectionChange(nextSection: TripWorkspaceSection) {
     setEditing(false);
     setSection(nextSection);
 
     if (nextSection === "overview") {
-      setSelectedItemPublicId(null);
+      itineraryWorkspace.setSelectedItemPublicId(null);
       return;
     }
 
-    if (!itineraryLoaded) {
-      void loadItinerary();
-    }
+    itineraryWorkspace.loadIfNeeded();
   }
 
   if (status === "loading" || loading) {
@@ -301,7 +152,7 @@ export function TripDetailView({ publicId }: TripDetailViewProps) {
     <TripReview trip={trip} onEdit={() => setEditing(true)} />
   );
 
-  const itineraryItems = [...(itinerary?.items ?? [])].sort(
+  const itineraryItems = [...(itineraryWorkspace.itinerary?.items ?? [])].sort(
     (left, right) => left.sequenceNo - right.sequenceNo,
   );
 
@@ -318,19 +169,19 @@ export function TripDetailView({ publicId }: TripDetailViewProps) {
         ) : (
           <ItineraryView
             trip={trip}
-            itinerary={itinerary}
-            loading={itineraryLoading}
-            error={itineraryError}
-            selectedItemPublicId={selectedItemPublicId}
-            mutating={itineraryMutating}
-            onRetry={loadItinerary}
-            onAdd={handleAddPlace}
-            onDelete={handleDeleteItem}
-            onReplace={handleReplacePlace}
-            onReorder={handleReorderItems}
-            onSelectItem={setSelectedItemPublicId}
-            onGeneratePreview={handleGeneratePreview}
-            onApplyPreview={handleApplyPreview}
+            itinerary={itineraryWorkspace.itinerary}
+            loading={itineraryWorkspace.loading}
+            error={itineraryWorkspace.error}
+            selectedItemPublicId={itineraryWorkspace.selectedItemPublicId}
+            mutating={itineraryWorkspace.mutating}
+            onRetry={itineraryWorkspace.load}
+            onAdd={itineraryWorkspace.addPlace}
+            onDelete={itineraryWorkspace.deleteItem}
+            onReplace={itineraryWorkspace.replacePlace}
+            onReorder={itineraryWorkspace.reorderItems}
+            onSelectItem={itineraryWorkspace.setSelectedItemPublicId}
+            onGeneratePreview={itineraryWorkspace.generatePreview}
+            onApplyPreview={itineraryWorkspace.applyPreview}
           />
         )}
       </section>
@@ -351,8 +202,8 @@ export function TripDetailView({ publicId }: TripDetailViewProps) {
           <ItineraryMapShell
             origin={trip.startLocation}
             items={itineraryItems}
-            selectedItemPublicId={selectedItemPublicId}
-            onSelectItem={setSelectedItemPublicId}
+            selectedItemPublicId={itineraryWorkspace.selectedItemPublicId}
+            onSelectItem={itineraryWorkspace.setSelectedItemPublicId}
           />
         )}
       </section>
