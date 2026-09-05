@@ -46,37 +46,6 @@ public class OpeningHoursFeasibilityEvaluator {
         return hasUnknownInterval ? OpeningHoursFeasibility.UNKNOWN : OpeningHoursFeasibility.INFEASIBLE;
     }
 
-    public OpeningHoursFeasibility evaluatePossibleOverlap(
-            Place place, LocalDate tripDate, LocalTime tripStart, LocalTime tripEnd) {
-        List<OpeningHour> openingHours = openingHoursFor(place, tripDate);
-
-        if (openingHours.isEmpty()) {
-            return OpeningHoursFeasibility.UNKNOWN;
-        }
-
-        boolean hasUnknownInterval = false;
-
-        for (OpeningHour openingHour : openingHours) {
-            if (Boolean.TRUE.equals(openingHour.getClosed())) {
-                continue;
-            }
-
-            if (!isCompleteOpenInterval(openingHour)) {
-                hasUnknownInterval = true;
-                continue;
-            }
-
-            LocalTime availableStart = laterOf(tripStart, openingHour.getOpenTime());
-            LocalTime availableEnd = earlierOf(tripEnd, openingHour.getCloseTime());
-
-            if (availableStart.isBefore(availableEnd)) {
-                return OpeningHoursFeasibility.FEASIBLE;
-            }
-        }
-
-        return hasUnknownInterval ? OpeningHoursFeasibility.UNKNOWN : OpeningHoursFeasibility.INFEASIBLE;
-    }
-
     private List<OpeningHour> openingHoursFor(Place place, LocalDate tripDate) {
         short dayOfWeek = (short) tripDate.getDayOfWeek().getValue();
 
