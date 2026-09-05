@@ -4,7 +4,6 @@ from pydantic import BaseModel, Field, field_validator
 from app.rag.itinerary_explanation_service import generate_itinerary_reasons
 from app.rag.rag_service import answer_question
 
-
 router = APIRouter(
     prefix="/api/v1/rag",
     tags=["RAG"],
@@ -51,13 +50,7 @@ class ItineraryReasonsRequest(BaseModel):
     @field_validator("place_slugs")
     @classmethod
     def normalize_place_slugs(cls, place_slugs: list[str]) -> list[str]:
-        normalized = list(
-            dict.fromkeys(
-                slug.strip()
-                for slug in place_slugs
-                if slug.strip()
-            )
-        )
+        normalized = list(dict.fromkeys(slug.strip() for slug in place_slugs if slug.strip()))
         if not normalized:
             raise ValueError("At least one non-blank place slug is required")
         return normalized

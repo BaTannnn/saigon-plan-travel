@@ -12,7 +12,6 @@ from app.knowledge.corpus_schema import (
     Source,
 )
 
-
 MARKDOWN_HEADERS = (
     ("#", "place"),
     ("##", "section"),
@@ -41,9 +40,7 @@ def build_place_markdown(corpus: PlaceCorpus) -> str:
     blocks = [f"# {corpus.placeSlug}"]
 
     for section in corpus.sections:
-        blocks.append(
-            f"## {section.section}\n{section.content.strip()}"
-        )
+        blocks.append(f"## {section.section}\n{section.content.strip()}")
 
     return "\n\n".join(blocks) + "\n"
 
@@ -70,24 +67,14 @@ def create_recursive_splitter() -> RecursiveCharacterTextSplitter:
 def split_place_corpus(
     corpus: PlaceCorpus,
 ) -> list[PreparedKnowledgeChunk]:
-    section_documents = split_place_markdown(
-        build_place_markdown(corpus)
-    )
+    section_documents = split_place_markdown(build_place_markdown(corpus))
     expected_sections = [section.section for section in corpus.sections]
-    actual_sections = [
-        document.metadata.get("section")
-        for document in section_documents
-    ]
+    actual_sections = [document.metadata.get("section") for document in section_documents]
 
     if actual_sections != expected_sections:
-        raise ValueError(
-            "Markdown splitting did not preserve semantic section order"
-        )
+        raise ValueError("Markdown splitting did not preserve semantic section order")
 
-    source_by_section = {
-        section.section: section.source
-        for section in corpus.sections
-    }
+    source_by_section = {section.section: section.source for section in corpus.sections}
     recursive_splitter = create_recursive_splitter()
     prepared_chunks: list[PreparedKnowledgeChunk] = []
 
@@ -96,20 +83,14 @@ def split_place_corpus(
         section_name = section_document.metadata.get("section")
 
         if place_slug != corpus.placeSlug:
-            raise ValueError(
-                "Markdown splitting did not preserve place metadata"
-            )
+            raise ValueError("Markdown splitting did not preserve place metadata")
 
         if section_name not in source_by_section:
-            raise ValueError(
-                "Markdown splitting produced an unknown semantic section"
-            )
+            raise ValueError("Markdown splitting produced an unknown semantic section")
 
         final_documents = [section_document]
         if len(section_document.page_content) > SECTION_CHUNK_SIZE:
-            final_documents = recursive_splitter.split_documents(
-                [section_document]
-            )
+            final_documents = recursive_splitter.split_documents([section_document])
 
         for final_document in final_documents:
             content = final_document.page_content.strip()
@@ -118,9 +99,7 @@ def split_place_corpus(
                 raise ValueError("Chunk content must not be empty")
 
             if final_document.metadata != section_document.metadata:
-                raise ValueError(
-                    "Recursive splitting did not preserve header metadata"
-                )
+                raise ValueError("Recursive splitting did not preserve header metadata")
 
             prepared_chunks.append(
                 PreparedKnowledgeChunk(

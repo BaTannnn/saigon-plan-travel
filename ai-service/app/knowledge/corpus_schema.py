@@ -51,9 +51,7 @@ class PlaceCorpus(BaseModel):
         expected = list(range(1, len(indexes) + 1))
 
         if indexes != expected:
-            raise ValueError(
-                "chunkIndex must be unique and continuous starting from 1"
-            )
+            raise ValueError("chunkIndex must be unique and continuous starting from 1")
 
         section_names = [section.section for section in self.sections]
 

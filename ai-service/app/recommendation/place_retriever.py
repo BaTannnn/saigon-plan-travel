@@ -1,4 +1,4 @@
-from app.knowledge.knowledge_repository import CandidateChunk
+from app.knowledge.retrieval_repository import CandidateChunk
 
 
 def deduplicate_best_chunk_by_place(

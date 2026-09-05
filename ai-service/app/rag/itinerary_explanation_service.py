@@ -2,7 +2,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from app.knowledge.embedding_service import embed_query
-from app.knowledge.knowledge_repository import (
+from app.knowledge.retrieval_repository import (
     KnowledgeChunk,
     find_relevant_chunks_by_place_slugs,
 )
@@ -27,9 +27,7 @@ class ItineraryReason(BaseModel):
     reason: str | None
 
 
-INSUFFICIENT_CONTEXT_REASON = (
-    "Dữ liệu hiện có chưa đủ để giải thích đề xuất này."
-)
+INSUFFICIENT_CONTEXT_REASON = "Dữ liệu hiện có chưa đủ để giải thích đề xuất này."
 DEFAULT_CHUNKS_PER_PLACE = 2
 
 
@@ -115,9 +113,7 @@ def generate_itinerary_reasons(
         chunks_per_place=chunks_per_place,
     )
     slugs_with_context = {chunk.place_slug for chunk in retrieved_chunks}
-    llm_slugs = [
-        slug for slug in unique_slugs if slug in slugs_with_context
-    ]
+    llm_slugs = [slug for slug in unique_slugs if slug in slugs_with_context]
 
     if not retrieved_chunks:
         return _insufficient_context_reasons(unique_slugs)
@@ -125,9 +121,7 @@ def generate_itinerary_reasons(
     reasons_by_slug: dict[str, str] = {}
     context = build_itinerary_context(retrieved_chunks)
 
-    structured_model = create_chat_model().with_structured_output(
-        GeneratedItineraryReasons
-    )
+    structured_model = create_chat_model().with_structured_output(GeneratedItineraryReasons)
     response = structured_model.invoke(
         PROMPT.format_messages(
             preference=preference,
@@ -147,32 +141,22 @@ def generate_itinerary_reasons(
 
     for item in parsed.reasons:
         if item.place_slug not in slugs_with_context:
-            raise ValueError(
-                "Itinerary explanation output contains an unknown place slug"
-            )
+            raise ValueError("Itinerary explanation output contains an unknown place slug")
         if item.place_slug in reasons_by_slug:
-            raise ValueError(
-                "Itinerary explanation output contains duplicate place slugs"
-            )
+            raise ValueError("Itinerary explanation output contains duplicate place slugs")
         reason = item.reason.strip()
         if not reason:
-            raise ValueError(
-                "Itinerary explanation output contains a blank reason"
-            )
+            raise ValueError("Itinerary explanation output contains a blank reason")
         reasons_by_slug[item.place_slug] = reason
 
     if set(reasons_by_slug) != slugs_with_context:
-        raise ValueError(
-            "Itinerary explanation output is missing a requested place slug"
-        )
+        raise ValueError("Itinerary explanation output is missing a requested place slug")
 
     return [
         ItineraryReason(
             place_slug=slug,
             reason=(
-                reasons_by_slug[slug]
-                if slug in slugs_with_context
-                else INSUFFICIENT_CONTEXT_REASON
+                reasons_by_slug[slug] if slug in slugs_with_context else INSUFFICIENT_CONTEXT_REASON
             ),
         )
         for slug in unique_slugs

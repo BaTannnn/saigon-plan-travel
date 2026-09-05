@@ -1,9 +1,7 @@
 from fastapi import APIRouter
-
 from pydantic import BaseModel, Field
 
 from app.recommendation.recommendation_service import recommend_places
-
 
 router = APIRouter(
     prefix="/api/v1/recommendations",
@@ -22,6 +20,7 @@ class PlaceRecommendationRequest(BaseModel):
         ge=1,
         le=30,
     )
+
 
 class PlaceCandidateResponse(BaseModel):
     place_slug: str

@@ -84,8 +84,8 @@ public class ItineraryService {
     @Transactional
     public ItineraryDetailResponse deleteItem(Long userId, UUID tripPublicId, UUID itemPublicId) {
         Trip trip = findOwnedTrip(userId, tripPublicId);
-        Itinerary itinerary = findItineraryWithItem(trip.getId(), itemPublicId);
-        ItineraryItem item = itinerary.findItem(itemPublicId).orElseThrow(ItineraryItemNotFoundException::new);
+        Itinerary itinerary = findItinerary(trip.getId());
+        ItineraryItem item = findItem(itinerary, itemPublicId);
         OffsetDateTime now = OffsetDateTime.now(clock);
 
         itinerary.removeItem(item, now);
@@ -101,8 +101,8 @@ public class ItineraryService {
     public ItineraryDetailResponse replaceItemPlace(
             Long userId, UUID tripPublicId, UUID itemPublicId, Long replacementPlaceId) {
         Trip trip = findOwnedTrip(userId, tripPublicId);
-        Itinerary itinerary = findItineraryWithItem(trip.getId(), itemPublicId);
-        ItineraryItem item = itinerary.findItem(itemPublicId).orElseThrow(ItineraryItemNotFoundException::new);
+        Itinerary itinerary = findItinerary(trip.getId());
+        ItineraryItem item = findItem(itinerary, itemPublicId);
         Place replacementPlace = findActivePlace(replacementPlaceId);
 
         if (itinerary.containsOtherPlace(replacementPlaceId, itemPublicId)) {
@@ -118,14 +118,14 @@ public class ItineraryService {
         return tripQueryService.findOwnedTrip(userId, tripPublicId);
     }
 
-    private Itinerary findItineraryWithItem(Long tripId, UUID itemPublicId) {
-        Itinerary itinerary = itineraryRepository.findByTripId(tripId).orElseThrow(ItineraryItemNotFoundException::new);
+    private Itinerary findItinerary(Long tripId) {
+        return itineraryRepository.findByTripId(tripId)
+            .orElseThrow(ItineraryItemNotFoundException::new);
+    }
 
-        if (itinerary.findItem(itemPublicId).isEmpty()) {
-            throw new ItineraryItemNotFoundException();
-        }
-
-        return itinerary;
+    private ItineraryItem findItem(Itinerary itinerary, UUID itemPublicId) {
+        return itinerary.findItem(itemPublicId)
+                .orElseThrow(ItineraryItemNotFoundException::new);
     }
 
     private Place findActivePlace(Long placeId) {

@@ -5,7 +5,6 @@ from app.knowledge.chunking import split_place_corpus
 from app.knowledge.corpus_schema import PlaceCorpus
 from app.knowledge.embedding_service import compute_document_fingerprint
 
-
 CORPUS_DIR = Path("corpus")
 
 
@@ -34,11 +33,7 @@ def main() -> None:
                 title=f"{chunk.place_slug} - {chunk.section}",
             )
 
-            print(
-                f"  chunk={chunk.chunk_index} "
-                f"section={chunk.section} "
-                f"hash={content_hash}"
-            )
+            print(f"  chunk={chunk.chunk_index} section={chunk.section} hash={content_hash}")
 
             total_chunks += 1
 

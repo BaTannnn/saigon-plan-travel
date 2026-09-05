@@ -6,7 +6,6 @@ from app.knowledge.embedding_service import (
     embed_query,
 )
 
-
 load_dotenv()
 
 
@@ -26,15 +25,9 @@ def main() -> None:
 
     query_embedding = embed_query(query)
 
-    print(
-        f"Document vector dimension: "
-        f"{len(document_embedding)}"
-    )
+    print(f"Document vector dimension: {len(document_embedding)}")
 
-    print(
-        f"Query vector dimension: "
-        f"{len(query_embedding)}"
-    )
+    print(f"Query vector dimension: {len(query_embedding)}")
 
     print(
         "Document first 5 values:",

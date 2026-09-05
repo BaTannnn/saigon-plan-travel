@@ -1,6 +1,7 @@
 from enum import Enum
 from pathlib import Path
 
+from app.db.postgres import pool
 from app.knowledge.chunking import (
     PreparedKnowledgeChunk,
     split_place_corpus,
@@ -10,7 +11,7 @@ from app.knowledge.embedding_service import (
     compute_document_fingerprint,
     embed_document,
 )
-from app.knowledge.knowledge_repository import (
+from app.knowledge.ingestion_repository import (
     StoredChunkState,
     delete_stale_chunks,
     find_stored_chunk_state,
@@ -18,7 +19,6 @@ from app.knowledge.knowledge_repository import (
     upsert_chunk,
 )
 from app.knowledge.place_lookup import resolve_place_id
-from app.db.postgres import pool
 
 CORPUS_DIR = Path("corpus")
 
@@ -45,10 +45,7 @@ def ingest_chunk(
         chunk_index=chunk.chunk_index,
     )
 
-    if (
-        stored_chunk is not None
-        and stored_chunk.content_hash == content_hash
-    ):
+    if stored_chunk is not None and stored_chunk.content_hash == content_hash:
         if _metadata_is_unchanged(stored_chunk, chunk):
             return ChunkIngestionStatus.SKIPPED
 
@@ -106,10 +103,7 @@ def ingest_place(
 
     deleted = delete_stale_chunks(
         place_id=place_id,
-        current_chunk_indexes=[
-            chunk.chunk_index
-            for chunk in prepared_chunks
-        ],
+        current_chunk_indexes=[chunk.chunk_index for chunk in prepared_chunks],
     )
 
     return prepared_chunks, statuses, deleted
@@ -150,14 +144,10 @@ def main() -> None:
 
         corpus = PlaceCorpus.model_validate_json(raw_json)
 
-        place_id = resolve_place_id(
-            corpus.placeSlug
-        )
+        place_id = resolve_place_id(corpus.placeSlug)
 
         if place_id is None:
-            raise RuntimeError(
-                f"Place not found: {corpus.placeSlug}"
-            )
+            raise RuntimeError(f"Place not found: {corpus.placeSlug}")
 
         print()
         print(f"[PLACE] {corpus.placeSlug}")
@@ -168,11 +158,7 @@ def main() -> None:
         )
 
         for chunk, status in zip(prepared_chunks, statuses):
-            print(
-                f"  [{status.value}] "
-                f"{chunk.chunk_index} "
-                f"{chunk.section}"
-            )
+            print(f"  [{status.value}] {chunk.chunk_index} {chunk.section}")
 
             if status is ChunkIngestionStatus.UPSERTED:
                 inserted_or_updated += 1

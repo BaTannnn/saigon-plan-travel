@@ -1,6 +1,6 @@
 from app.db.postgres import pool
 from app.knowledge.embedding_service import embed_query
-from app.knowledge.knowledge_repository import search_candidate_chunks
+from app.knowledge.retrieval_repository import search_candidate_chunks
 
 
 def main() -> None:
@@ -19,12 +19,7 @@ def main() -> None:
     print(f"\nQuery: {query}\n")
 
     for index, result in enumerate(results, start=1):
-        print(
-            f"{index}. "
-            f"{result.place_name} | "
-            f"{result.section} | "
-            f"{result.similarity:.4f}"
-        )
+        print(f"{index}. {result.place_name} | {result.section} | {result.similarity:.4f}")
 
 
 if __name__ == "__main__":

@@ -5,7 +5,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 from app.knowledge.embedding_service import embed_query
-from app.knowledge.knowledge_repository import (
+from app.knowledge.retrieval_repository import (
     SearchResult,
     search_similar_chunks,
 )
@@ -108,10 +108,7 @@ def answer_question(
 
     if not results:
         return RagAnswer(
-            answer=(
-                "Dữ liệu hiện có chưa đủ để "
-                "trả lời câu hỏi này."
-            ),
+            answer=("Dữ liệu hiện có chưa đủ để trả lời câu hỏi này."),
             sources=[],
         )
 

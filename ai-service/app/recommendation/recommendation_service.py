@@ -1,6 +1,6 @@
 from app.config import get_retrieval_fetch_k
 from app.knowledge.embedding_service import embed_query
-from app.knowledge.knowledge_repository import search_candidate_chunks
+from app.knowledge.retrieval_repository import search_candidate_chunks
 from app.recommendation.models import PlaceCandidate
 from app.recommendation.place_retriever import (
     deduplicate_best_chunk_by_place,
@@ -33,10 +33,7 @@ def retrieve_candidate_places(
             retrieved_chunks,
         )
 
-        if (
-            len(unique_chunks) >= top_k
-            or len(retrieved_chunks) < resolved_fetch_k
-        ):
+        if len(unique_chunks) >= top_k or len(retrieved_chunks) < resolved_fetch_k:
             break
 
         resolved_fetch_k *= 2
@@ -62,9 +59,8 @@ def recommend_places(
     fetch_k: int | None = None,
     top_k: int = 15,
 ) -> list[PlaceCandidate]:
-    candidates = retrieve_candidate_places(
+    return retrieve_candidate_places(
         query=query,
         top_k=top_k,
         fetch_k=fetch_k,
     )
-    return candidates[:top_k]

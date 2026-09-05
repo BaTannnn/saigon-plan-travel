@@ -20,15 +20,9 @@ def main() -> None:
     print("-------")
 
     for source in result.sources:
-        print(
-            f"- {source.place_name} "
-            f"[{source.section}] "
-            f"similarity={source.similarity:.4f}"
-        )
+        print(f"- {source.place_name} [{source.section}] similarity={source.similarity:.4f}")
 
-        print(
-            f"  {source.source_uri}"
-        )
+        print(f"  {source.source_uri}")
 
 
 if __name__ == "__main__":

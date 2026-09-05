@@ -1,13 +1,14 @@
+from dotenv import load_dotenv
 from google import genai
 from google.genai import types
-from dotenv import load_dotenv
-from app.knowledge.content_hash import compute_content_hash
 
+from app.knowledge.content_hash import compute_content_hash
 
 EMBEDDING_MODEL = "gemini-embedding-2"
 EMBEDDING_DIMENSION = 768
 
 load_dotenv()
+
 
 def create_client() -> genai.Client:
     return genai.Client()
@@ -19,10 +20,7 @@ def prepare_document(
 ) -> str:
     document_title = title or "none"
 
-    return (
-        f"title: {document_title} | "
-        f"text: {content.strip()}"
-    )
+    return f"title: {document_title} | text: {content.strip()}"
 
 
 def compute_document_fingerprint(
@@ -55,9 +53,7 @@ def embed_document(
     result = client.models.embed_content(
         model=EMBEDDING_MODEL,
         contents=prepared_content,
-        config=types.EmbedContentConfig(
-            output_dimensionality=EMBEDDING_DIMENSION
-        ),
+        config=types.EmbedContentConfig(output_dimensionality=EMBEDDING_DIMENSION),
     )
 
     return result.embeddings[0].values
@@ -71,9 +67,7 @@ def embed_query(query: str) -> list[float] | None:
     result = client.models.embed_content(
         model=EMBEDDING_MODEL,
         contents=prepared_query,
-        config=types.EmbedContentConfig(
-            output_dimensionality=EMBEDDING_DIMENSION
-        ),
+        config=types.EmbedContentConfig(output_dimensionality=EMBEDDING_DIMENSION),
     )
 
     return result.embeddings[0].values
