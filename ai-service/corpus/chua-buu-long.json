@@ -1,0 +1,46 @@
+{
+  "placeSlug": "chua-buu-long",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Chùa Bửu Long, còn được biết đến với tên Thiền viện Tổ đình Bửu Long, là một điểm đến Phật giáo tại khu vực phía đông Thành phố Hồ Chí Minh. Chùa thuộc truyền thống Phật giáo Nguyên thủy Nam tông và nổi bật nhờ không gian nhiều cây xanh cùng kiến trúc chịu ảnh hưởng từ các nền văn hóa Phật giáo Đông Nam Á. Địa điểm phù hợp với người quan tâm tôn giáo, kiến trúc, không gian yên tĩnh và chụp ảnh cảnh quan.",
+      "source": {
+        "label": "Du lịch Thủ Đức - Chùa Bửu Long",
+        "uri": "https://dulich-tpthuduc.hochiminhcity.gov.vn/diem-den/diem-vui-choi-giai-tri/ch%C3%B9a-b%E1%BB%ADu-long/",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Tư liệu của Cục Du lịch Quốc gia Việt Nam cho biết chùa được hình thành từ năm 1942 và được trùng tu quy mô lớn vào giai đoạn sau, với kiến trúc kết hợp ảnh hưởng Việt Nam và một số quốc gia Phật giáo trong khu vực như Myanmar, Thái Lan và Lào. Khuôn viên rộng, nhiều cây xanh và vị trí tách khỏi vùng đô thị dày đặc tạo nên bầu không khí yên tĩnh. Khi xây dựng knowledge base, phần lịch sử này giúp RAG giải thích vì sao Bửu Long phù hợp với nhu cầu tìm hiểu kiến trúc tôn giáo và trải nghiệm thanh tịnh.",
+      "source": {
+        "label": "Cục Du lịch Quốc gia Việt Nam - Buu Long Pagoda",
+        "uri": "https://vietnamtourism.gov.vn/en/printer/10762?type=1",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Điểm nhận diện nổi bật của chùa là quần thể kiến trúc Phật giáo Nam tông, trong đó các tháp, mái và chi tiết trang trí tạo cảm giác khác biệt so với nhiều chùa Bắc tông trong nội đô. Không gian cây xanh và khu vực mặt nước hỗ trợ trải nghiệm tham quan chậm, quan sát kiến trúc và nghỉ ngơi. Trong recommendation, các đặc trưng phù hợp gồm tôn giáo, kiến trúc, văn hóa, yên tĩnh và ngoài trời. Chùa cũng nằm ở khu vực xa trung tâm hơn nhiều địa điểm du lịch phổ biến nên có thể ghép với các điểm phía đông để tối ưu tuyến đường.",
+      "source": {
+        "label": "Du lịch Thủ Đức - Chùa Bửu Long",
+        "uri": "https://dulich-tpthuduc.hochiminhcity.gov.vn/diem-den/diem-vui-choi-giai-tri/ch%C3%B9a-b%E1%BB%ADu-long/",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Khi đưa Bửu Long vào lịch trình, hệ thống nên coi đây là điểm tham quan tôn giáo và yêu cầu người dùng giữ thái độ, trang phục phù hợp với không gian tu học. Nguồn Du lịch Thủ Đức cho biết chùa có các khung giờ đón khách trong ngày, vì vậy giờ mở cửa nên được quản lý bằng dữ liệu structured và được cập nhật nếu có thay đổi. Thời lượng khoảng một đến hai giờ thường đủ cho tham quan nhẹ, nhưng travel time từ trung tâm có thể đáng kể; scheduler nên tránh ghép chùa với các điểm ở phía tây thành phố trong cùng một khoảng thời gian ngắn.",
+      "source": {
+        "label": "Du lịch Thủ Đức - Chùa Bửu Long",
+        "uri": "https://dulich-tpthuduc.hochiminhcity.gov.vn/diem-den/diem-vui-choi-giai-tri/ch%C3%B9a-b%E1%BB%ADu-long/",
+        "retrievedAt": "2026-08-29"
+      }
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "placeSlug": "cong-vien-lich-su-van-hoa-dan-toc",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Công viên Lịch sử Văn hóa Dân tộc là quần thể quy mô lớn ở khu vực Long Bình, Thành phố Thủ Đức, được định hướng như không gian tham quan, giáo dục và tôn vinh lịch sử - văn hóa Việt Nam. Cổng du lịch Thành phố Thủ Đức cho biết công viên có quy mô gần 400 ha và được quy hoạch thành nhiều khu vực thể hiện các giai đoạn lịch sử khác nhau. Đây là địa điểm phù hợp với gia đình, học sinh, người quan tâm văn hóa dân tộc và các lịch trình muốn kết hợp hoạt động ngoài trời với nội dung giáo dục lịch sử, thay vì chỉ tập trung vào các điểm du lịch trung tâm đô thị.",
+      "source": {
+        "label": "Du lịch Thành phố Thủ Đức - Công viên Lịch sử Văn hóa Dân tộc",
+        "uri": "https://dulich-tpthuduc.hochiminhcity.gov.vn/diem-den/diem-vui-choi-giai-tri/c%C3%B4ng-vi%C3%AAn-l%E1%BB%8Bch-s%E1%BB%AD-v%C4%83n-h%C3%B3a-d%C3%A2n-t%E1%BB%99c/",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Theo thông tin của Du lịch Thủ Đức, quy hoạch công viên gồm các khu thể hiện lịch sử từ thời cổ đại, trung đại, cận - hiện đại và khu sinh hoạt văn hóa, với mục tiêu tái hiện tiến trình lịch sử của đất nước. Công trình trung tâm của khu cổ đại là Khu tưởng niệm các Vua Hùng, khánh thành năm 2009 và trở thành nơi tổ chức các hoạt động hướng về cội nguồn. Sở Văn hóa và Thể thao Thành phố Hồ Chí Minh cũng ghi nhận nơi đây là địa điểm tổ chức Lễ Giỗ Tổ Hùng Vương của thành phố. Vì vậy corpus cần nhấn mạnh đây không chỉ là công viên cảnh quan mà còn là không gian nghi lễ và giáo dục lịch sử có quy mô cấp thành phố.",
+      "source": {
+        "label": "Sở Văn hóa và Thể thao TP.HCM - Giỗ Tổ Hùng Vương tại Khu tưởng niệm",
+        "uri": "https://svhtt.hochiminhcity.gov.vn/tin-chi-tiet/-/chi-tiet/gio-to-hung-vuong-tai-khu-tuong-niem-cac-vua-hung-cong-vien-lich-su-van-hoa-dan-toc-thanh-pho-thu-%C4%91uc--24160-1.html",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Khu tưởng niệm các Vua Hùng là điểm nhấn nổi bật với đền tưởng niệm, biểu tượng Chim Lạc và không gian văn bia hướng về nguồn cội dân tộc. Quy mô rộng làm cho trải nghiệm tại đây khác với bảo tàng trong nhà: người dùng cần đi bộ nhiều hơn, dành thời gian cho cảnh quan và có thể tham gia các hoạt động văn hóa ngoài trời. Với recommendation, các đặc trưng phù hợp gồm lịch sử Việt Nam, văn hóa dân tộc, giáo dục, gia đình, ngoại khóa, kiến trúc tưởng niệm, không gian xanh và hoạt động lễ hội. Các dịp Giỗ Tổ hoặc sự kiện lớn cần được coi là context động do khả năng đông người cao hơn ngày thường.",
+      "source": {
+        "label": "Du lịch Thành phố Thủ Đức - Công viên Lịch sử Văn hóa Dân tộc",
+        "uri": "https://dulich-tpthuduc.hochiminhcity.gov.vn/diem-den/diem-den-mo-phong-3d/c%C3%B4ng-vi%C3%AAn-l%E1%BB%8Bch-s%E1%BB%AD-v%C4%83n-h%C3%B3a-d%C3%A2n-t%E1%BB%99c/",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Công viên nằm xa khu trung tâm nên phù hợp hơn với lịch trình nửa ngày hoặc ghép cùng các điểm ở phía đông thành phố như Suối Tiên và một số chùa, bảo tàng tại Thủ Đức. Trang Du lịch Thủ Đức công bố khung giờ tham quan 8:00-17:00 hằng ngày; tuy nhiên trong seed phát triển, giờ mở cửa vẫn nên được ghi chú là dữ liệu tham khảo và cần xác minh nếu triển khai thực tế. Người dùng nên chuẩn bị cho hoạt động đi bộ ngoài trời, đặc biệt vào ngày nắng. Với scheduler, nên phân bổ thời lượng dài hơn các điểm nội đô và tránh ghép quá nhiều địa điểm xa nhau trong cùng buổi.",
+      "source": {
+        "label": "Du lịch Thành phố Thủ Đức - Công viên Lịch sử Văn hóa Dân tộc",
+        "uri": "https://dulich-tpthuduc.hochiminhcity.gov.vn/diem-den/diem-vui-choi-giai-tri/c%C3%B4ng-vi%C3%AAn-l%E1%BB%8Bch-s%E1%BB%AD-v%C4%83n-h%C3%B3a-d%C3%A2n-t%E1%BB%99c/",
+        "retrievedAt": "2026-08-29"
+      }
+    }
+  ]
+}

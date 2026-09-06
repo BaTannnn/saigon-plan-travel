@@ -1,0 +1,46 @@
+{
+  "placeSlug": "cong-vien-van-hoa-dam-sen",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Công viên Văn hóa Đầm Sen là một khu vui chơi giải trí lâu năm tại Thành phố Hồ Chí Minh, kết hợp trò chơi, cảnh quan cây xanh, khu vực chim thú, thủy cung, sự kiện và dịch vụ ẩm thực. Với nhiều loại hình hoạt động trong cùng một khuôn viên, địa điểm phù hợp hơn với lịch trình dài hoặc nhóm gia đình muốn dành nhiều thời gian cho vui chơi và thư giãn.",
+      "source": {
+        "label": "Công viên Văn hóa Đầm Sen - Trang chính thức",
+        "uri": "https://damsenpark.vn/",
+        "retrievedAt": "2026-08-22"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Lịch sử hình thành Công viên Văn hóa Đầm Sen bắt đầu sau năm 1975, khi khu vực này vẫn còn là vùng đầm lầy. Năm 1976, thành phố phát động việc xây dựng các công viên văn hóa lớn và Đầm Sen được cải tạo trên một khu vực rộng, từng bước chuyển từ vùng đất hoang thành hồ nước, cảnh quan xanh và không gian phục vụ vui chơi, sinh hoạt văn hóa của người dân.",
+      "source": {
+        "label": "Công viên Văn hóa Đầm Sen - Lịch sử hình thành",
+        "uri": "https://damsenpark.vn/lich-su-hinh-thanh/",
+        "retrievedAt": "2026-08-22"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Đầm Sen phát triển nhiều nhóm trải nghiệm như trò chơi thư giãn và cảm giác mạnh, các khu vườn và cảnh quan xanh, khu chim thú, thủy cung, sự kiện văn hóa và khu ẩm thực. Sự đa dạng này giúp công viên phục vụ nhiều nhóm khách khác nhau, từ trẻ em và gia đình đến nhóm bạn muốn kết hợp vui chơi, tham quan động vật và nghỉ ngơi trong cùng một địa điểm.",
+      "source": {
+        "label": "Công viên Văn hóa Đầm Sen - Các loại hình dịch vụ",
+        "uri": "https://damsenpark.vn/lich-su-hinh-thanh/",
+        "retrievedAt": "2026-08-22"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Khách đến Đầm Sen có thể lựa chọn các trò chơi theo mức độ phù hợp, tham quan thủy cung hoặc khu chim thú, đi dạo qua các khu vườn và kết hợp ăn uống trong công viên. Vì các hoạt động phân bố trên khuôn viên lớn và có nhiều lựa chọn, địa điểm phù hợp với lịch trình nửa ngày hoặc dài hơn thay vì một điểm dừng ngắn. Khi lập lịch, hệ thống nên xem đây là điểm có thời lượng tham quan tương đối cao.",
+      "source": {
+        "label": "Công viên Văn hóa Đầm Sen - Trải nghiệm trong công viên",
+        "uri": "https://damsenpark.vn/",
+        "retrievedAt": "2026-08-22"
+      }
+    }
+  ]
+}

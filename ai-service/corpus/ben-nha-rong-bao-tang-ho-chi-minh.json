@@ -1,0 +1,46 @@
+{
+  "placeSlug": "ben-nha-rong-bao-tang-ho-chi-minh",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Bến Nhà Rồng - Bảo tàng Hồ Chí Minh, chi nhánh Thành phố Hồ Chí Minh là một địa điểm lịch sử nằm bên sông Sài Gòn, gắn với sự kiện Nguyễn Tất Thành rời Sài Gòn năm 1911 để bắt đầu hành trình ra nước ngoài tìm đường cứu nước. Địa điểm kết hợp giá trị của một công trình kiến trúc lịch sử với không gian trưng bày bảo tàng về cuộc đời, hành trình và tư tưởng của Chủ tịch Hồ Chí Minh. Vị trí ven sông và gần khu vực trung tâm giúp nơi đây có thể được kết hợp với các điểm tham quan lịch sử, kiến trúc và cảnh quan dọc sông trong cùng một lịch trình.",
+      "source": {
+        "label": "Bảo tàng Hồ Chí Minh - Chi nhánh TP.HCM, Bến Nhà Rồng",
+        "uri": "https://bennharong.vn/",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Tòa nhà Nhà Rồng ban đầu là trụ sở của một công ty vận tải hàng hải của Pháp, được xây dựng trong giai đoạn 1862-1863. Kiến trúc công trình mang phong cách phương Tây nhưng phần mái có chi tiết trang trí hai con rồng hướng vào nhau, tạo nên tên gọi Nhà Rồng và sau đó là Bến Nhà Rồng. Địa điểm có ý nghĩa đặc biệt trong lịch sử Việt Nam hiện đại vì ngày 5 tháng 6 năm 1911, Nguyễn Tất Thành rời Thương cảng Sài Gòn trên tàu Amiral Latouche Tréville với công việc phụ bếp, bắt đầu hành trình nhiều năm ở nước ngoài. Sau năm 1975, Nhà Rồng được cải tạo thành di tích lưu niệm Chủ tịch Hồ Chí Minh. Năm 1979, nơi đây mở cửa phục vụ trưng bày về hành trình tìm đường cứu nước; đến năm 1995, khu lưu niệm được đổi tên thành Bảo tàng Hồ Chí Minh - chi nhánh Thành phố Hồ Chí Minh. Vì vậy, giá trị của điểm đến nằm ở sự chồng lớp giữa lịch sử đô thị Sài Gòn, kiến trúc thuộc địa, hoạt động hàng hải và một sự kiện quan trọng trong tiểu sử Chủ tịch Hồ Chí Minh.",
+      "source": {
+        "label": "Sở Văn hóa và Thể thao TP.HCM - Bảo tàng Hồ Chí Minh chi nhánh TP.HCM",
+        "uri": "https://svhtt.hochiminhcity.gov.vn/tin-chi-tiet/-/chi-tiet/bao-tang-ho-chi-minh-chi-nhanh-thanh-pho-ho-chi-minh-19084-2015.html",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Không gian trưng bày tại Bến Nhà Rồng tập trung vào Chủ tịch Hồ Chí Minh và mối liên hệ của Người với miền Nam. Các khu vực giới thiệu hành trình ra đi tìm đường cứu nước, các giai đoạn hoạt động, tư liệu về cuộc đời và nhiều chuyên đề lịch sử khác. Bên cạnh giá trị nội dung, bản thân tòa Nhà Rồng là một điểm nhấn kiến trúc với lịch sử hình thành từ thế kỷ XIX. Khuôn viên hướng ra sông Sài Gòn tạo ra trải nghiệm khác với các bảo tàng nằm hoàn toàn trong khu phố đô thị. Vì vậy, địa điểm phù hợp với người quan tâm lịch sử Việt Nam hiện đại, kiến trúc, di tích và cảnh quan ven sông; đồng thời có thể tạo một điểm chuyển tiếp hợp lý trong hành trình giữa khu trung tâm và các điểm ở phía bên kia hoặc dọc bờ sông.",
+      "source": {
+        "label": "Bảo tàng Hồ Chí Minh - Chi nhánh TP.HCM, Bến Nhà Rồng",
+        "uri": "https://bennharong.vn/",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Khách tham quan có thể kết hợp việc xem các phòng trưng bày với quan sát kiến trúc Nhà Rồng và cảnh quan sông Sài Gòn. Trải nghiệm phù hợp với hành trình lịch sử - văn hóa, đặc biệt khi người dùng muốn tìm hiểu các mốc của lịch sử Việt Nam hiện đại nhưng vẫn có một khoảng không gian ngoài trời để nghỉ và quan sát cảnh quan. Khi lập lịch, địa điểm có thể ghép với các điểm trung tâm thành phố và các điểm ven sông để giảm quãng đường vòng. Các thông tin vận hành có tính thời điểm như đóng cửa sửa chữa hoặc thay đổi giờ phục vụ nên được lấy từ nguồn realtime/structured data thay vì nhúng cố định vào corpus kiến thức dài hạn.",
+      "source": {
+        "label": "Bảo tàng Hồ Chí Minh - Chi nhánh TP.HCM, Bến Nhà Rồng",
+        "uri": "https://bennharong.vn/",
+        "retrievedAt": "2026-08-29"
+      }
+    }
+  ]
+}

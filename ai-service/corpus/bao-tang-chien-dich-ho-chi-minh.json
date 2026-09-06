@@ -1,0 +1,46 @@
+{
+  "placeSlug": "bao-tang-chien-dich-ho-chi-minh",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Bảo tàng Chiến dịch Hồ Chí Minh là điểm tham quan lịch sử tại số 2 Lê Duẩn, khu vực trung tâm Thành phố Hồ Chí Minh. Nội dung của bảo tàng gắn với Chiến dịch Hồ Chí Minh và giai đoạn kết thúc cuộc chiến tranh năm 1975. Đây là lựa chọn phù hợp với người quan tâm lịch sử quân sự, tư liệu, hiện vật và muốn bổ sung một điểm trong nhà vào lịch trình trung tâm. Vị trí gần Thảo Cầm Viên và Bảo tàng Lịch sử giúp dễ kết hợp thành cụm điểm đi bộ hoặc di chuyển ngắn.",
+      "source": {
+        "label": "Ủy ban MTTQ Việt Nam TP.HCM - Lịch công tác tại Bảo tàng Chiến dịch Hồ Chí Minh",
+        "uri": "https://ubmttq.hochiminhcity.gov.vn/tin-tuc/chitiet/8876/lich-cong-tac-tuan-27-tu-ngay-296-den-ngay-0572026",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Chiến dịch Hồ Chí Minh diễn ra cuối tháng 4 năm 1975 và là chiến dịch có ý nghĩa quyết định trong cuộc Tổng tiến công và nổi dậy mùa Xuân 1975. Bảo tàng tập trung vào chủ đề này, giúp người xem tiếp cận sự kiện thông qua hệ thống trưng bày thay vì chỉ đọc tư liệu lịch sử. Với RAG, phần bối cảnh nên được sử dụng để giải thích vì sao điểm đến phù hợp với nhu cầu tìm hiểu lịch sử quân sự hiện đại, đồng thời tránh biến corpus thành bài tường thuật toàn bộ chiến dịch vượt quá phạm vi thông tin điểm đến.",
+      "source": {
+        "label": "Bảo tàng Lịch sử Quốc gia - Chiến dịch Hồ Chí Minh lịch sử",
+        "uri": "https://baotanglichsu.vn/vi/Articles/2002/67989/chien-dich-ho-chi-minh-lich-su-26-4-30-4-1975.html",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Các mô tả điểm đến và hoạt động tham quan cho biết bảo tàng có không gian trưng bày hình ảnh, sơ đồ, sa bàn và hiện vật liên quan đến chiến dịch, kết hợp khu vực trong nhà và một số hiện vật ngoài trời. Với recommendation, các tín hiệu phù hợp gồm lịch sử, văn hóa, giáo dục và trải nghiệm trong nhà. Do nằm trong cụm trung tâm và thời lượng tham quan không quá dài, scheduler có thể ghép bảo tàng với Thảo Cầm Viên, Bảo tàng Lịch sử hoặc các điểm trên trục Lê Duẩn trong cùng buổi.",
+      "source": {
+        "label": "Ủy ban MTTQ Việt Nam TP.HCM - Hoạt động tham quan Bảo tàng Chiến dịch Hồ Chí Minh",
+        "uri": "https://ubmttq.hochiminhcity.gov.vn/tin-tuc/chitiet/4993/quan-11-cum-thi-dua-2-khoi-phuong-to-chuc-hoat-dong-tim-hieu-y-nghia-lich-su-ngay-giai-phong-mien-nam-thong-nhat-dat-nuoc-3041975--3042024",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Đây là điểm thích hợp khi người dùng cần một hoạt động trong nhà, đặc biệt trong những ngày nắng gắt hoặc mưa. Tuy vậy, giờ mở cửa, ngày nghỉ và chính sách vé nên được quản lý bằng structured data hoặc nguồn vận hành cập nhật thay vì suy ra từ corpus. Khi lập lịch, có thể dành khoảng một đến một giờ rưỡi cho tham quan cơ bản và tăng thời lượng nếu người dùng có sở thích lịch sử mạnh. Corpus nên hỗ trợ giải thích nội dung và mức độ phù hợp, còn scheduler chịu trách nhiệm kiểm tra giờ mở cửa thực tế.",
+      "source": {
+        "label": "Sở Văn hóa và Thể thao TP.HCM - Báo cáo hoạt động bảo tàng",
+        "uri": "https://svhtt.hochiminhcity.gov.vn/documents/10184/384676/9-HCM.pdf/ecbac71c-861a-4789-be4b-fd175c981a7a",
+        "retrievedAt": "2026-08-29"
+      }
+    }
+  ]
+}

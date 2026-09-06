@@ -1,0 +1,46 @@
+{
+  "placeSlug": "khu-du-lich-van-thanh",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Khu du lịch Văn Thánh là một không gian sinh thái, ẩm thực và nghỉ ngơi thuộc hệ thống Làng Du lịch Bình Quới, nằm gần khu vực trung tâm Thành phố Hồ Chí Minh. Điểm nổi bật của nơi đây là diện tích cây xanh và mặt nước lớn, tạo cảm giác tách khỏi nhịp đô thị dù khoảng cách di chuyển không xa. Văn Thánh phù hợp với gia đình, nhóm bạn hoặc người muốn kết hợp ăn uống, thư giãn, chụp ảnh và các hoạt động ngoài trời trong cùng một điểm dừng.",
+      "source": {
+        "label": "Làng Du lịch Bình Quới - Khu du lịch Văn Thánh",
+        "uri": "https://binhquoi.vn/overview/khu-du-lich-van-thanh/",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Theo giới thiệu của Làng Du lịch Bình Quới, Khu du lịch Văn Thánh có quy mô trên 8 ha, trong đó hồ nước chiếm khoảng 3,5 ha. Cấu trúc cảnh quan gồm hồ, thảm cỏ, cây xanh, khu nhà hàng và các khu vực sinh hoạt tập thể. Cách tổ chức này khiến Văn Thánh thiên về trải nghiệm nghỉ ngơi và dịch vụ hơn là tham quan theo tuyến hiện vật. Với đồ án SaigonPlanTravel, địa điểm này có thể đại diện cho nhóm điểm đến sinh thái đô thị, nơi thời gian lưu trú phụ thuộc nhiều vào hoạt động mà người dùng lựa chọn.",
+      "source": {
+        "label": "Làng Du lịch Bình Quới - Giới thiệu",
+        "uri": "https://binhquoi.vn/tong-quan/",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Các dịch vụ được giới thiệu tại Văn Thánh gồm hệ thống nhà hàng, khu cà phê, hồ bơi, sân thể thao, nhà sinh hoạt dã ngoại, không gian tổ chức hội nghị và các bãi cỏ phù hợp cho hoạt động ngoài trời. Khu vực ven hồ và nhiều mảng xanh là yếu tố tạo khác biệt so với các địa điểm nội đô có mật độ xây dựng cao. Trong recommendation, các tín hiệu phù hợp gồm thiên nhiên, gia đình, ẩm thực, nghỉ ngơi và ngoài trời; đây cũng là địa điểm có thể kết hợp với các điểm lân cận ở khu Bình Thạnh để giảm thời gian di chuyển.",
+      "source": {
+        "label": "Làng Du lịch Bình Quới - Khu du lịch Văn Thánh",
+        "uri": "https://binhquoi.vn/overview/khu-du-lich-van-thanh/",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Khi lập lịch, Văn Thánh nên được xem là điểm có thời lượng linh hoạt: người dùng chỉ đi dạo hoặc uống cà phê có thể ở lại ngắn, còn ăn uống, bơi hoặc sinh hoạt nhóm sẽ cần nhiều thời gian hơn. Trang chính thức công bố khung hoạt động trong ngày, nhưng giá dịch vụ và chương trình ẩm thực có thể thay đổi nên không nên cố định vào corpus tĩnh. Vì nhiều trải nghiệm diễn ra ngoài trời, module context-aware nên giảm ưu tiên hoặc đề xuất phương án thay thế khi có mưa lớn hoặc thời tiết bất lợi.",
+      "source": {
+        "label": "Làng Du lịch Bình Quới - Dịch vụ",
+        "uri": "https://binhquoi.vn/dich-vu/",
+        "retrievedAt": "2026-08-29"
+      }
+    }
+  ]
+}

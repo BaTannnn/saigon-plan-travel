@@ -35,6 +35,37 @@
         </div>
     </div>
 
+    <section class="card page-card mb-4">
+        <div class="card-body p-4">
+            <h2 class="h5 mb-3">Cover image</h2>
+            <div class="alert alert-danger" role="alert" th:if="${imageError}" th:text="${imageError}">
+                Image operation failed.
+            </div>
+            <img class="img-fluid rounded mb-3"
+                 style="max-height: 320px; object-fit: cover;"
+                 th:if="${place.primaryImageUrl != null}"
+                 th:src="${place.primaryImageUrl}"
+                 th:alt="${place.name + ' cover image'}">
+            <p class="text-secondary" th:if="${place.primaryImageUrl == null}">No cover image uploaded.</p>
+
+            <form class="mb-3" method="post" enctype="multipart/form-data"
+                  th:action="@{/admin/places/{slug}/cover-image(slug=${place.slug})}">
+                <label class="form-label" for="image">
+                    <span th:text="${place.primaryImageUrl == null ? 'Upload image' : 'Replace image'}">Upload image</span>
+                </label>
+                <input class="form-control" id="image" name="image" type="file" accept="image/*" required>
+                <div class="form-text">Image files up to 5 MB.</div>
+                <button class="btn btn-primary mt-3" type="submit"
+                        th:text="${place.primaryImageUrl == null ? 'Upload cover' : 'Replace cover'}">Upload cover</button>
+            </form>
+
+            <form method="post" th:if="${place.primaryImageUrl != null}"
+                  th:action="@{/admin/places/{slug}/cover-image/remove(slug=${place.slug})}">
+                <button class="btn btn-outline-danger" type="submit">Remove image</button>
+            </form>
+        </div>
+    </section>
+
     <div class="card page-card mb-4">
     <div class="card-body p-4">
     <h2 class="h5 mb-3">Basic information</h2>

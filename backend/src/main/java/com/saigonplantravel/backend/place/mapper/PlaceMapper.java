@@ -1,12 +1,12 @@
 package com.saigonplantravel.backend.place.mapper;
 
-import com.saigonplantravel.backend.place.dto.AdminCategoryResponse;
-import com.saigonplantravel.backend.place.dto.AdminPlaceDetailResponse;
-import com.saigonplantravel.backend.place.dto.AdminPlaceSummaryResponse;
 import com.saigonplantravel.backend.place.dto.CategoryResponse;
 import com.saigonplantravel.backend.place.dto.OpeningHourResponse;
 import com.saigonplantravel.backend.place.dto.PlaceDetailResponse;
 import com.saigonplantravel.backend.place.dto.PlaceSummaryResponse;
+import com.saigonplantravel.backend.place.dto.admin.AdminCategoryResponse;
+import com.saigonplantravel.backend.place.dto.admin.AdminPlaceDetailResponse;
+import com.saigonplantravel.backend.place.dto.admin.AdminPlaceSummaryResponse;
 import com.saigonplantravel.backend.place.entity.Category;
 import com.saigonplantravel.backend.place.entity.OpeningHour;
 import com.saigonplantravel.backend.place.entity.Place;
@@ -33,7 +33,8 @@ public class PlaceMapper {
                 place.getEstimatedVisitMinutes(),
                 place.getMinCost(),
                 place.getMaxCost(),
-                place.getIndoor());
+                place.getIndoor(),
+                place.getPrimaryImageUrl());
     }
 
     public PlaceDetailResponse toDetailResponse(Place place) {
@@ -61,7 +62,8 @@ public class PlaceMapper {
                 place.getMaxCost(),
                 place.getIndoor(),
                 categories,
-                openingHours);
+                openingHours,
+                place.getPrimaryImageUrl());
     }
 
     public AdminPlaceSummaryResponse toAdminSummaryResponse(Place place) {
@@ -97,7 +99,8 @@ public class PlaceMapper {
                 detail.indoor(),
                 detail.categories(),
                 detail.openingHours(),
-                place.getActive());
+                place.getActive(),
+                detail.primaryImageUrl());
     }
 
     public CategoryResponse toCategoryResponse(Category category) {

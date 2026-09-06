@@ -1,15 +1,15 @@
 package com.saigonplantravel.backend.place.service;
 
-import com.saigonplantravel.backend.place.dto.AdminPlaceDetailResponse;
-import com.saigonplantravel.backend.place.dto.AdminPlaceSummaryResponse;
 import com.saigonplantravel.backend.place.dto.OpeningHourState;
 import com.saigonplantravel.backend.place.dto.PageResponse;
-import com.saigonplantravel.backend.place.dto.PlaceCreateRequest;
 import com.saigonplantravel.backend.place.dto.PlaceDetailResponse;
-import com.saigonplantravel.backend.place.dto.PlaceOpeningHoursRequest;
-import com.saigonplantravel.backend.place.dto.PlaceSearchRequest;
+import com.saigonplantravel.backend.place.dto.PlaceQueryRequest;
 import com.saigonplantravel.backend.place.dto.PlaceSummaryResponse;
-import com.saigonplantravel.backend.place.dto.PlaceUpdateRequest;
+import com.saigonplantravel.backend.place.dto.admin.AdminPlaceDetailResponse;
+import com.saigonplantravel.backend.place.dto.admin.AdminPlaceSummaryResponse;
+import com.saigonplantravel.backend.place.dto.admin.PlaceCreateRequest;
+import com.saigonplantravel.backend.place.dto.admin.PlaceOpeningHoursRequest;
+import com.saigonplantravel.backend.place.dto.admin.PlaceUpdateRequest;
 import com.saigonplantravel.backend.place.entity.Category;
 import com.saigonplantravel.backend.place.entity.Place;
 import com.saigonplantravel.backend.place.exception.InvalidPlaceCategoryAssignmentException;
@@ -19,6 +19,7 @@ import com.saigonplantravel.backend.place.mapper.PlaceMapper;
 import com.saigonplantravel.backend.place.repository.CategoryRepository;
 import com.saigonplantravel.backend.place.repository.PlaceRepository;
 import com.saigonplantravel.backend.place.repository.specification.PlaceSpecifications;
+import com.saigonplantravel.backend.place.search.PlaceSearchNormalizer;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -46,15 +47,7 @@ public class PlaceService {
         this.placeMapper = placeMapper;
     }
 
-    public PageResponse<PlaceSummaryResponse> getActivePlaces(int page, int size) {
-        Page<PlaceSummaryResponse> result = placeRepository
-                .findAllByActiveTrue(PageRequest.of(page, size, PLACE_SORT))
-                .map(placeMapper::toSummaryResponse);
-
-        return toPageResponse(result);
-    }
-
-    public PageResponse<PlaceSummaryResponse> searchPlaces(PlaceSearchRequest request) {
+    public PageResponse<PlaceSummaryResponse> findActivePlaces(PlaceQueryRequest request) {
         Page<PlaceSummaryResponse> result = placeRepository
                 .findAll(
                         PlaceSpecifications.matching(request),
@@ -64,10 +57,13 @@ public class PlaceService {
         return toPageResponse(result);
     }
 
-    public PageResponse<AdminPlaceSummaryResponse> getPlacesForAdministration(int page, int size) {
-        Page<AdminPlaceSummaryResponse> result = placeRepository
-                .findAll(PageRequest.of(page, size, PLACE_SORT))
-                .map(placeMapper::toAdminSummaryResponse);
+    public PageResponse<AdminPlaceSummaryResponse> getPlacesForAdministration(String keyword, int page, int size) {
+        String normalizedKeyword = PlaceSearchNormalizer.normalizeText(keyword);
+        PageRequest pageRequest = PageRequest.of(page, size, PLACE_SORT);
+        Page<Place> places = normalizedKeyword == null
+                ? placeRepository.findAll(pageRequest)
+                : placeRepository.findAll(PlaceSpecifications.adminKeyword(normalizedKeyword), pageRequest);
+        Page<AdminPlaceSummaryResponse> result = places.map(placeMapper::toAdminSummaryResponse);
 
         return toPageResponse(result);
     }

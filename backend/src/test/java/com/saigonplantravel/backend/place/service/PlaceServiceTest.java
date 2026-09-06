@@ -8,16 +8,16 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.saigonplantravel.backend.place.dto.AdminPlaceDetailResponse;
-import com.saigonplantravel.backend.place.dto.AdminPlaceSummaryResponse;
 import com.saigonplantravel.backend.place.dto.OpeningHourState;
 import com.saigonplantravel.backend.place.dto.PageResponse;
-import com.saigonplantravel.backend.place.dto.PlaceCreateRequest;
 import com.saigonplantravel.backend.place.dto.PlaceDetailResponse;
-import com.saigonplantravel.backend.place.dto.PlaceOpeningHoursRequest;
-import com.saigonplantravel.backend.place.dto.PlaceSearchRequest;
+import com.saigonplantravel.backend.place.dto.PlaceQueryRequest;
 import com.saigonplantravel.backend.place.dto.PlaceSummaryResponse;
-import com.saigonplantravel.backend.place.dto.PlaceUpdateRequest;
+import com.saigonplantravel.backend.place.dto.admin.AdminPlaceDetailResponse;
+import com.saigonplantravel.backend.place.dto.admin.AdminPlaceSummaryResponse;
+import com.saigonplantravel.backend.place.dto.admin.PlaceCreateRequest;
+import com.saigonplantravel.backend.place.dto.admin.PlaceOpeningHoursRequest;
+import com.saigonplantravel.backend.place.dto.admin.PlaceUpdateRequest;
 import com.saigonplantravel.backend.place.entity.Category;
 import com.saigonplantravel.backend.place.entity.Place;
 import com.saigonplantravel.backend.place.exception.InvalidPlaceCategoryAssignmentException;
@@ -38,9 +38,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 
 @ExtendWith(MockitoExtension.class)
@@ -54,61 +52,6 @@ class PlaceServiceTest {
 
     @Mock
     private PlaceMapper placeMapper;
-
-    @Test
-    void mapsPageAndUsesLockedSorting() {
-        Place place = mock(Place.class);
-        PlaceSummaryResponse summary = new PlaceSummaryResponse(
-                1L,
-                "Demo Place",
-                "demo-place",
-                null,
-                new BigDecimal("10.0000000"),
-                new BigDecimal("106.0000000"),
-                60,
-                BigDecimal.ZERO,
-                new BigDecimal("100000.00"),
-                true);
-        when(placeRepository.findAllByActiveTrue(org.mockito.ArgumentMatchers.any(Pageable.class)))
-                .thenAnswer(invocation -> {
-                    Pageable pageable = invocation.getArgument(0);
-                    return new PageImpl<>(List.of(place), pageable, 1);
-                });
-        when(placeMapper.toSummaryResponse(place)).thenReturn(summary);
-
-        PageResponse<PlaceSummaryResponse> response =
-                new PlaceService(placeRepository, categoryRepository, placeMapper).getActivePlaces(0, 20);
-
-        assertThat(response.content()).containsExactly(summary);
-        assertThat(response.page()).isZero();
-        assertThat(response.size()).isEqualTo(20);
-        assertThat(response.totalElements()).isEqualTo(1);
-        assertThat(response.totalPages()).isEqualTo(1);
-        assertThat(response.first()).isTrue();
-        assertThat(response.last()).isTrue();
-
-        ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
-        verify(placeRepository).findAllByActiveTrue(pageableCaptor.capture());
-        assertThat(pageableCaptor.getValue().getSort().toString()).isEqualTo("name: ASC,id: ASC");
-    }
-
-    @Test
-    void preservesEmptyPageEnvelope() {
-        Pageable pageable = PageRequest.of(3, 10, Sort.by(Sort.Order.asc("name"), Sort.Order.asc("id")));
-        when(placeRepository.findAllByActiveTrue(org.mockito.ArgumentMatchers.any(Pageable.class)))
-                .thenReturn(new PageImpl<>(List.of(), pageable, 0));
-
-        PageResponse<PlaceSummaryResponse> response =
-                new PlaceService(placeRepository, categoryRepository, placeMapper).getActivePlaces(3, 10);
-
-        assertThat(response.content()).isEmpty();
-        assertThat(response.page()).isEqualTo(3);
-        assertThat(response.size()).isEqualTo(10);
-        assertThat(response.totalElements()).isZero();
-        assertThat(response.totalPages()).isZero();
-        assertThat(response.first()).isFalse();
-        assertThat(response.last()).isTrue();
-    }
 
     @Test
     void searchesWithDefaultsFixedSortingAndSummaryMapping() {
@@ -134,7 +77,7 @@ class PlaceServiceTest {
         when(placeMapper.toSummaryResponse(place)).thenReturn(summary);
 
         PageResponse<PlaceSummaryResponse> response = new PlaceService(placeRepository, categoryRepository, placeMapper)
-                .searchPlaces(new PlaceSearchRequest("   ", null, null, new BigDecimal("100000"), null, null));
+                .findActivePlaces(new PlaceQueryRequest("   ", null, null, new BigDecimal("100000"), null, null));
 
         assertThat(response.content()).containsExactly(summary);
         assertThat(response.page()).isZero();
@@ -168,8 +111,9 @@ class PlaceServiceTest {
                 });
         when(placeMapper.toAdminSummaryResponse(place)).thenReturn(summary);
 
-        PageResponse<AdminPlaceSummaryResponse> response =
-                new PlaceService(placeRepository, categoryRepository, placeMapper).getPlacesForAdministration(0, 20);
+        PageResponse<AdminPlaceSummaryResponse> response = new PlaceService(
+                        placeRepository, categoryRepository, placeMapper)
+                .getPlacesForAdministration("   ", 0, 20);
 
         assertThat(response.content()).containsExactly(summary);
         assertThat(response.content().getFirst().active()).isFalse();
@@ -179,6 +123,43 @@ class PlaceServiceTest {
         verify(placeRepository).findAll(pageableCaptor.capture());
         assertThat(pageableCaptor.getValue().getPageNumber()).isZero();
         assertThat(pageableCaptor.getValue().getPageSize()).isEqualTo(20);
+        assertThat(pageableCaptor.getValue().getSort().toString()).isEqualTo("name: ASC,id: ASC");
+    }
+
+    @Test
+    void searchesAdministrationWithSpecificationAndStablePagination() {
+        Place place = mock(Place.class);
+        AdminPlaceSummaryResponse summary = new AdminPlaceSummaryResponse(
+                1L,
+                "Matching Place",
+                "matching-place",
+                null,
+                new BigDecimal("10.0000000"),
+                new BigDecimal("106.0000000"),
+                60,
+                BigDecimal.ZERO,
+                new BigDecimal("100000.00"),
+                true,
+                false);
+        when(placeRepository.findAll(
+                        org.mockito.ArgumentMatchers.<Specification<Place>>any(),
+                        org.mockito.ArgumentMatchers.any(Pageable.class)))
+                .thenAnswer(invocation -> {
+                    Pageable pageable = invocation.getArgument(1);
+                    return new PageImpl<>(List.of(place), pageable, 1);
+                });
+        when(placeMapper.toAdminSummaryResponse(place)).thenReturn(summary);
+
+        PageResponse<AdminPlaceSummaryResponse> response = new PlaceService(
+                        placeRepository, categoryRepository, placeMapper)
+                .getPlacesForAdministration("  MATCHING   PLACE ", 2, 10);
+
+        assertThat(response.content()).containsExactly(summary);
+        ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
+        verify(placeRepository)
+                .findAll(org.mockito.ArgumentMatchers.<Specification<Place>>any(), pageableCaptor.capture());
+        assertThat(pageableCaptor.getValue().getPageNumber()).isEqualTo(2);
+        assertThat(pageableCaptor.getValue().getPageSize()).isEqualTo(10);
         assertThat(pageableCaptor.getValue().getSort().toString()).isEqualTo("name: ASC,id: ASC");
     }
 

@@ -11,6 +11,11 @@ import {
   ZoomControl,
   useMap,
 } from "react-leaflet";
+import {
+  GEOAPIFY_TILE_ATTRIBUTION,
+  GEOAPIFY_TILE_MAX_ZOOM,
+  GEOAPIFY_TILE_URL,
+} from "@/lib/geoapify-map";
 import { cn } from "@/lib/utils";
 import type { ItineraryItemResponse } from "@/types/itinerary";
 import styles from "./itinerary-map.module.css";
@@ -88,16 +93,30 @@ function MapViewport({
   return null;
 }
 
+function hasValidCoordinates(item: ItineraryItemResponse) {
+  const { latitude, longitude } = item.place;
+
+  return (
+    Number.isFinite(latitude) &&
+    Number.isFinite(longitude) &&
+    latitude >= -90 &&
+    latitude <= 90 &&
+    longitude >= -180 &&
+    longitude <= 180
+  );
+}
+
 export function ItineraryMap({
   origin,
   items,
   selectedItemPublicId,
   onSelectItem,
 }: ItineraryMapProps) {
+  const validItems = useMemo(() => items.filter(hasValidCoordinates), [items]);
   const selectedItem = useMemo(
     () =>
-      items.find((item) => item.publicId === selectedItemPublicId) ?? null,
-    [items, selectedItemPublicId],
+      validItems.find((item) => item.publicId === selectedItemPublicId) ?? null,
+    [validItems, selectedItemPublicId],
   );
 
   return (
@@ -110,12 +129,13 @@ export function ItineraryMap({
         zoomControl={false}
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution={GEOAPIFY_TILE_ATTRIBUTION}
+          maxZoom={GEOAPIFY_TILE_MAX_ZOOM}
+          url={GEOAPIFY_TILE_URL}
         />
         <MapViewport
           origin={origin}
-          items={items}
+          items={validItems}
           selectedItemPublicId={selectedItemPublicId}
         />
         <ZoomControl position="bottomright" />
@@ -130,7 +150,7 @@ export function ItineraryMap({
           </Tooltip>
         </Marker>
 
-        {items.map((item) => (
+        {validItems.map((item) => (
           <Marker
             key={item.publicId}
             position={[item.place.latitude, item.place.longitude]}
@@ -152,7 +172,7 @@ export function ItineraryMap({
 
       {selectedItem ? (
         <div
-          className="absolute bottom-7 left-1/2 z-[500] grid min-w-[min(330px,calc(100%_-_100px))] -translate-x-1/2 rounded-mint-md border border-border bg-surface px-[18px] py-3.5 shadow-mint-md max-md:bottom-[90px] max-md:min-w-[calc(100%_-_32px)]"
+          className="absolute bottom-7 left-1/2 z-[500] grid min-w-[min(330px,calc(100%_-_100px))] -translate-x-1/2 rounded-mint-md border border-border/50 bg-card px-[18px] py-3.5 shadow-mint-sm max-md:bottom-[90px] max-md:min-w-[calc(100%_-_32px)]"
           aria-live="polite"
         >
           <strong>

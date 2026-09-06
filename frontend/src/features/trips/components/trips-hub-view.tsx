@@ -4,102 +4,61 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/features/auth/auth-provider";
-import { getTripsLoadErrorMessage } from "@/features/trips/trip-errors";
+import { TripMonthBoard } from "@/features/trips/components/trip-month-board";
+import { TripMonthToolbar } from "@/features/trips/components/trip-month-toolbar";
+import {
+  getTripDeleteErrorMessage,
+  getTripsLoadErrorMessage,
+} from "@/features/trips/trip-errors";
 import { ApiError } from "@/lib/api/api-client";
-import { getTrips } from "@/lib/api/trip-api";
-import type {
-  EnvironmentPreference,
-  TravelPace,
-  TripSummaryResponse,
-} from "@/types/trip";
+import { deleteTrip, getTrips } from "@/lib/api/trip-api";
+import type { TripSummaryResponse } from "@/types/trip";
 
-const paceLabels: Record<TravelPace, string> = {
-  RELAXED: "Thư thả",
-  BALANCED: "Cân bằng",
-  FAST: "Nhanh",
-};
-
-const environmentLabels: Record<EnvironmentPreference, string> = {
-  INDOOR: "Trong nhà",
-  OUTDOOR: "Ngoài trời",
-  MIXED: "Kết hợp",
-};
+function getCurrentMonth() {
+  const today = new Date();
+  return { year: today.getFullYear(), month: today.getMonth() + 1 };
+}
 
 function formatDate(value: string) {
+  const [year, month, day] = value.split("-").map(Number);
+
   return new Intl.DateTimeFormat("vi-VN", {
     weekday: "long",
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
-  }).format(new Date(`${value}T00:00:00`));
-}
-
-function formatMoney(value: number) {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-    maximumFractionDigits: 2,
-  }).format(value);
-}
-
-function TripCard({ trip }: { trip: TripSummaryResponse }) {
-  return (
-    <Card
-      asChild
-      className="rounded-mint-lg border-border bg-surface p-5 shadow-mint-sm ring-0 transition-transform hover:-translate-y-0.5 hover:shadow-mint-md"
-    >
-      <Link href={`/trips/${trip.publicId}`}>
-        <div className="flex items-start justify-between gap-4 max-sm:flex-col">
-          <div>
-            <p className="m-0 text-xs font-extrabold tracking-[0.12em] text-primary uppercase">
-              Chuyến đi đã lưu
-            </p>
-            <h2 className="mt-1.5 mb-1 text-xl font-bold tracking-[-0.025em] capitalize">
-              {formatDate(trip.tripDate)}
-            </h2>
-            <p className="m-0 font-bold text-primary-strong">
-              {trip.startTime} – {trip.endTime}
-            </p>
-          </div>
-          <p className="m-0 text-lg font-bold whitespace-nowrap">
-            {formatMoney(trip.budget)}
-          </p>
-        </div>
-
-        <p className="mt-4 mb-0 text-sm text-text-secondary">
-          Xuất phát: {trip.startLocationLabel}
-        </p>
-        <p className="mt-1 mb-0 text-sm text-text-secondary">
-          {paceLabels[trip.travelPace]} ·{" "}
-          {environmentLabels[trip.environmentPreference]}
-        </p>
-
-        <div className="mt-4 flex flex-wrap gap-2">
-          {trip.categoryPreferences.map((category) => (
-            <Badge
-              key={category.id}
-              className="h-8 rounded-full bg-primary-soft px-3 text-primary-strong"
-              variant="secondary"
-            >
-              {category.name}
-            </Badge>
-          ))}
-        </div>
-      </Link>
-    </Card>
-  );
+  }).format(new Date(year, month - 1, day));
 }
 
 export function TripsHubView() {
   const router = useRouter();
   const { status, runAuthenticated } = useAuth();
-  const [trips, setTrips] = useState<TripSummaryResponse[] | null>(null);
+  const [initialMonth] = useState(getCurrentMonth);
+  const [selectedYear, setSelectedYear] = useState(initialMonth.year);
+  const [selectedMonth, setSelectedMonth] = useState(initialMonth.month);
+  const [years] = useState(() =>
+    Array.from({ length: 7 }, (_, index) => initialMonth.year - 1 + index),
+  );
+  const [trips, setTrips] = useState<TripSummaryResponse[]>([]);
+  const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [tripPendingDelete, setTripPendingDelete] =
+    useState<TripSummaryResponse | null>(null);
+  const [deletingPublicId, setDeletingPublicId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     if (status === "guest") {
@@ -110,7 +69,9 @@ export function TripsHubView() {
 
     let cancelled = false;
 
-    runAuthenticated((token) => getTrips(token))
+    runAuthenticated((token) =>
+      getTrips({ year: selectedYear, month: selectedMonth }, token),
+    )
       .then((response) => {
         if (cancelled) return;
         setTrips(response);
@@ -122,72 +83,173 @@ export function TripsHubView() {
           return;
         }
         setLoadError(getTripsLoadErrorMessage(error));
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
       });
 
     return () => {
       cancelled = true;
     };
-  }, [router, runAuthenticated, status]);
+  }, [router, runAuthenticated, selectedMonth, selectedYear, status]);
 
-  if (status !== "authenticated" || (!trips && !loadError)) {
+  const deleting = deletingPublicId !== null;
+  const firstYear = years[0];
+  const lastYear = years[years.length - 1];
+  const previousDisabled = selectedYear === firstYear && selectedMonth === 1;
+  const nextDisabled = selectedYear === lastYear && selectedMonth === 12;
+
+  function moveMonth(offset: number) {
+    const nextDate = new Date(selectedYear, selectedMonth - 1 + offset, 1);
+    setLoading(true);
+    setLoadError(null);
+    setTrips([]);
+    setSelectedYear(nextDate.getFullYear());
+    setSelectedMonth(nextDate.getMonth() + 1);
+  }
+
+  function selectMonth(month: number) {
+    setLoading(true);
+    setLoadError(null);
+    setTrips([]);
+    setSelectedMonth(month);
+  }
+
+  function selectYear(year: number) {
+    setLoading(true);
+    setLoadError(null);
+    setTrips([]);
+    setSelectedYear(year);
+  }
+
+  function handleDeleteDialogOpenChange(open: boolean) {
+    if (open || deleting) return;
+    setTripPendingDelete(null);
+    setDeleteError(null);
+  }
+
+  async function handleDeleteTrip() {
+    if (!tripPendingDelete || deleting) return;
+
+    const publicId = tripPendingDelete.publicId;
+    setDeletingPublicId(publicId);
+    setDeleteError(null);
+
+    try {
+      await runAuthenticated((token) => deleteTrip(publicId, token));
+      setTrips((current) =>
+        current.filter((trip) => trip.publicId !== publicId),
+      );
+      setTripPendingDelete(null);
+    } catch (error) {
+      setDeleteError(getTripDeleteErrorMessage(error));
+    } finally {
+      setDeletingPublicId(null);
+    }
+  }
+
+  if (status !== "authenticated") {
     return (
       <main
-        className="mx-auto grid w-[min(900px,calc(100%_-_32px))] gap-4 py-10"
+        className="mx-auto grid w-[min(1120px,calc(100%_-_32px))] gap-4 py-10"
         aria-label="Đang tải danh sách chuyến đi"
       >
-        <Skeleton className="h-32 rounded-mint-lg" />
-        <Skeleton className="h-48 rounded-mint-md" />
-        <Skeleton className="h-48 rounded-mint-md" />
+        <Skeleton className="h-24 rounded-mint-lg" />
+        <div className="grid grid-cols-4 gap-3 max-md:grid-cols-2 max-sm:grid-cols-1">
+          {Array.from({ length: 8 }, (_, index) => (
+            <Skeleton key={index} className="aspect-square rounded-mint-md" />
+          ))}
+        </div>
       </main>
     );
   }
 
   return (
-    <main className="mx-auto w-[min(900px,calc(100%_-_32px))] py-9 pb-16 max-md:py-6">
-      <header className="mb-7 flex items-end justify-between gap-5 max-sm:items-start max-sm:flex-col">
-        <div>
-          <p className="m-0 text-xs font-extrabold tracking-[0.12em] text-primary uppercase">
-            FE-F02.5 · Trip Hub
-          </p>
-          <h1 className="mt-1.5 mb-2 text-[clamp(2rem,5vw,3.4rem)] leading-[1.08] font-bold tracking-[-0.05em]">
-            Chuyến đi của tôi
-          </h1>
-          <p className="m-0 max-w-2xl leading-7 text-text-secondary">
-            Mở lại một chuyến đi đã lưu để xem hoặc chỉnh sửa sở thích.
-          </p>
+    <main className="mx-auto w-[min(1440px,calc(100%_-_32px))] py-8 pb-16 max-md:py-6">
+      <header className="mb-6 grid gap-4">
+        <h1 className="m-0 text-3xl leading-tight font-bold tracking-[-0.04em] max-md:text-2xl">
+          Chuyến đi của tôi
+        </h1>
+
+        <div className="flex items-center justify-between gap-4 max-sm:flex-col max-sm:items-stretch">
+          <TripMonthToolbar
+            month={selectedMonth}
+            year={selectedYear}
+            years={years}
+            previousDisabled={previousDisabled}
+            nextDisabled={nextDisabled}
+            onMonthChange={selectMonth}
+            onYearChange={selectYear}
+            onPreviousMonth={() => moveMonth(-1)}
+            onNextMonth={() => moveMonth(1)}
+          />
+          <Button asChild variant="accent" className="shrink-0">
+            <Link href="/trips/new">Tạo chuyến đi</Link>
+          </Button>
         </div>
-        <Button asChild className="max-sm:w-full">
-          <Link href="/trips/new">Tạo chuyến đi</Link>
-        </Button>
       </header>
 
+      <AlertDialog
+        open={tripPendingDelete !== null}
+        onOpenChange={handleDeleteDialogOpenChange}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xóa chuyến đi?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {tripPendingDelete
+                ? `Chuyến đi ngày ${formatDate(tripPendingDelete.tripDate)} và hành trình đã lưu bên trong sẽ bị xóa vĩnh viễn.`
+                : "Chuyến đi và hành trình đã lưu bên trong sẽ bị xóa vĩnh viễn."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {deleteError ? (
+            <Alert variant="destructive" role="alert">
+              <AlertTitle>Không thể xóa chuyến đi</AlertTitle>
+              <AlertDescription>{deleteError}</AlertDescription>
+            </Alert>
+          ) : null}
+          <AlertDialogFooter>
+            <AlertDialogCancel asChild>
+              <Button type="button" variant="outline" disabled={deleting}>
+                Hủy
+              </Button>
+            </AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Button
+                type="button"
+                variant="destructive"
+                disabled={deleting}
+                onClick={(event) => {
+                  event.preventDefault();
+                  void handleDeleteTrip();
+                }}
+              >
+                {deleting ? "Đang xóa..." : "Xóa chuyến đi"}
+              </Button>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {loadError ? (
-        <Alert className="rounded-mint-lg border-border bg-surface p-6 shadow-mint-sm">
+        <Alert className="mb-4 rounded-mint-md border-border bg-surface shadow-mint-sm">
           <AlertTitle>Không thể tải chuyến đi</AlertTitle>
           <AlertDescription>{loadError}</AlertDescription>
         </Alert>
-      ) : trips?.length === 0 ? (
-        <Card className="items-start rounded-mint-lg border-border bg-[linear-gradient(145deg,var(--surface),var(--primary-soft))] p-7 shadow-mint-sm ring-0">
-          <p className="m-0 text-xs font-extrabold tracking-[0.12em] text-primary uppercase">
-            Chưa có chuyến đi
-          </p>
-          <h2 className="m-0 text-2xl font-bold tracking-[-0.03em]">
-            Bắt đầu với kế hoạch đầu tiên của bạn
-          </h2>
-          <p className="m-0 max-w-xl leading-7 text-text-secondary">
-            Lưu ngày đi, khung giờ, ngân sách, điểm xuất phát và sở thích của chuyến đi.
-          </p>
-          <Button asChild variant="accent">
-            <Link href="/trips/new">Tạo chuyến đi</Link>
-          </Button>
-        </Card>
-      ) : (
-        <div className="grid gap-4" aria-label="Các chuyến đi đã lưu">
-          {trips?.map((trip) => (
-            <TripCard key={trip.publicId} trip={trip} />
-          ))}
-        </div>
-      )}
+      ) : null}
+
+      {!loadError ? (
+        <TripMonthBoard
+          year={selectedYear}
+          month={selectedMonth}
+          trips={trips}
+          loading={loading}
+          onDelete={(selectedTrip) => {
+            setDeleteError(null);
+            setTripPendingDelete(selectedTrip);
+          }}
+        />
+      ) : null}
     </main>
   );
 }

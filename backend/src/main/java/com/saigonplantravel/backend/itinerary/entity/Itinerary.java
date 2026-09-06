@@ -1,5 +1,6 @@
 package com.saigonplantravel.backend.itinerary.entity;
 
+import com.saigonplantravel.backend.itinerary.exception.InvalidItineraryOrderException;
 import com.saigonplantravel.backend.place.entity.Place;
 import com.saigonplantravel.backend.trip.entity.Trip;
 import jakarta.persistence.CascadeType;
@@ -15,11 +16,8 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -88,6 +86,13 @@ public class Itinerary {
         this.updatedAt = updatedAt;
     }
 
+    public void clearItems(OffsetDateTime updatedAt) {
+
+        items.clear();
+
+        this.updatedAt = updatedAt;
+    }
+
     public void resequenceItems(OffsetDateTime updatedAt) {
         items.sort(Comparator.comparing(ItineraryItem::getSequenceNo));
 
@@ -103,5 +108,55 @@ public class Itinerary {
 
     public List<ItineraryItem> getItems() {
         return List.copyOf(items);
+    }
+
+    public void reorderItems(List<UUID> orderedItemPublicIds, OffsetDateTime updatedAt) {
+
+        if (orderedItemPublicIds == null
+                || orderedItemPublicIds.size() != items.size()
+                || new HashSet<>(orderedItemPublicIds).size() != orderedItemPublicIds.size()) {
+
+            throw new InvalidItineraryOrderException();
+        }
+
+        Map<UUID, ItineraryItem> itemsByPublicId =
+                items.stream().collect(Collectors.toMap(ItineraryItem::getPublicId, item -> item));
+
+        if (!itemsByPublicId.keySet().equals(new HashSet<>(orderedItemPublicIds))) {
+
+            throw new InvalidItineraryOrderException();
+        }
+
+        List<ItineraryItem> reorderedItems =
+                orderedItemPublicIds.stream().map(itemsByPublicId::get).toList();
+
+        items.clear();
+        items.addAll(reorderedItems);
+
+        for (int index = 0; index < items.size(); index++) {
+
+            items.get(index).changeSequence(index + 1, updatedAt);
+        }
+
+        this.updatedAt = updatedAt;
+    }
+
+    public void shiftSequencesForReorder(OffsetDateTime updatedAt) {
+
+        if (items.isEmpty()) {
+            return;
+        }
+
+        int maxSequence =
+                items.stream().mapToInt(ItineraryItem::getSequenceNo).max().orElse(0);
+
+        int offset = maxSequence + items.size();
+
+        for (ItineraryItem item : items) {
+
+            item.changeSequence(item.getSequenceNo() + offset, updatedAt);
+        }
+
+        this.updatedAt = updatedAt;
     }
 }

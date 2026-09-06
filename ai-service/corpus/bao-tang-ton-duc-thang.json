@@ -1,0 +1,46 @@
+{
+  "placeSlug": "bao-tang-ton-duc-thang",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Bảo tàng Tôn Đức Thắng là bảo tàng lưu niệm danh nhân tại Thành phố Hồ Chí Minh, chuyên giới thiệu tương đối hệ thống về cuộc đời và sự nghiệp của Chủ tịch Tôn Đức Thắng. Nội dung trưng bày tập trung vào tiểu sử, hoạt động cách mạng, các giai đoạn công tác và những giá trị gắn với hình ảnh một nhà lãnh đạo có phong cách sống giản dị. Đây là điểm tham quan phù hợp với người quan tâm lịch sử Việt Nam hiện đại, nhân vật lịch sử và hoạt động giáo dục truyền thống. Không gian bảo tàng trong nhà cũng thuận lợi khi cần bố trí một điểm đến ít phụ thuộc vào điều kiện thời tiết.",
+      "source": {
+        "label": "Bảo tàng Tôn Đức Thắng - Trang chính thức",
+        "uri": "https://baotangtonducthang.vn/",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Bảo tàng Tôn Đức Thắng được thành lập vào năm 1988, nhân dịp kỷ niệm 100 năm ngày sinh Chủ tịch Tôn Đức Thắng. Mục đích hình thành bảo tàng là phục vụ nhu cầu tìm hiểu, nghiên cứu và học tập về cuộc đời, sự nghiệp của ông đối với người dân cả nước, đặc biệt là công chúng tại Thành phố Hồ Chí Minh và khu vực phía Nam. Qua quá trình hoạt động, bảo tàng xây dựng hệ thống sưu tầm, nghiên cứu, trưng bày và giáo dục xoay quanh nhân vật Tôn Đức Thắng. Đây là mô hình bảo tàng chuyên đề có phạm vi nội dung rõ ràng, nhờ đó phù hợp cho các hành trình học tập lịch sử hoặc các tuyến tham quan theo chủ đề danh nhân - cách mạng.",
+      "source": {
+        "label": "Bảo tàng Tôn Đức Thắng - Giới thiệu",
+        "uri": "https://baotangtonducthang.vn/",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Bảo tàng tổ chức các khu vực trưng bày thường trực theo những chủ đề chính về cuộc đời và sự nghiệp Chủ tịch Tôn Đức Thắng, đồng thời có không gian dành cho các chuyên đề ngắn hạn. Ngoài phần trưng bày, đơn vị còn thực hiện hoạt động nghiên cứu, sưu tầm tư liệu - hiện vật và các chương trình giáo dục truyền thông. Điểm đáng chú ý của trải nghiệm là nội dung được tập trung vào một nhân vật lịch sử nên người xem có thể theo dõi câu chuyện theo trình tự và bối cảnh rõ ràng hơn so với bảo tàng tổng hợp. Đây cũng là cơ sở để hệ thống RAG giải thích sự phù hợp cho người dùng muốn tìm hiểu lịch sử hiện đại, các phong trào công nhân, hoạt động cách mạng hoặc chân dung các nhà lãnh đạo Việt Nam.",
+      "source": {
+        "label": "Bảo tàng Tôn Đức Thắng - Trưng bày và hoạt động",
+        "uri": "https://baotangtonducthang.vn/",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Trải nghiệm tham quan chủ yếu gồm xem hệ thống trưng bày, đọc tư liệu, quan sát hình ảnh và hiện vật liên quan đến Chủ tịch Tôn Đức Thắng. Địa điểm phù hợp với lịch trình mang tính giáo dục, lịch sử hoặc tham quan bảo tàng trong khu vực trung tâm. Người không ưu tiên lịch sử chuyên sâu có thể xem đây là một điểm dừng thời lượng vừa phải, còn người học tập và nghiên cứu có thể dành nhiều thời gian hơn cho phần tư liệu. Khi xếp lịch, có thể kết hợp với các điểm lịch sử - văn hóa khác gần khu trung tâm để giảm thời gian di chuyển.",
+      "source": {
+        "label": "Bảo tàng Tôn Đức Thắng - Trang chính thức",
+        "uri": "https://baotangtonducthang.vn/",
+        "retrievedAt": "2026-08-29"
+      }
+    }
+  ]
+}

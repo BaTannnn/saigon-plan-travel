@@ -1,8 +1,8 @@
 from pathlib import Path
 
-from app.rag.corpus_schema import PlaceCorpus
-from app.rag.place_lookup import resolve_place_id
-
+from app.db.postgres import pool
+from app.knowledge.corpus_schema import PlaceCorpus
+from app.knowledge.place_lookup import resolve_place_id
 
 CORPUS_DIR = Path("corpus")
 
@@ -24,17 +24,12 @@ def main() -> None:
         place_id = resolve_place_id(corpus.placeSlug)
 
         if place_id is None:
-            print(
-                f"[MISSING] {corpus.placeSlug}"
-            )
-            missing += 1
+            print(f"[MISSING] {corpus.placeSlug}")
 
+            missing += 1
             continue
 
-        print(
-            f"[OK] {corpus.placeSlug}"
-            f" -> place_id={place_id}"
-        )
+        print(f"[OK] {corpus.placeSlug} -> place_id={place_id}")
 
     print()
     print(f"Checked: {len(files)}")
@@ -45,4 +40,9 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    pool.open()
+
+    try:
+        main()
+    finally:
+        pool.close()

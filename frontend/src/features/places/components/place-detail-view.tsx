@@ -1,13 +1,8 @@
-import Link from "next/link";
+import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import {
-  ArrowLeftIcon,
-  ClockIcon,
-  PinIcon,
-  WalletIcon,
-} from "@/components/ui/icons";
+import { ClockIcon, PinIcon, WalletIcon } from "@/components/ui/icons";
+import { PlaceDetailBackButton } from "@/features/places/components/place-detail-back-button";
 import {
   dayNames,
   formatCost,
@@ -21,14 +16,11 @@ type PlaceDetailViewProps = {
   place: PlaceDetail;
 };
 
-const eyebrowClassName =
-  "m-0 text-xs font-extrabold tracking-[0.12em] text-primary uppercase";
-
 const detailCardClassName =
-  "block rounded-mint-md border border-border bg-surface p-[clamp(22px,4vw,36px)] shadow-mint-sm ring-0";
+  "block rounded-mint-md border border-border/50 bg-card p-[clamp(22px,4vw,36px)] shadow-mint-sm ring-0";
 
 const quickFactClassName =
-  "min-h-[42px] rounded-xl border-border bg-background px-3 text-xs font-bold text-text-primary";
+  "min-h-[42px] rounded-xl border-border/50 bg-background px-3 text-xs font-bold text-text-primary";
 
 export function PlaceDetailView({ place }: PlaceDetailViewProps) {
   const hoursByDay = new Map(
@@ -37,29 +29,33 @@ export function PlaceDetailView({ place }: PlaceDetailViewProps) {
 
   return (
     <main className="mx-auto w-[min(1180px,calc(100%_-_40px))] pt-7 pb-16 max-md:w-[min(calc(100%_-_28px),1180px)] max-md:pt-[18px]">
-      <Button
-        asChild
-        className="mb-[18px] min-h-11 p-0 font-extrabold"
-        variant="link"
-      >
-        <Link href="/places">
-          <ArrowLeftIcon /> Quay lại khám phá
-        </Link>
-      </Button>
+      <PlaceDetailBackButton />
 
       <Card asChild>
-        <section className="grid grid-cols-[minmax(280px,0.85fr)_1.25fr] items-center gap-[clamp(28px,6vw,72px)] rounded-mint-lg border border-border bg-surface p-[clamp(24px,5vw,56px)] shadow-mint-sm ring-0 max-md:grid-cols-1 max-md:gap-6 max-md:p-4">
-          <div
-            className="relative grid min-h-[310px] place-items-center overflow-hidden rounded-mint-lg bg-[linear-gradient(145deg,var(--primary-soft),color-mix(in_srgb,var(--accent-soft)_60%,var(--surface)))] text-primary-strong max-md:min-h-[220px]"
-            aria-hidden="true"
-          >
-            <span className="relative z-2 grid size-28 place-items-center rounded-[50%_50%_50%_24px] border border-surface bg-white/60 text-[3.2rem] font-black backdrop-blur-sm">
-              {place.categories[0]?.name.slice(0, 1) ?? "S"}
-            </span>
-            <div className="absolute size-[280px] rounded-full border-2 border-dashed border-primary/20" />
-            <p className="absolute inset-x-5 bottom-4 m-0 text-center font-extrabold">
-              {place.categories[0]?.name ?? "Khám phá"}
-            </p>
+        <section className="grid grid-cols-[minmax(280px,0.85fr)_1.25fr] items-center gap-[clamp(28px,6vw,72px)] rounded-mint-md border border-border/50 bg-card p-[clamp(24px,5vw,56px)] shadow-mint-sm ring-0 max-md:grid-cols-1 max-md:gap-6 max-md:p-4">
+          <div className="relative grid aspect-[4/3] place-items-center overflow-hidden rounded-mint-md bg-primary-soft text-primary-strong">
+            {place.primaryImageUrl ? (
+              <Image
+                src={place.primaryImageUrl}
+                alt={place.name}
+                fill
+                priority
+                sizes="(max-width: 768px) calc(100vw - 60px), 40vw"
+                className="object-cover"
+              />
+            ) : (
+              <div
+                className="absolute inset-0 grid place-items-center"
+                aria-hidden="true"
+              >
+                <span className="relative z-2 grid size-28 place-items-center rounded-mint-md border border-white bg-card text-[3.2rem] font-black shadow-mint-sm">
+                  {place.categories[0]?.name.slice(0, 1) ?? "S"}
+                </span>
+                <p className="absolute inset-x-5 bottom-4 m-0 text-center font-extrabold">
+                  {place.categories[0]?.name ?? "Khám phá"}
+                </p>
+              </div>
+            )}
           </div>
           <div className="max-md:px-1.5 max-md:pt-0.5 max-md:pb-3">
             <div className="mb-[18px] flex flex-wrap items-center gap-[7px]">
@@ -97,10 +93,7 @@ export function PlaceDetailView({ place }: PlaceDetailViewProps) {
         <div className="grid gap-6">
           <Card asChild>
             <section className={detailCardClassName}>
-              <p className={eyebrowClassName}>Giới thiệu</p>
-              <h2 className="mt-[5px] mb-3.5 text-2xl font-bold">
-                Về địa điểm
-              </h2>
+              <h2 className="mt-0 mb-3.5 text-2xl font-bold">Về địa điểm</h2>
               <p className="m-0 leading-[1.8] text-text-secondary">
                 {place.fullDescription ??
                   place.shortDescription ??
@@ -111,8 +104,7 @@ export function PlaceDetailView({ place }: PlaceDetailViewProps) {
 
           <Card asChild>
             <section className={detailCardClassName}>
-              <p className={eyebrowClassName}>Lịch hoạt động</p>
-              <h2 className="mt-[5px] mb-3.5 text-2xl font-bold">Giờ mở cửa</h2>
+              <h2 className="mt-0 mb-3.5 text-2xl font-bold">Giờ mở cửa</h2>
               <div className="grid">
                 {Object.entries(dayNames).map(([day, label]) => {
                   const opening = hoursByDay.get(Number(day));
@@ -144,7 +136,7 @@ export function PlaceDetailView({ place }: PlaceDetailViewProps) {
 
         <aside className="sticky top-[100px] max-md:static max-md:row-start-1">
           <Card asChild>
-            <section className="block rounded-mint-md border border-border bg-surface p-3 shadow-mint-sm ring-0">
+            <section className="block rounded-mint-md border border-border/50 bg-card p-3 shadow-mint-sm ring-0">
               <div className="h-[330px] overflow-hidden rounded-[13px] max-md:h-[42vh] max-md:min-h-[300px]">
                 <MapShell
                   places={[place]}

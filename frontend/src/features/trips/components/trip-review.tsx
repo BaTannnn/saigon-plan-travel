@@ -1,4 +1,4 @@
-import { Badge } from "@/components/ui/badge";
+import { MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type {
   EnvironmentPreference,
@@ -42,25 +42,25 @@ function formatDuration(startTime: string, endTime: string) {
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
 
-  return minutes === 0
-    ? `${hours} giờ`
-    : `${hours} giờ ${minutes} phút`;
+  return minutes === 0 ? `${hours} giờ` : `${hours} giờ ${minutes} phút`;
 }
 
 function OverviewStat({
   label,
   value,
+  className,
 }: {
   label: string;
   value: string;
+  className: string;
 }) {
   return (
-    <div>
-      <p className="m-0 text-xs font-extrabold tracking-[0.12em] text-text-secondary uppercase">
-        {label}
-      </p>
-      <p className="mt-2 mb-0 text-xl font-bold tracking-[-0.025em] text-text-primary">
+    <div className={className}>
+      <p className="m-0 break-words text-[1.35rem] leading-tight font-bold tracking-[-0.025em] text-text-primary">
         {value}
+      </p>
+      <p className="mt-2 mb-0 text-sm font-medium text-text-secondary">
+        {label}
       </p>
     </div>
   );
@@ -78,106 +78,88 @@ export function TripReview({
   return (
     <article>
       <header>
-        <p className="m-0 text-sm font-extrabold tracking-[0.14em] text-primary uppercase">
-          TP.HCM
-        </p>
-        <h1 className="mt-2 mb-0 text-[clamp(2.2rem,5vw,3.7rem)] leading-[1.05] font-bold tracking-[-0.055em] capitalize">
+        <h1 className="m-0 max-w-2xl text-[clamp(2.65rem,5vw,3.75rem)] leading-[1.02] font-bold tracking-[-0.055em] capitalize">
           {formatDate(trip.tripDate)}
         </h1>
 
         <div
-          className="mt-7 grid grid-cols-[auto_minmax(40px,1fr)_auto] items-center gap-4 text-lg font-bold text-primary-strong"
-          aria-label={`Từ ${trip.startTime} đến ${trip.endTime}`}
+          className="mt-8 border-y border-border py-5"
+          aria-label={`Từ ${trip.startTime}, trong ${duration}, đến ${trip.endTime}`}
         >
-          <time dateTime={trip.startTime}>{trip.startTime}</time>
-          <span className="flex items-center" aria-hidden="true">
-            <span className="size-2 rounded-full bg-primary" />
-            <span className="h-px flex-1 bg-primary/40" />
-            <span className="size-2 rounded-full bg-primary" />
-          </span>
-          <time dateTime={trip.endTime}>{trip.endTime}</time>
-        </div>
-        <p className="mt-2 mb-0 text-center text-sm font-semibold text-text-secondary">
-          Thời lượng {duration}
-        </p>
-      </header>
-
-      <section className="mt-10" aria-labelledby="trip-origin-heading">
-        <h2
-          id="trip-origin-heading"
-          className="m-0 text-xs font-extrabold tracking-[0.12em] text-text-secondary uppercase"
-        >
-          Điểm xuất phát
-        </h2>
-        <div className="mt-3 grid grid-cols-[12px_1fr] items-start gap-3">
-          <span
-            className="mt-2 size-2 rounded-full bg-primary"
+          <div className="grid grid-cols-3 items-end gap-3">
+            <time
+              className="text-2xl font-bold tracking-[-0.025em] text-primary-strong tabular-nums"
+              dateTime={trip.startTime}
+            >
+              {trip.startTime}
+            </time>
+            <span className="text-center text-lg font-bold tracking-[-0.02em] whitespace-nowrap text-text-primary">
+              {duration}
+            </span>
+            <time
+              className="text-right text-2xl font-bold tracking-[-0.025em] text-primary-strong tabular-nums"
+              dateTime={trip.endTime}
+            >
+              {trip.endTime}
+            </time>
+          </div>
+          <div
+            className="mt-4 h-2.5 w-full rounded-full bg-primary"
             aria-hidden="true"
           />
-          <div>
-            <p className="m-0 text-xl font-bold">
-              {trip.startLocation.label}
-            </p>
-            <p className="mt-1.5 mb-0 text-[0.72rem] tracking-[0.02em] text-text-secondary/70">
-              Tọa độ: {" "}
-              {trip.startLocation.latitude.toFixed(7)}, {" "}
-              {trip.startLocation.longitude.toFixed(7)}
-            </p>
-          </div>
+        </div>
+      </header>
+
+      <section
+        className="grid grid-cols-[28px_minmax(0,1fr)] gap-3 border-b border-border py-7"
+        aria-labelledby="trip-origin-heading"
+      >
+        <MapPin className="mt-1 size-5 text-primary" aria-hidden="true" />
+        <div className="min-w-0">
+          <p className="m-0 break-words text-xl leading-snug font-bold tracking-[-0.025em]">
+            {trip.startLocation.label}
+          </p>
+          <h2
+            id="trip-origin-heading"
+            className="mt-1 mb-0 text-sm font-medium text-text-secondary"
+          >
+            Điểm xuất phát
+          </h2>
         </div>
       </section>
 
       <section
-        className="mt-10 border-t border-border pt-8"
+        className="grid grid-cols-1 border-b border-border sm:grid-cols-3"
         aria-label="Thông tin chuyến đi"
       >
-        <div className="grid grid-cols-2 gap-x-12 gap-y-8 max-sm:grid-cols-1">
-          <OverviewStat label="Ngân sách" value={formatMoney(trip.budget)} />
-          <OverviewStat
-            label="Nhịp độ"
-            value={paceLabels[trip.travelPace]}
-          />
-          <OverviewStat
-            label="Không gian"
-            value={environmentLabels[trip.environmentPreference]}
-          />
-        </div>
+        <OverviewStat
+          className="py-6 sm:pr-6"
+          label="Ngân sách"
+          value={formatMoney(trip.budget)}
+        />
+        <OverviewStat
+          className="border-t border-border py-6 sm:border-t-0 sm:border-l sm:px-6"
+          label="Nhịp độ"
+          value={paceLabels[trip.travelPace]}
+        />
+        <OverviewStat
+          className="border-t border-border py-6 sm:border-t-0 sm:border-l sm:pl-6"
+          label="Không gian"
+          value={environmentLabels[trip.environmentPreference]}
+        />
       </section>
 
-      <section
-        className="mt-10 border-t border-border pt-8"
-        aria-labelledby="trip-preferences-heading"
-      >
-        <h2
-          id="trip-preferences-heading"
-          className="m-0 text-xs font-extrabold tracking-[0.12em] text-text-secondary uppercase"
-        >
-          Sở thích
-        </h2>
-        <div className="mt-4 flex flex-wrap gap-2">
-          {trip.categoryPreferences.map((category) => (
-            <Badge
-              key={category.id}
-              className="h-8 rounded-full bg-primary-soft px-3 text-primary-strong"
-              variant="secondary"
-            >
-              {category.name}
-            </Badge>
-          ))}
-        </div>
-      </section>
-
-      <footer className="mt-10 border-t border-border pt-8">
-        <Button type="button" variant="outline" onClick={onEdit}>
-          Chỉnh sửa
-        </Button>
-        <p className="mt-5 mb-0 text-xs text-text-secondary">
+      <footer className="mt-6 flex flex-wrap items-end justify-between gap-4">
+        <p className="m-0 text-xs text-text-secondary">
           Cập nhật lần cuối:{" "}
           {new Intl.DateTimeFormat("vi-VN", {
             dateStyle: "medium",
             timeStyle: "short",
           }).format(new Date(trip.updatedAt))}
         </p>
+        <Button type="button" size="sm" variant="outline" onClick={onEdit}>
+          Chỉnh sửa
+        </Button>
       </footer>
     </article>
   );

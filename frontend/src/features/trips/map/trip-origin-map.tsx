@@ -10,6 +10,11 @@ import {
   ZoomControl,
   useMap,
 } from "react-leaflet";
+import {
+  GEOAPIFY_TILE_ATTRIBUTION,
+  GEOAPIFY_TILE_MAX_ZOOM,
+  GEOAPIFY_TILE_URL,
+} from "@/lib/geoapify-map";
 import { cn } from "@/lib/utils";
 import styles from "./trip-origin-map.module.css";
 
@@ -27,7 +32,10 @@ const originIcon = L.divIcon({
   tooltipAnchor: [0, -44],
 });
 
-function OriginViewport({ latitude, longitude }: Omit<TripOriginMapProps, "label">) {
+function OriginViewport({
+  latitude,
+  longitude,
+}: Omit<TripOriginMapProps, "label">) {
   const map = useMap();
 
   useEffect(() => {
@@ -52,8 +60,9 @@ export function TripOriginMap({
         zoomControl={false}
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution={GEOAPIFY_TILE_ATTRIBUTION}
+          maxZoom={GEOAPIFY_TILE_MAX_ZOOM}
+          url={GEOAPIFY_TILE_URL}
         />
         <OriginViewport latitude={latitude} longitude={longitude} />
         <ZoomControl position="bottomright" />

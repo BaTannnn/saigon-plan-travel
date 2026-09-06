@@ -10,9 +10,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
-import com.saigonplantravel.backend.place.dto.AdminPlaceDetailResponse;
 import com.saigonplantravel.backend.place.dto.CategoryResponse;
-import com.saigonplantravel.backend.place.dto.PlaceCategoryAssignmentRequest;
+import com.saigonplantravel.backend.place.dto.admin.AdminPlaceDetailResponse;
+import com.saigonplantravel.backend.place.dto.admin.PlaceCategoryAssignmentRequest;
 import com.saigonplantravel.backend.place.exception.InvalidPlaceCategoryAssignmentException;
 import com.saigonplantravel.backend.place.service.CategoryService;
 import com.saigonplantravel.backend.place.service.PlaceService;

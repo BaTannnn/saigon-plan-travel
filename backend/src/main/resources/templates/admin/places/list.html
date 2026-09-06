@@ -16,11 +16,26 @@
     </div>
 
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <p class="mb-0">Total places: <strong th:text="${placesPage.totalElements}">0</strong></p>
+        <p class="mb-0">
+            <span th:text="${keyword == null ? 'Total places:' : 'Matching places:'}">Total places:</span>
+            <strong th:text="${placesPage.totalElements}">0</strong>
+        </p>
         <a class="link-secondary" th:href="@{/admin/categories}">Manage categories</a>
     </div>
 
-    <div class="alert alert-light border" th:if="${placesPage.content.isEmpty()}">No places found.</div>
+    <form class="card page-card mb-3" method="get" th:action="@{/admin/places}">
+        <div class="card-body d-flex flex-column flex-md-row gap-2">
+            <label class="visually-hidden" for="keyword">Search places</label>
+            <input class="form-control" id="keyword" name="keyword" type="search" maxlength="100"
+                   placeholder="Search by name, slug or address..." th:value="${keyword}">
+            <input name="size" type="hidden" th:value="${placesPage.size}">
+            <button class="btn btn-primary" type="submit">Search</button>
+            <a class="btn btn-outline-secondary" th:href="@{/admin/places}">Clear</a>
+        </div>
+    </form>
+
+    <div class="alert alert-light border" th:if="${placesPage.content.isEmpty()}"
+         th:text="${keyword == null ? 'No places found.' : 'No places match your search.'}">No places found.</div>
 
     <div class="card page-card" th:unless="${placesPage.content.isEmpty()}">
         <div class="table-responsive">
@@ -54,7 +69,7 @@
                       th:text="${place.active ? 'Active' : 'Inactive'}">Active</span>
             </td>
             <td><a class="btn btn-sm btn-outline-primary"
-                   th:href="@{/admin/places/{slug}/edit(slug=${place.slug})}">Edit</a></td>
+                   th:href="@{/admin/places/{slug}(slug=${place.slug})}">Manage</a></td>
         </tr>
         </tbody>
         </table>
@@ -63,7 +78,7 @@
 
     <nav class="d-flex justify-content-center align-items-center gap-3 mt-4" aria-label="Place pagination">
         <a class="btn btn-sm btn-outline-secondary" th:if="${!placesPage.first}"
-           th:href="@{/admin/places(page=${placesPage.page - 1},size=${placesPage.size})}">&larr; Previous</a>
+           th:href="@{/admin/places(page=${placesPage.page - 1},size=${placesPage.size},keyword=${keyword})}">&larr; Previous</a>
         <span class="text-secondary">
             Page
             <span th:text="${placesPage.totalPages == 0 ? 0 : placesPage.page + 1}">0</span>
@@ -71,7 +86,7 @@
             <span th:text="${placesPage.totalPages}">0</span>
         </span>
         <a class="btn btn-sm btn-outline-secondary" th:if="${!placesPage.last}"
-           th:href="@{/admin/places(page=${placesPage.page + 1},size=${placesPage.size})}">Next &rarr;</a>
+           th:href="@{/admin/places(page=${placesPage.page + 1},size=${placesPage.size},keyword=${keyword})}">Next &rarr;</a>
     </nav>
 </main>
 </body>

@@ -1,0 +1,46 @@
+{
+  "placeSlug": "cong-vien-tao-dan",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Công viên Tao Đàn là một không gian xanh lớn ở khu vực trung tâm Thành phố Hồ Chí Minh, nổi bật với nhiều cây xanh, lối đi bộ và khoảng không thích hợp để nghỉ ngơi hoặc vận động nhẹ. Với vị trí gần nhiều điểm tham quan trung tâm, công viên có thể đóng vai trò là điểm dừng thư giãn giữa một lịch trình có nhiều bảo tàng, công trình kiến trúc hoặc khu mua sắm.",
+      "source": {
+        "label": "Du lịch Thành phố Hồ Chí Minh - Công viên Tao Đàn",
+        "uri": "https://visithcmc.net/en/news/kham-pha-cong-vien-tao-dan-oc-dao-xanh-giua-long-thanh-pho",
+        "retrievedAt": "2026-08-22"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Khu vực Công viên Tao Đàn có lịch sử gắn với không gian đô thị Sài Gòn từ thời Pháp thuộc. Tư liệu của Trung tâm Xúc tiến Du lịch Thành phố Hồ Chí Minh cho biết khu đất từng thuộc khuôn viên dinh, sau đó được tách ra và phát triển thành vườn công cộng; sau năm 1975, nơi đây mang tên Công viên Văn hóa Tao Đàn và tiếp tục được bổ sung các khu sinh hoạt, vui chơi cho người dân.",
+      "source": {
+        "label": "Du lịch Thành phố Hồ Chí Minh - Lịch sử Công viên Tao Đàn",
+        "uri": "https://visithcmc.net/en/news/kham-pha-cong-vien-tao-dan-oc-dao-xanh-giua-long-thanh-pho",
+        "retrievedAt": "2026-08-22"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Bên cạnh hệ thống cây xanh và đường dạo, Công viên Tao Đàn còn có các điểm mang giá trị văn hóa như Đền tưởng niệm các Vua Hùng và khu mộ cổ họ Lâm. Không gian rộng, có khu vui chơi trẻ em và những khu vực sinh hoạt cộng đồng, tạo ra sự kết hợp giữa cảnh quan xanh, hoạt động gia đình và một số dấu ấn văn hóa - lịch sử trong cùng một địa điểm.",
+      "source": {
+        "label": "Du lịch Thành phố Hồ Chí Minh - Điểm nổi bật tại Công viên Tao Đàn",
+        "uri": "https://visithcmc.net/en/news/kham-pha-cong-vien-tao-dan-oc-dao-xanh-giua-long-thanh-pho",
+        "retrievedAt": "2026-08-22"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Du khách có thể đi bộ dưới các hàng cây, nghỉ chân, quan sát sinh hoạt thường ngày của cư dân địa phương hoặc dành thời gian cho các hoạt động nhẹ ngoài trời. Công viên phù hợp với người ưu tiên không gian xanh, gia đình có trẻ nhỏ hoặc lịch trình cần một điểm nghỉ giữa các điểm tham quan trong nhà. Trải nghiệm chủ yếu là thư giãn và quan sát đời sống đô thị hơn là tham quan theo tuyến cố định.",
+      "source": {
+        "label": "Vietnam Tourism - Không gian ngoài trời tại Thành phố Hồ Chí Minh",
+        "uri": "https://vietnam.travel/vi/things-to-do/enjoy-great-outdoors-ho-chi-minh-city",
+        "retrievedAt": "2026-08-22"
+      }
+    }
+  ]
+}

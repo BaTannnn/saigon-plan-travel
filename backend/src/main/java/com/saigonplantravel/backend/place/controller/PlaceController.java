@@ -2,7 +2,7 @@ package com.saigonplantravel.backend.place.controller;
 
 import com.saigonplantravel.backend.place.dto.PageResponse;
 import com.saigonplantravel.backend.place.dto.PlaceDetailResponse;
-import com.saigonplantravel.backend.place.dto.PlaceSearchRequest;
+import com.saigonplantravel.backend.place.dto.PlaceQueryRequest;
 import com.saigonplantravel.backend.place.dto.PlaceSummaryResponse;
 import com.saigonplantravel.backend.place.service.PlaceService;
 import jakarta.validation.Valid;
@@ -26,8 +26,8 @@ public class PlaceController {
     }
 
     @GetMapping
-    public PageResponse<PlaceSummaryResponse> getPlaces(@Valid @ModelAttribute PlaceSearchRequest request) {
-        return placeService.searchPlaces(request);
+    public PageResponse<PlaceSummaryResponse> getPlaces(@Valid @ModelAttribute PlaceQueryRequest request) {
+        return placeService.findActivePlaces(request);
     }
 
     @GetMapping("/{slug}")

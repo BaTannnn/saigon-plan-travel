@@ -1,0 +1,46 @@
+{
+  "placeSlug": "ho-con-rua",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Hồ Con Rùa, tên hành chính là khu vực Công trường Quốc tế, là một không gian công cộng nằm tại nút giao Phạm Ngọc Thạch và Võ Văn Tần ở khu vực trung tâm Thành phố Hồ Chí Minh. Điểm nhận diện của nơi này là hồ nhân tạo bố trí giữa giao lộ, bao quanh bởi các tuyến đường và hoạt động thương mại ở tầng trệt các dãy nhà phố. Với quy mô tham quan nhỏ và vị trí gần nhiều điểm trung tâm, Hồ Con Rùa phù hợp làm điểm nghỉ chân, gặp gỡ hoặc một chặng ngắn trong lịch trình đi bộ khám phá đô thị.",
+      "source": {
+        "label": "Công báo TP.HCM - Quy chế quản lý kiến trúc đô thị",
+        "uri": "https://congbao.hochiminhcity.gov.vn/DKC.MFiles.CB/Gazette/DownLoadFileResult/44778",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Trong hệ thống quản lý kiến trúc đô thị của Thành phố Hồ Chí Minh, Công trường Quốc tế (Hồ Con Rùa) được xác định là một khu vực có giá trị cảnh quan cần được quản lý và duy trì đặc trưng không gian. Văn bản quy chế mô tả công trường nằm tại nút giao Phạm Ngọc Thạch - Võ Văn Tần, với hồ nhân tạo ở trung tâm và khu thương mại bao quanh. Điều này cho thấy giá trị của địa điểm không nằm ở một công trình đơn lẻ mà ở tổng thể quảng trường, mặt nước, giao thông, mặt đứng đô thị và nhịp sinh hoạt xung quanh. Vì vậy khi giới thiệu địa điểm, nên xem Hồ Con Rùa như một điểm cảnh quan và sinh hoạt đô thị hơn là một điểm tham quan cần nhiều thời gian.",
+      "source": {
+        "label": "Công báo TP.HCM - Quy chế quản lý kiến trúc đô thị",
+        "uri": "https://congbao.hochiminhcity.gov.vn/DKC.MFiles.CB/Gazette/DownLoadFileResult/44778",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Điểm nổi bật của Hồ Con Rùa là cấu trúc không gian mở ở giữa một nút giao trung tâm, tạo cảm giác khác với các bảo tàng, công trình tôn giáo hoặc điểm tham quan có cổng vào. Hồ nước nhân tạo và các khoảng ngồi xung quanh tạo điều kiện cho người dân dừng chân, trò chuyện và quan sát nhịp sống đường phố. Khu vực lân cận có nhiều cửa hàng, quán ăn và hoạt động thương mại, vì vậy địa điểm có thể kết hợp với nhu cầu ăn nhẹ hoặc nghỉ giữa hai chặng tham quan. Với hệ thống lập lịch, đây là một candidate phù hợp khi người dùng cần hoạt động ngoài trời nhẹ, chi phí thấp và thời lượng ngắn ở khu vực trung tâm.",
+      "source": {
+        "label": "Công báo TP.HCM - Quy chế quản lý kiến trúc đô thị",
+        "uri": "https://congbao.hochiminhcity.gov.vn/DKC.MFiles.CB/Gazette/DownLoadFileResult/44778",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Trải nghiệm tại Hồ Con Rùa phù hợp nhất với đi bộ ngắn, nghỉ chân, quan sát cảnh quan và cảm nhận đời sống đô thị. Không nên dành quá nhiều thời gian cho địa điểm nếu mục tiêu chính của chuyến đi là tham quan chuyên sâu, bởi giá trị của nơi này chủ yếu đến từ không gian công cộng và bối cảnh xung quanh. Địa điểm có thể ghép với Nhà thờ Đức Bà, Bưu điện Trung tâm, Đường sách Nguyễn Văn Bình hoặc các điểm ở khu trung tâm. Tình trạng đông người, thời tiết và giao thông quanh nút giao là yếu tố thay đổi theo thời điểm, nên được xử lý bằng dữ liệu context thay vì ghi cố định vào corpus.",
+      "source": {
+        "label": "Công báo TP.HCM - Quy chế quản lý kiến trúc đô thị",
+        "uri": "https://congbao.hochiminhcity.gov.vn/DKC.MFiles.CB/Gazette/DownLoadFileResult/44778",
+        "retrievedAt": "2026-08-29"
+      }
+    }
+  ]
+}

@@ -12,9 +12,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
-import com.saigonplantravel.backend.place.dto.AdminCategoryResponse;
-import com.saigonplantravel.backend.place.dto.CategoryCreateRequest;
-import com.saigonplantravel.backend.place.dto.CategoryUpdateRequest;
+import com.saigonplantravel.backend.place.dto.admin.AdminCategoryResponse;
+import com.saigonplantravel.backend.place.dto.admin.CategoryCreateRequest;
+import com.saigonplantravel.backend.place.dto.admin.CategoryUpdateRequest;
 import com.saigonplantravel.backend.place.exception.CategoryAlreadyExistsException;
 import com.saigonplantravel.backend.place.exception.CategoryNotFoundException;
 import com.saigonplantravel.backend.place.service.CategoryService;
@@ -23,7 +23,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -152,12 +151,10 @@ class AdminCategoryControllerTest {
     }
 
     @Test
-    void returnsNotFoundForMissingCategoryEditPage() throws Exception {
+    void returnsNotFoundForMissingCategory() throws Exception {
         when(categoryService.getCategoryForAdministrationBySlug("missing")).thenThrow(new CategoryNotFoundException());
 
-        mockMvc.perform(get("/admin/categories/missing/edit"))
-                .andExpect(status().isNotFound())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON));
+        mockMvc.perform(get("/admin/categories/missing/edit")).andExpect(status().isNotFound());
     }
 
     private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder validCategoryPost() {

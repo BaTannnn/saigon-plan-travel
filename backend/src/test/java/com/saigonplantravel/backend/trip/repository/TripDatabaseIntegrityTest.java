@@ -1,8 +1,8 @@
 package com.saigonplantravel.backend.trip.repository;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.saigonplantravel.backend.testsupport.PostgresIntegrationTestSupport;
 import com.saigonplantravel.backend.testsupport.database.DatabaseTestFixtures;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -20,28 +20,20 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
-import org.testcontainers.utility.DockerImageName;
 
 @Testcontainers
 @SpringBootTest
 class TripDatabaseIntegrityTest {
     @Container
-    static final PostgreSQLContainer postgres = new PostgreSQLContainer(
-            DockerImageName.parse("pgvector/pgvector:pg16").asCompatibleSubstituteFor("postgres"));
+    static final PostgreSQLContainer postgres = PostgresIntegrationTestSupport.newContainer();
 
     @DynamicPropertySource
     static void databaseProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
-
-        registry.add("spring.datasource.username", postgres::getUsername);
-
-        registry.add("spring.datasource.password", postgres::getPassword);
+        PostgresIntegrationTestSupport.registerCommonProperties(registry, postgres);
 
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "validate");
 
         registry.add("spring.jpa.open-in-view", () -> "false");
-
-        registry.add("app.security.jwt.secret", () -> "MDEyMzQ1Njc4OWFiY2RlZjAx" + "MjM0NTY3ODlhYmNkZWY=");
     }
 
     private DatabaseTestFixtures fixtures;
@@ -219,73 +211,12 @@ class TripDatabaseIntegrityTest {
     }
 
     @Test
-    void rejectsDuplicateCategoryPreference() {
-        Long userId = fixtures.insertUser("duplicate-preference");
-        Long categoryId = fixtures.insertCategory("Duplicate Preference Category", "duplicate-preference-category");
-
-        Long tripId = fixtures.insertValidTrip(UUID.randomUUID(), userId);
-
-        jdbcTemplate.update(
-                """
-                INSERT INTO trip_category_preferences (
-                    trip_id,
-                    category_id
-                )
-                VALUES (?, ?)
-                """,
-                tripId,
-                categoryId);
-
-        assertThatThrownBy(() -> jdbcTemplate.update(
-                        """
-                INSERT INTO trip_category_preferences (
-                    trip_id,
-                    category_id
-                )
-                VALUES (?, ?)
-                """,
-                        tripId,
-                        categoryId))
-                .isInstanceOf(DataIntegrityViolationException.class);
-    }
-
-    @Test
-    void enforcesTripForeignKeyDeleteBehavior() {
+    void preventsDeletingUserReferencedByTrip() {
         Long userId = fixtures.insertUser("foreign-key-user");
-
-        Long categoryId = fixtures.insertCategory("Trip FK Category", "trip-fk-category");
-
-        Long tripId = fixtures.insertValidTrip(UUID.randomUUID(), userId);
-
-        jdbcTemplate.update(
-                """
-                INSERT INTO trip_category_preferences (
-                    trip_id,
-                    category_id
-                )
-                VALUES (?, ?)
-                """,
-                tripId,
-                categoryId);
-
-        assertThatThrownBy(() -> jdbcTemplate.update("DELETE FROM categories WHERE id = ?", categoryId))
-                .isInstanceOf(DataIntegrityViolationException.class);
+        fixtures.insertValidTrip(UUID.randomUUID(), userId);
 
         assertThatThrownBy(() -> jdbcTemplate.update("DELETE FROM users WHERE id = ?", userId))
                 .isInstanceOf(DataIntegrityViolationException.class);
-
-        jdbcTemplate.update("DELETE FROM trips WHERE id = ?", tripId);
-
-        Integer preferenceCount = jdbcTemplate.queryForObject(
-                """
-                        SELECT count(*)
-                        FROM trip_category_preferences
-                        WHERE trip_id = ?
-                        """,
-                Integer.class,
-                tripId);
-
-        assertThat(preferenceCount).isZero();
     }
 
     // Helper

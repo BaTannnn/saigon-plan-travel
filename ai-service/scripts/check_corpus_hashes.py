@@ -1,8 +1,9 @@
 from pathlib import Path
 
-from app.rag.content_hash import compute_content_hash
-from app.rag.corpus_schema import PlaceCorpus
-
+from app.db.postgres import pool
+from app.knowledge.chunking import split_place_corpus
+from app.knowledge.corpus_schema import PlaceCorpus
+from app.knowledge.embedding_service import compute_document_fingerprint
 
 CORPUS_DIR = Path("corpus")
 
@@ -24,16 +25,15 @@ def main() -> None:
         print()
         print(f"{corpus.placeSlug}")
 
-        for chunk in corpus.sections:
-            content_hash = compute_content_hash(
-                chunk.content
+        chunks = split_place_corpus(corpus)
+
+        for chunk in chunks:
+            content_hash = compute_document_fingerprint(
+                content=chunk.content,
+                title=f"{chunk.place_slug} - {chunk.section}",
             )
 
-            print(
-                f"  chunk={chunk.chunkIndex} "
-                f"section={chunk.section} "
-                f"hash={content_hash}"
-            )
+            print(f"  chunk={chunk.chunk_index} section={chunk.section} hash={content_hash}")
 
             total_chunks += 1
 
@@ -43,4 +43,9 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    pool.open()
+
+    try:
+        main()
+    finally:
+        pool.close()

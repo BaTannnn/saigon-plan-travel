@@ -1,0 +1,46 @@
+{
+  "placeSlug": "chua-vinh-nghiem",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Chùa Vĩnh Nghiêm là một ngôi chùa lớn tại Thành phố Hồ Chí Minh, nổi bật bởi quy mô, kiến trúc Phật giáo Việt Nam thế kỷ XX và vị trí thuận tiện trong khu vực nội thành. Công trình được xây dựng theo tinh thần kế thừa kiến trúc của chùa Vĩnh Nghiêm ở Bắc Giang nhưng thích nghi với điều kiện đô thị phía Nam. Đây là điểm đến phù hợp với người quan tâm Phật giáo, kiến trúc, không gian tâm linh hoặc muốn một hoạt động tham quan tương đối nhẹ nhàng trong lịch trình.",
+      "source": {
+        "label": "Cơ sở dữ liệu ngành Du lịch - Chùa Vĩnh Nghiêm",
+        "uri": "https://csdl.vietnamtourism.gov.vn/dest/?item=69",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Chùa Vĩnh Nghiêm được hai hòa thượng Thích Thanh Kiểm và Thích Tâm Giác khởi công xây dựng vào năm 1964 với mục đích tạo một cơ sở Phật giáo tại Sài Gòn. Khu đất ban đầu nằm cạnh rạch Thị Nghè và cần được san lấp trước khi xây dựng. Công trình cơ bản hoàn thành vào năm 1971. Theo cơ sở dữ liệu của ngành du lịch, chùa mang nhiều đặc điểm gợi nhắc chùa Vĩnh Nghiêm ở Bắc Giang, qua đó thể hiện sự tiếp nối của truyền thống Phật giáo miền Bắc trong một không gian đô thị miền Nam. Qua nhiều thập niên, chùa trở thành nơi sinh hoạt tín ngưỡng, học tập Phật pháp và là một điểm kiến trúc quen thuộc của Thành phố Hồ Chí Minh.",
+      "source": {
+        "label": "Cơ sở dữ liệu ngành Du lịch - Chùa Vĩnh Nghiêm",
+        "uri": "https://csdl.vietnamtourism.gov.vn/dest/?item=69",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Kiến trúc chùa được tổ chức theo mặt bằng chữ công với cổng tam quan, tòa nhà trung tâm và các hạng mục Phật giáo tạo thành một tổng thể tương đối rõ ràng. Hệ mái ngói đỏ, các đầu đao cong và tỷ lệ công trình tạo cảm giác quen thuộc của kiến trúc chùa Việt nhưng được xây dựng ở quy mô lớn hơn so với nhiều ngôi chùa phố. Chùa vừa có không gian thờ tự, vừa là nơi học tập và sinh hoạt của Phật tử. Đối với hệ thống RAG, các đặc trưng có thể được dùng để giải thích recommendation gồm “Phật giáo”, “kiến trúc Việt Nam thế kỷ XX”, “không gian tâm linh”, “nội thành” và “tham quan nhẹ nhàng”. Đây cũng là lựa chọn có thể ghép với Nhà thờ Tân Định, Bảo tàng Phụ nữ Nam Bộ hoặc các điểm lân cận để tạo một tuyến văn hóa - kiến trúc mà không cần di chuyển quá xa.",
+      "source": {
+        "label": "Cơ sở dữ liệu ngành Du lịch - Chùa Vĩnh Nghiêm",
+        "uri": "https://csdl.vietnamtourism.gov.vn/dest/?item=69",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Khách tham quan nên xem đây trước hết là một không gian tôn giáo đang hoạt động chứ không chỉ là điểm chụp ảnh. Trải nghiệm phù hợp với việc quan sát kiến trúc, tìm hiểu Phật giáo và dành một khoảng thời gian yên tĩnh trong ngày. Khi hệ thống gợi ý, nên nhắc người dùng giữ trang phục và hành vi phù hợp với không gian thờ tự. Những yếu tố thay đổi theo ngày như lễ lớn, lượng người tập trung hoặc hạn chế tham quan không nên được đóng cứng trong corpus mà cần lấy từ nguồn thời điểm nếu hệ thống có dữ liệu.",
+      "source": {
+        "label": "Cơ sở dữ liệu ngành Du lịch - Chùa Vĩnh Nghiêm",
+        "uri": "https://csdl.vietnamtourism.gov.vn/dest/?item=69",
+        "retrievedAt": "2026-08-29"
+      }
+    }
+  ]
+}

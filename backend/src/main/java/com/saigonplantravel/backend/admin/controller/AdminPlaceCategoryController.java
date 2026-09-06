@@ -1,7 +1,7 @@
 package com.saigonplantravel.backend.admin.controller;
 
-import com.saigonplantravel.backend.place.dto.AdminPlaceDetailResponse;
-import com.saigonplantravel.backend.place.dto.PlaceCategoryAssignmentRequest;
+import com.saigonplantravel.backend.place.dto.admin.AdminPlaceDetailResponse;
+import com.saigonplantravel.backend.place.dto.admin.PlaceCategoryAssignmentRequest;
 import com.saigonplantravel.backend.place.exception.InvalidPlaceCategoryAssignmentException;
 import com.saigonplantravel.backend.place.service.CategoryService;
 import com.saigonplantravel.backend.place.service.PlaceService;

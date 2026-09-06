@@ -1,0 +1,46 @@
+{
+  "placeSlug": "ho-ban-nguyet",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Hồ Bán Nguyệt thuộc khu The Crescent của đô thị Phú Mỹ Hưng, là không gian mặt nước và sinh hoạt cộng đồng nổi bật ở phía nam Thành phố Hồ Chí Minh. Khu vực được quy hoạch như một trung tâm kết nối cảnh quan, thương mại, đi bộ và các hoạt động cộng đồng. Đối với lịch trình du lịch, Hồ Bán Nguyệt phù hợp với nghỉ ngơi, tản bộ, ngắm cảnh và kết hợp trực tiếp với Cầu Ánh Sao, giúp hình thành một cụm điểm đến có tính liên tục thay vì phải di chuyển xa giữa từng hoạt động.",
+      "source": {
+        "label": "Phú Mỹ Hưng - Trái tim cộng đồng The Crescent",
+        "uri": "https://phumyhung.vn/trai-tim-cong-dong/",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Ngay trong quy hoạch tổng thể Phú Mỹ Hưng, khu The Crescent được xác định giữ vai trò trung tâm cộng đồng của khu đô thị. Theo thông tin từ Công ty Phú Mỹ Hưng, The Crescent là một trong các tiểu khu thuộc khu A và được phát triển như một khu phức hợp kết nối nhiều chức năng. Hồ Bán Nguyệt cùng không gian công cộng xung quanh vì vậy không chỉ là một hồ cảnh quan riêng lẻ mà là phần lõi của hệ thống đi bộ, sinh hoạt và dịch vụ tại khu vực. Cách tổ chức này giải thích vì sao Hồ Bán Nguyệt thường được trải nghiệm cùng các điểm lân cận như Cầu Ánh Sao và khu thương mại thay vì như một điểm tham quan độc lập có nội dung cố định.",
+      "source": {
+        "label": "Phú Mỹ Hưng - Trái tim cộng đồng The Crescent",
+        "uri": "https://phumyhung.vn/trai-tim-cong-dong/",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Điểm nổi bật của Hồ Bán Nguyệt là mặt nước, lối đi bộ và cảnh quan đô thị được tổ chức thành một không gian mở. Khu vực thích hợp cho tản bộ, chụp ảnh, nghỉ chân hoặc kết hợp ăn uống và mua sắm gần đó. Phú Mỹ Hưng mô tả The Crescent như một trung tâm kết nối cộng đồng, cho thấy giá trị của địa điểm nằm nhiều ở trải nghiệm không gian và khả năng kết hợp nhiều hoạt động trong cùng khu vực. Trong recommendation, các thuộc tính phù hợp là ngoài trời, ngắm cảnh, gia đình, cặp đôi và lịch trình nhẹ.",
+      "source": {
+        "label": "Phú Mỹ Hưng - Dự án Hồ Bán Nguyệt vì cộng đồng",
+        "uri": "https://phumyhung.vn/du-an-ho-ban-nguyet-the-crescent-du-an-vi-cong-dong/",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Hồ Bán Nguyệt phù hợp để xếp vào buổi chiều hoặc tối, hoặc làm khoảng nghỉ giữa các hoạt động mua sắm và ăn uống. Khi người dùng đồng thời chọn Cầu Ánh Sao, scheduler nên ưu tiên hai điểm liền nhau để tránh travel-time dư thừa. Vì trải nghiệm chủ yếu ngoài trời, thời tiết nóng hoặc mưa nên tác động trực tiếp đến điểm phù hợp. Các đợt chỉnh trang cảnh quan, sự kiện hoặc hạn chế tiếp cận là dữ liệu thay đổi theo thời gian và nên được xử lý bởi context/realtime module thay vì ghi cố định trong corpus.",
+      "source": {
+        "label": "Phú Mỹ Hưng - Dự án Hồ Bán Nguyệt vì cộng đồng",
+        "uri": "https://phumyhung.vn/du-an-ho-ban-nguyet-the-crescent-du-an-vi-cong-dong/",
+        "retrievedAt": "2026-08-29"
+      }
+    }
+  ]
+}

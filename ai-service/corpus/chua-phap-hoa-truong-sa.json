@@ -1,0 +1,46 @@
+{
+  "placeSlug": "chua-phap-hoa-truong-sa",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Chùa Pháp Hoa tại 870 Trường Sa nằm sát kênh Nhiêu Lộc, gần cầu Lê Văn Sỹ, tạo nên một không gian Phật giáo gắn trực tiếp với cảnh quan đô thị ven kênh. Địa điểm phù hợp với người muốn tham quan chùa, ngắm kiến trúc, tìm không gian yên tĩnh hoặc kết hợp đi bộ dọc tuyến Trường Sa - Hoàng Sa. Khi recommendation, có thể ưu tiên các truy vấn về Phật giáo, cảnh quan kênh Nhiêu Lộc, lễ hội ánh sáng và trải nghiệm tâm linh gần trung tâm.",
+      "source": {
+        "label": "Giác Ngộ Online - Chùa Pháp Hoa bên kênh Nhiêu Lộc",
+        "uri": "https://giacngo.vn/anh-ruc-ro-sen-hong-don-mung-phat-dan-tai-chua-phap-hoa-q3-tphcm-post75564.html",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Chùa Pháp Hoa ở đường Trường Sa hiện là một cơ sở Phật giáo hoạt động thường xuyên tại khu vực kênh Nhiêu Lộc. Các tư liệu của Báo Giác Ngộ cho thấy chùa nhiều năm tổ chức trang trí, nghi lễ và các chương trình Phật đản thu hút đông Phật tử. Corpus chủ động không gán lịch sử hình thành của những chùa cùng tên tại Phú Nhuận cho địa điểm này, nhằm tránh trộn thực thể trong RAG. Đặc điểm quan trọng để nhận diện là địa chỉ 870 Trường Sa và vị trí ngay bên kênh Nhiêu Lộc.",
+      "source": {
+        "label": "Giác Ngộ Online - Chùa Pháp Hoa Quận 3",
+        "uri": "https://giacngo.vn/anh-ruc-ro-sen-hong-quanh-chua-phap-hoa-ben-kenh-nhieu-loc-bao-hieu-mua-phat-dan-dang-ve-post79603.html",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Điểm nổi bật nhất về trải nghiệm là cảnh quan chùa bên kênh cùng các đợt trang trí hoa sen, cờ và lồng đèn vào mùa Phật đản. Báo Giác Ngộ ghi nhận khu vực cầu Lê Văn Sỹ, đường Trường Sa và mặt kênh trước chùa trở thành một không gian lễ hội đặc sắc; những đêm hoa đăng có lượng người tham dự lớn. Do vậy RAG nên phân biệt trải nghiệm ngày thường yên tĩnh với những dịp lễ đông đúc. Với người thích chụp ảnh, văn hóa Phật giáo hoặc không gian ven kênh, đây là lựa chọn khác biệt so với các chùa nằm sâu trong khu dân cư.",
+      "source": {
+        "label": "Giác Ngộ Online - Đêm hoa đăng Chùa Pháp Hoa",
+        "uri": "https://giacngo.vn/ruc-ro-dem-hoa-dang-kinh-mung-phat-dan-phat-lich-2568-tai-chua-phap-hoa-post71701.html",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Thông tin bản đồ hiện tại ghi nhận chùa mở cửa theo hai khung buổi sáng và chiều - tối, nhưng giờ có thể thay đổi theo nghi lễ nên seed chỉ dùng profile giờ phát triển đơn giản. Người dùng cần ăn mặc lịch sự, giữ trật tự và hạn chế chụp ảnh ở khu vực đang hành lễ. Vào các dịp Phật đản hoặc hoa đăng, lượng người tăng mạnh và khu vực Trường Sa - Lê Văn Sỹ có thể đông, vì vậy context-aware scheduler nên tăng buffer di chuyển hoặc đề xuất khung giờ khác. Ngày thường, thời lượng khoảng 45-75 phút là phù hợp.",
+      "source": {
+        "label": "Apple Maps - Chùa Pháp Hoa Lê Văn Sỹ",
+        "uri": "https://maps.apple.com/place?place-id=I75775BE16BBCF67D",
+        "retrievedAt": "2026-08-29"
+      }
+    }
+  ]
+}

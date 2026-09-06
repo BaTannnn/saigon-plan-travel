@@ -5,21 +5,17 @@ import type {
   TripSummaryResponse,
 } from "@/types/trip";
 
-const DEFAULT_BROWSER_BACKEND_URL = "http://localhost:8080";
-
-function getBrowserBackendBaseUrl() {
-  return (
-    process.env.NEXT_PUBLIC_BACKEND_API_BASE_URL ??
-    DEFAULT_BROWSER_BACKEND_URL
-  ).replace(/\/$/, "");
+function getTripPath(path = "") {
+  return `/api/v1/trips${path}`;
 }
 
-function getTripUrl(path = "") {
-  return `${getBrowserBackendBaseUrl()}/api/v1/trips${path}`;
-}
+export type TripListFilter = {
+  year: number;
+  month: number;
+};
 
 export function createTrip(request: SaveTripRequest, token: string) {
-  return requestJson<TripResponse>(getTripUrl(), {
+  return requestJson<TripResponse>(getTripPath(), {
     method: "POST",
     body: request,
     token,
@@ -27,17 +23,27 @@ export function createTrip(request: SaveTripRequest, token: string) {
   });
 }
 
-export function getTrips(token: string) {
-  return requestJson<TripSummaryResponse[]>(getTripUrl(), {
-    token,
-    cache: "no-store",
+export function getTrips(filter: TripListFilter, token: string) {
+  const searchParams = new URLSearchParams({
+    year: String(filter.year),
+    month: String(filter.month),
   });
+
+  return requestJson<TripSummaryResponse[]>(
+    getTripPath(`?${searchParams}`),
+    {
+      method: "GET",
+      token,
+      cache: "no-store",
+    },
+  );
 }
 
 export function getTrip(publicId: string, token: string) {
   return requestJson<TripResponse>(
-    getTripUrl(`/${encodeURIComponent(publicId)}`),
+    getTripPath(`/${encodeURIComponent(publicId)}`),
     {
+      method: "GET",
       token,
       cache: "no-store",
     },
@@ -50,7 +56,7 @@ export function replaceTrip(
   token: string,
 ) {
   return requestJson<TripResponse>(
-    getTripUrl(`/${encodeURIComponent(publicId)}`),
+    getTripPath(`/${encodeURIComponent(publicId)}`),
     {
       method: "PUT",
       body: request,
@@ -58,4 +64,12 @@ export function replaceTrip(
       cache: "no-store",
     },
   );
+}
+
+export function deleteTrip(publicId: string, token: string) {
+  return requestJson<void>(getTripPath(`/${encodeURIComponent(publicId)}`), {
+    method: "DELETE",
+    token,
+    cache: "no-store",
+  });
 }

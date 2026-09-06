@@ -1,0 +1,46 @@
+{
+  "placeSlug": "cho-binh-tay",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Chợ Bình Tây là một khu chợ đầu mối lớn và lâu đời của khu Chợ Lớn, gắn với hoạt động thương mại và đời sống của cộng đồng người Hoa tại Thành phố Hồ Chí Minh. Ngoài chức năng mua bán, chợ còn là một điểm tham quan văn hóa nhờ kiến trúc đặc trưng, không khí giao thương sôi động và khả năng kết hợp trải nghiệm mua sắm với khám phá ẩm thực địa phương.",
+      "source": {
+        "label": "Cục Du lịch Quốc gia Việt Nam - Chợ Bình Tây",
+        "uri": "https://vietnamtourism.vn/index.php/tourism/items/512/5",
+        "retrievedAt": "2026-08-22"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Chợ Bình Tây hiện nay được xây dựng trong những năm 1920 để đáp ứng nhu cầu kinh doanh ngày càng lớn của khu Chợ Lớn. Tư liệu du lịch quốc gia ghi nhận thương nhân gốc Hoa Quách Đàm đã góp tiền xây chợ mới tại khu vực Bình Tây, với kỹ thuật xây dựng hiện đại thời bấy giờ kết hợp phong cách kiến trúc mang dấu ấn Trung Hoa.",
+      "source": {
+        "label": "Cơ sở dữ liệu ngành Du lịch - Chợ Bình Tây",
+        "uri": "https://csdl.vietnamtourism.gov.vn/dest/?item=429",
+        "retrievedAt": "2026-08-22"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Chợ Bình Tây nổi bật với kiến trúc Á Đông và quy mô lớn gồm nhiều quầy sạp, nhóm ngành hàng đa dạng từ thực phẩm, gia vị và đồ gia dụng đến quần áo, giày dép, túi xách và các mặt hàng khác. Sự kết hợp giữa không gian kiến trúc, hoạt động bán buôn và văn hóa thương mại của Chợ Lớn tạo nên bản sắc khác với các điểm mua sắm hiện đại.",
+      "source": {
+        "label": "Ban Quản lý Chợ Bình Tây - Giới thiệu chợ",
+        "uri": "https://chobinhtay.gov.vn/",
+        "retrievedAt": "2026-08-22"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Khách tham quan có thể đi bộ qua các khu vực kinh doanh để quan sát nhịp sống thương mại, tìm hiểu các nhóm hàng hóa, khám phá món ăn và chụp ảnh kiến trúc của chợ. Đây là điểm phù hợp cho người muốn trải nghiệm đời sống địa phương và văn hóa Chợ Lớn thay vì chỉ tham quan một công trình riêng lẻ; lịch trình có thể kết hợp với Chùa Bà Thiên Hậu và các điểm văn hóa người Hoa gần đó.",
+      "source": {
+        "label": "Vietnam Tourism - Thành phố Hồ Chí Minh và khu Chợ Lớn",
+        "uri": "https://vietnam.travel/vi/places-to-go/southern-vietnam/ho-chi-minh-city",
+        "retrievedAt": "2026-08-22"
+      }
+    }
+  ]
+}

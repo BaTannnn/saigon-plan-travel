@@ -16,7 +16,17 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
-
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
+  http:
+    clients:
+      connect-timeout: 2s
+      read-timeout: 10s
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
 management:
   endpoints:
     web:
@@ -28,6 +38,16 @@ management:
       show-details: always
 
 app:
+  media:
+    cloudinary:
+      cloud-name: ${CLOUDINARY_CLOUD_NAME:}
+      api-key: ${CLOUDINARY_API_KEY:}
+      api-secret: ${CLOUDINARY_API_SECRET:}
+  ai:
+    base-url: ${AI_SERVICE_URL:http://localhost:8000}
+  geocoding:
+    base-url: ${GEOAPIFY_BASE_URL:https://api.geoapify.com}
+    api-key: ${GEOAPIFY_API_KEY:}
   security:
     cors:
       allowed-origin: ${CORS_ALLOWED_ORIGIN:http://localhost:3000}

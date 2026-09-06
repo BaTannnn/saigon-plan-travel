@@ -1,8 +1,16 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useState } from "react";
+import Image from "next/image";
 import { Filter, MapPin, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -13,136 +21,64 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import { getCategories } from "@/lib/api/category-api";
-import { getPlaceCatalog, getPlaces } from "@/lib/api/place-api";
-import type { Category } from "@/types/category";
-import type { PlaceSummary, PlacesSearchFilters } from "@/types/place";
+  PLACE_PICKER_ALL_VALUE,
+  usePlacePickerCatalog,
+} from "@/features/itinerary/hooks/use-place-picker-catalog";
+import type { PlaceSummary } from "@/types/place";
 
 export type PlacePickerMode = "add" | "replace";
 
 type PlacePickerSheetProps = {
   open: boolean;
   mode: PlacePickerMode;
-  excludedPlaceIds: number[];
+  excludedPlaceSlugs: string[];
   busy?: boolean;
   onOpenChange: (open: boolean) => void;
   onSelect: (place: PlaceSummary) => Promise<void>;
 };
 
-const ALL_VALUE = "__all__";
-
 export function PlacePickerSheet({
   open,
   mode,
-  excludedPlaceIds,
+  excludedPlaceSlugs,
   busy = false,
   onOpenChange,
   onSelect,
 }: PlacePickerSheetProps) {
-  const [places, setPlaces] = useState<PlaceSummary[]>([]);
-  const [catalog, setCatalog] = useState<PlaceSummary[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [query, setQuery] = useState("");
-  const [category, setCategory] = useState(ALL_VALUE);
-  const [indoor, setIndoor] = useState(ALL_VALUE);
-  const [maxCost, setMaxCost] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const catalog = usePlacePickerCatalog(open, excludedPlaceSlugs);
+  const [selectionError, setSelectionError] = useState<string | null>(null);
   const [selectedPlaceId, setSelectedPlaceId] = useState<number | null>(null);
 
-  useEffect(() => {
-    if (!open || catalog.length > 0) return;
-
-    let cancelled = false;
-    setLoading(true);
-    setError(null);
-
-    Promise.all([getPlaceCatalog(), getCategories()])
-      .then(([placeCatalog, categoryList]) => {
-        if (cancelled) return;
-        setCatalog(placeCatalog.content);
-        setPlaces(placeCatalog.content);
-        setCategories(categoryList);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setError("Không thể tải dữ liệu địa điểm. Vui lòng thử lại.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [catalog.length, open]);
-
-  useEffect(() => {
-    if (!open) {
-      setQuery("");
-      setCategory(ALL_VALUE);
-      setIndoor(ALL_VALUE);
-      setMaxCost("");
-      setPlaces(catalog);
+  function handleOpenChange(nextOpen: boolean) {
+    if (!nextOpen) {
+      catalog.reset();
+      setSelectionError(null);
       setSelectedPlaceId(null);
-      setError(null);
     }
-  }, [catalog, open]);
 
-  const visiblePlaces = useMemo(() => {
-    const excluded = new Set(excludedPlaceIds);
-    return places.filter((place) => !excluded.has(place.id));
-  }, [excludedPlaceIds, places]);
+    onOpenChange(nextOpen);
+  }
 
-  async function applyFilters(event?: FormEvent<HTMLFormElement>) {
+  function applyFilters(event?: FormEvent<HTMLFormElement>) {
     event?.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    const filters: PlacesSearchFilters = {
-      keyword: query.trim() || undefined,
-      category: category === ALL_VALUE ? undefined : category,
-      indoor:
-        indoor === ALL_VALUE ? undefined : (indoor as "true" | "false"),
-      maxCost: maxCost.trim() || undefined,
-      page: 0,
-      size: 100,
-    };
-
-    try {
-      const response = await getPlaces(filters);
-      setPlaces(response.content);
-    } catch {
-      setError("Không thể áp dụng bộ lọc. Vui lòng thử lại.");
-    } finally {
-      setLoading(false);
-    }
+    setSelectionError(null);
+    void catalog.search();
   }
 
   function resetFilters() {
-    setQuery("");
-    setCategory(ALL_VALUE);
-    setIndoor(ALL_VALUE);
-    setMaxCost("");
-    setPlaces(catalog);
-    setError(null);
+    setSelectionError(null);
+    void catalog.resetFilters();
   }
 
   async function handleSelect(place: PlaceSummary) {
     setSelectedPlaceId(place.id);
-    setError(null);
+    setSelectionError(null);
 
     try {
       await onSelect(place);
-      onOpenChange(false);
+      handleOpenChange(false);
     } catch {
-      setError(
+      setSelectionError(
         mode === "add"
           ? "Không thể thêm địa điểm vào hành trình."
           : "Không thể thay địa điểm trong hành trình.",
@@ -153,48 +89,52 @@ export function PlacePickerSheet({
   }
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-[min(94vw,520px)] sm:max-w-[520px]">
-        <SheetHeader className="border-b border-border px-5 py-5 pr-14">
-          <SheetTitle className="text-lg font-bold">
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="w-[min(calc(100vw_-_2rem),560px)]">
+        <DialogHeader className="border-b border-border pb-5">
+          <DialogTitle>
             {mode === "add" ? "Thêm địa điểm" : "Thay địa điểm"}
-          </SheetTitle>
-          <SheetDescription>
-            Tìm kiếm và lọc địa điểm ngay trong quá trình xây dựng hành trình.
-          </SheetDescription>
-        </SheetHeader>
+          </DialogTitle>
+          <DialogDescription>
+            Tìm địa điểm phù hợp ngay trong hành trình của bạn.
+          </DialogDescription>
+        </DialogHeader>
 
-        <form className="grid gap-3 px-5" onSubmit={applyFilters}>
+        <form className="px-5 pt-5" onSubmit={applyFilters}>
           <div className="relative">
             <Search
               className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-text-secondary"
               aria-hidden="true"
             />
             <Input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              className="pl-9"
-              placeholder="Tìm theo tên hoặc mô tả..."
+              value={catalog.query}
+              onChange={(event) => catalog.setQuery(event.target.value)}
+              className="h-11 pl-9"
+              placeholder="Tìm tên địa điểm..."
               aria-label="Tìm địa điểm"
             />
           </div>
 
-          <div className="rounded-xl border border-border bg-background p-3">
-            <div className="mb-3 flex items-center gap-2 text-sm font-bold text-text-primary">
+          <details className="mt-3 border-b border-border pb-3">
+            <summary className="flex cursor-pointer list-none items-center gap-2 text-sm font-semibold text-text-secondary hover:text-text-primary">
               <Filter className="size-4 text-primary" aria-hidden="true" />
               Bộ lọc
-            </div>
-
-            <div className="grid grid-cols-1 gap-3">
+            </summary>
+            <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="grid gap-1.5">
                 <Label className="text-xs text-text-secondary">Danh mục</Label>
-                <Select value={category} onValueChange={setCategory}>
+                <Select
+                  value={catalog.category}
+                  onValueChange={catalog.setCategory}
+                >
                   <SelectTrigger className="h-10 w-full bg-surface">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent position="popper">
-                    <SelectItem value={ALL_VALUE}>Tất cả danh mục</SelectItem>
-                    {categories.map((item) => (
+                    <SelectItem value={PLACE_PICKER_ALL_VALUE}>
+                      Tất cả danh mục
+                    </SelectItem>
+                    {catalog.categories.map((item) => (
                       <SelectItem key={item.id} value={item.slug}>
                         {item.name}
                       </SelectItem>
@@ -204,21 +144,31 @@ export function PlacePickerSheet({
               </div>
 
               <div className="grid gap-1.5">
-                <Label className="text-xs text-text-secondary">Không gian</Label>
-                <Select value={indoor} onValueChange={setIndoor}>
+                <Label className="text-xs text-text-secondary">
+                  Không gian
+                </Label>
+                <Select
+                  value={catalog.indoor}
+                  onValueChange={catalog.setIndoor}
+                >
                   <SelectTrigger className="h-10 w-full bg-surface">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent position="popper">
-                    <SelectItem value={ALL_VALUE}>Trong nhà & ngoài trời</SelectItem>
+                    <SelectItem value={PLACE_PICKER_ALL_VALUE}>
+                      Trong nhà & ngoài trời
+                    </SelectItem>
                     <SelectItem value="true">Trong nhà</SelectItem>
                     <SelectItem value="false">Ngoài trời</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              <div className="grid gap-1.5">
-                <Label className="text-xs text-text-secondary" htmlFor="picker-max-cost">
+              <div className="grid gap-1.5 sm:col-span-2">
+                <Label
+                  className="text-xs text-text-secondary"
+                  htmlFor="picker-max-cost"
+                >
                   Chi phí tối đa (VND)
                 </Label>
                 <Input
@@ -226,93 +176,118 @@ export function PlacePickerSheet({
                   type="text"
                   inputMode="numeric"
                   pattern="[0-9]*"
-                  value={maxCost}
-                  onChange={(event) => setMaxCost(event.target.value)}
+                  value={catalog.maxCost}
+                  onChange={(event) => catalog.setMaxCost(event.target.value)}
                   placeholder="Ví dụ: 200000"
                   className="h-10 bg-surface"
                 />
               </div>
             </div>
-
-            <div className="mt-3 flex gap-2">
-              <Button type="submit" size="sm" disabled={loading}>
-                {loading ? "Đang lọc..." : "Áp dụng"}
-              </Button>
+            <div className="mt-3 flex justify-end gap-2">
               <Button
                 type="button"
                 size="sm"
-                variant="outline"
+                variant="ghost"
                 onClick={resetFilters}
-                disabled={loading}
               >
                 Đặt lại
               </Button>
+              <Button
+                type="submit"
+                size="sm"
+                disabled={catalog.initialLoading || catalog.filterLoading}
+              >
+                Áp dụng
+              </Button>
             </div>
-          </div>
+          </details>
         </form>
 
-        {error ? (
-          <p className="mx-5 rounded-lg bg-destructive/10 px-3 py-2 text-sm font-semibold text-destructive">
-            {error}
-          </p>
-        ) : null}
-
         <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-5">
-          <div className="mb-2 flex items-center justify-between text-xs text-text-secondary">
+          <div className="flex min-h-9 items-center justify-between text-xs text-text-secondary">
             <span>
-              {loading ? "Đang tải..." : `${visiblePlaces.length} địa điểm`}
+              {catalog.initialLoading || catalog.filterLoading
+                ? "Đang tải..."
+                : `${catalog.visiblePlaces.length} địa điểm`}
             </span>
           </div>
 
-          {loading ? (
-            <div className="grid gap-3 py-2" aria-label="Đang tải địa điểm">
+          {selectionError || catalog.error ? (
+            <div
+              className="mb-3 flex items-center justify-between gap-3 border-l-2 border-destructive bg-destructive/8 px-3 py-2 text-sm text-destructive"
+              role="alert"
+            >
+              <span>{selectionError ?? catalog.error}</span>
+              <Button
+                type="button"
+                size="xs"
+                variant="ghost"
+                onClick={() => applyFilters()}
+              >
+                Thử lại
+              </Button>
+            </div>
+          ) : null}
+
+          {catalog.initialLoading && catalog.visiblePlaces.length === 0 ? (
+            <div className="grid gap-0" aria-label="Đang tải địa điểm">
               {[1, 2, 3, 4].map((item) => (
                 <div
                   key={item}
-                  className="h-20 animate-pulse rounded-xl bg-muted/70"
+                  className="h-18 animate-pulse border-b border-border bg-muted/45"
                 />
               ))}
             </div>
-          ) : visiblePlaces.length === 0 ? (
-            <div className="grid min-h-44 place-items-center text-center">
+          ) : catalog.visiblePlaces.length === 0 ? (
+            <div className="grid min-h-40 place-items-center text-center">
               <div>
                 <p className="font-bold text-text-primary">
                   Không tìm thấy địa điểm phù hợp
                 </p>
                 <p className="mt-1 text-sm text-text-secondary">
-                  Hãy thử thay đổi từ khóa hoặc bộ lọc.
+                  Không có địa điểm nào trong SaigonPlanTravel khớp với tìm kiếm
+                  này.
                 </p>
               </div>
             </div>
           ) : (
-            <div className="grid gap-2 py-2">
-              {visiblePlaces.map((place) => {
+            <div className="border-y border-border">
+              {catalog.visiblePlaces.map((place) => {
                 const selecting = selectedPlaceId === place.id || busy;
 
                 return (
                   <div
                     key={place.id}
-                    className="grid grid-cols-[1fr_auto] items-center gap-3 rounded-xl border border-border bg-surface p-3"
+                    className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-border py-3 last:border-b-0"
                   >
-                    <div className="min-w-0">
-                      <div className="flex items-start gap-2">
+                    <div className="flex min-w-0 items-start gap-3">
+                      {place.primaryImageUrl ? (
+                        <Image
+                          className="size-18 shrink-0 rounded-lg object-cover"
+                          src={place.primaryImageUrl}
+                          alt=""
+                          width={72}
+                          height={72}
+                          loading="lazy"
+                        />
+                      ) : (
                         <MapPin
                           className="mt-0.5 size-4 shrink-0 text-primary"
                           aria-hidden="true"
                         />
-                        <div className="min-w-0">
-                          <p className="m-0 truncate font-bold text-text-primary">
-                            {place.name}
+                      )}
+                      <div className="min-w-0">
+                        <p className="m-0 truncate text-sm font-bold text-text-primary">
+                          {place.name}
+                        </p>
+                        <p className="mt-0.5 mb-0 text-xs text-text-secondary">
+                          {place.indoor ? "Trong nhà" : "Ngoài trời"}
+                        </p>
+                        {place.shortDescription ? (
+                          <p className="mt-1 mb-0 line-clamp-1 text-xs leading-5 text-text-secondary">
+                            {place.shortDescription}
                           </p>
-                          <p className="mt-1 mb-0 truncate text-xs text-text-secondary">
-                            {place.indoor ? "Trong nhà" : "Ngoài trời"}
-                          </p>
-                          {place.shortDescription ? (
-                            <p className="mt-1.5 mb-0 line-clamp-2 text-xs leading-5 text-text-secondary">
-                              {place.shortDescription}
-                            </p>
-                          ) : null}
-                        </div>
+                        ) : null}
                       </div>
                     </div>
 
@@ -334,8 +309,22 @@ export function PlacePickerSheet({
               })}
             </div>
           )}
+
+          {catalog.hasMore && !catalog.initialLoading ? (
+            <div className="pt-4 text-center">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => void catalog.loadMore()}
+                disabled={catalog.loadingMore || busy}
+              >
+                {catalog.loadingMore ? "Đang tải thêm..." : "Xem thêm"}
+              </Button>
+            </div>
+          ) : null}
         </div>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }

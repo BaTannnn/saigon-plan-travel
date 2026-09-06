@@ -1,0 +1,46 @@
+{
+  "placeSlug": "chua-ba-thien-hau",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Chùa Bà Thiên Hậu là một cơ sở tín ngưỡng lâu đời của cộng đồng người Hoa tại khu Chợ Lớn, Thành phố Hồ Chí Minh, thờ Thiên Hậu Thánh Mẫu. Địa điểm mang giá trị tôn giáo, lịch sử và văn hóa cộng đồng, phù hợp với người muốn khám phá không gian tín ngưỡng và dấu ấn văn hóa người Hoa trong đô thị Sài Gòn - Chợ Lớn.",
+      "source": {
+        "label": "Cục Du lịch Quốc gia Việt Nam - Chùa Bà Thiên Hậu",
+        "uri": "https://vietnamtourism.vn/index.php/tourism/items/2216/5",
+        "retrievedAt": "2026-08-22"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Theo Cục Du lịch Quốc gia Việt Nam, ngôi chùa được cộng đồng người Hoa xây dựng vào khoảng năm 1760 sau khi họ định cư tại vùng Chợ Lớn. Việc thờ Thiên Hậu Thánh Mẫu gắn với niềm tin cầu mong sự che chở trong hành trình vượt biển và cuộc sống tại vùng đất mới, qua đó phản ánh lịch sử di cư và sinh hoạt cộng đồng của người Hoa tại Thành phố Hồ Chí Minh.",
+      "source": {
+        "label": "Cục Du lịch Quốc gia Việt Nam - Lịch sử Chùa Bà Thiên Hậu",
+        "uri": "https://vietnamtourism.vn/index.php/tourism/items/2216/5",
+        "retrievedAt": "2026-08-22"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Không gian chùa nổi bật với kiến trúc và trang trí mang dấu ấn văn hóa Hoa, cùng những vòng nhang lớn treo trong khu vực sân tạo nên hình ảnh đặc trưng. Bên cạnh vai trò là nơi thờ tự, chùa còn gắn với các sinh hoạt lễ hội của cộng đồng, đặc biệt là lễ vía Bà Thiên Hậu vào ngày 23 tháng 3 âm lịch.",
+      "source": {
+        "label": "Vietnam Tourism - Khám phá Chợ Lớn",
+        "uri": "https://vietnam.travel/vi/things-to-do/best-ways-explore-cho-lon",
+        "retrievedAt": "2026-08-22"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Khách tham quan có thể quan sát kiến trúc, các chi tiết trang trí và không gian thờ tự, đồng thời cảm nhận nhịp sống văn hóa của cộng đồng người Hoa tại Chợ Lớn. Vì đây là địa điểm tín ngưỡng đang hoạt động, trải nghiệm phù hợp nhất là tham quan với trang phục lịch sự, giữ yên tĩnh và tôn trọng người hành lễ; địa điểm cũng dễ kết hợp với Chợ Bình Tây và các hội quán lân cận trong một tuyến khám phá Chợ Lớn.",
+      "source": {
+        "label": "Vietnam Tourism - Những cách tốt nhất để khám phá Chợ Lớn",
+        "uri": "https://vietnam.travel/vi/things-to-do/best-ways-explore-cho-lon",
+        "retrievedAt": "2026-08-22"
+      }
+    }
+  ]
+}

@@ -2,8 +2,8 @@ package com.saigonplantravel.backend.auth.security;
 
 import com.saigonplantravel.backend.auth.entity.UserAccount;
 import com.saigonplantravel.backend.auth.repository.UserAccountRepository;
-import com.saigonplantravel.backend.common.security.jwt.AccessTokenClaims;
-import com.saigonplantravel.backend.common.security.jwt.InvalidAccessTokenException;
+import com.saigonplantravel.backend.auth.security.jwt.AccessTokenClaims;
+import com.saigonplantravel.backend.auth.security.jwt.InvalidAccessTokenException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;

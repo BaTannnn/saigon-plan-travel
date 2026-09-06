@@ -12,9 +12,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
-import com.saigonplantravel.backend.place.dto.AdminPlaceDetailResponse;
 import com.saigonplantravel.backend.place.dto.OpeningHourResponse;
 import com.saigonplantravel.backend.place.dto.OpeningHourState;
+import com.saigonplantravel.backend.place.dto.admin.AdminPlaceDetailResponse;
 import com.saigonplantravel.backend.place.service.PlaceService;
 import java.math.BigDecimal;
 import java.time.LocalTime;

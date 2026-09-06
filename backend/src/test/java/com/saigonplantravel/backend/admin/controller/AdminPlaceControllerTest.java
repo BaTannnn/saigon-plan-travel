@@ -5,6 +5,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
@@ -12,13 +13,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
-import com.saigonplantravel.backend.place.dto.AdminPlaceDetailResponse;
-import com.saigonplantravel.backend.place.dto.AdminPlaceSummaryResponse;
 import com.saigonplantravel.backend.place.dto.PageResponse;
-import com.saigonplantravel.backend.place.dto.PlaceCreateRequest;
 import com.saigonplantravel.backend.place.dto.PlaceDetailResponse;
-import com.saigonplantravel.backend.place.dto.PlaceUpdateRequest;
+import com.saigonplantravel.backend.place.dto.admin.AdminPlaceDetailResponse;
+import com.saigonplantravel.backend.place.dto.admin.AdminPlaceSummaryResponse;
+import com.saigonplantravel.backend.place.dto.admin.PlaceCreateRequest;
+import com.saigonplantravel.backend.place.dto.admin.PlaceUpdateRequest;
+import com.saigonplantravel.backend.place.exception.PlaceNotFoundException;
 import com.saigonplantravel.backend.place.exception.PlaceSlugAlreadyExistsException;
+import com.saigonplantravel.backend.place.service.PlaceImageService;
 import com.saigonplantravel.backend.place.service.PlaceService;
 import java.math.BigDecimal;
 import java.util.List;
@@ -26,6 +29,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -38,6 +42,9 @@ class AdminPlaceControllerTest {
 
     @MockitoBean
     private PlaceService placeService;
+
+    @MockitoBean
+    private PlaceImageService placeImageService;
 
     @Test
     void rendersPlaceListFromExistingPlaceService() throws Exception {
@@ -60,27 +67,61 @@ class AdminPlaceControllerTest {
                 3,
                 false,
                 true);
-        when(placeService.getPlacesForAdministration(2, 10)).thenReturn(page);
+        when(placeService.getPlacesForAdministration(null, 2, 10)).thenReturn(page);
 
         mockMvc.perform(get("/admin/places").param("page", "2").param("size", "10"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("admin/places/list"))
                 .andExpect(model().attribute("placesPage", page))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("Demo Place")));
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Demo Place")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString(">Manage</a>")))
+                .andExpect(content()
+                        .string(org.hamcrest.Matchers.not(
+                                org.hamcrest.Matchers.containsString("/admin/places/demo-place/edit"))));
 
-        verify(placeService).getPlacesForAdministration(2, 10);
+        verify(placeService).getPlacesForAdministration(null, 2, 10);
     }
 
     @Test
     void usesDefaultPaginationForPlaceList() throws Exception {
         PageResponse<AdminPlaceSummaryResponse> page = new PageResponse<>(List.of(), 0, 20, 0, 0, true, true);
-        when(placeService.getPlacesForAdministration(0, 20)).thenReturn(page);
+        when(placeService.getPlacesForAdministration(null, 0, 20)).thenReturn(page);
 
         mockMvc.perform(get("/admin/places"))
                 .andExpect(status().isOk())
                 .andExpect(model().attribute("placesPage", page));
 
-        verify(placeService).getPlacesForAdministration(0, 20);
+        verify(placeService).getPlacesForAdministration(null, 0, 20);
+    }
+
+    @Test
+    void normalizesKeywordAndPreservesItInPaginationLinks() throws Exception {
+        PageResponse<AdminPlaceSummaryResponse> page = new PageResponse<>(List.of(), 1, 10, 25, 3, false, false);
+        when(placeService.getPlacesForAdministration("Bảo tàng", 1, 10)).thenReturn(page);
+
+        mockMvc.perform(get("/admin/places")
+                        .param("keyword", "  Bảo   tàng  ")
+                        .param("page", "1")
+                        .param("size", "10"))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("keyword", "Bảo tàng"))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("No places match your search.")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("keyword=B%E1%BA%A3o%20t%C3%A0ng")));
+
+        verify(placeService).getPlacesForAdministration("Bảo tàng", 1, 10);
+    }
+
+    @Test
+    void treatsBlankKeywordAsNoSearch() throws Exception {
+        PageResponse<AdminPlaceSummaryResponse> page = new PageResponse<>(List.of(), 0, 20, 0, 0, true, true);
+        when(placeService.getPlacesForAdministration(null, 0, 20)).thenReturn(page);
+
+        mockMvc.perform(get("/admin/places").param("keyword", "   "))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("keyword", org.hamcrest.Matchers.nullValue()))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("No places found.")));
+
+        verify(placeService).getPlacesForAdministration(null, 0, 20);
     }
 
     @Test
@@ -90,7 +131,9 @@ class AdminPlaceControllerTest {
 
         verify(placeService, never())
                 .getPlacesForAdministration(
-                        org.mockito.ArgumentMatchers.anyInt(), org.mockito.ArgumentMatchers.anyInt());
+                        org.mockito.ArgumentMatchers.any(),
+                        org.mockito.ArgumentMatchers.anyInt(),
+                        org.mockito.ArgumentMatchers.anyInt());
     }
 
     @Test
@@ -105,6 +148,33 @@ class AdminPlaceControllerTest {
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Activate Place")))
                 .andExpect(content()
                         .string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("Deactivate Place"))));
+    }
+
+    @Test
+    void returnsNotFoundForMissingPlace() throws Exception {
+        when(placeService.getPlaceDetailForAdministrationBySlug("missing")).thenThrow(new PlaceNotFoundException());
+
+        mockMvc.perform(get("/admin/places/missing")).andExpect(status().isNotFound());
+    }
+
+    @Test
+    void uploadsPlaceCoverAndRedirectsToDetail() throws Exception {
+        MockMultipartFile image = new MockMultipartFile("image", "cover.jpg", "image/jpeg", new byte[] {1, 2, 3});
+
+        mockMvc.perform(multipart("/admin/places/demo-art-space/cover-image").file(image))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/places/demo-art-space"));
+
+        verify(placeImageService).uploadCover("demo-art-space", image);
+    }
+
+    @Test
+    void removesPlaceCoverAndRedirectsToDetail() throws Exception {
+        mockMvc.perform(post("/admin/places/demo-art-space/cover-image/remove"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/places/demo-art-space"));
+
+        verify(placeImageService).removeCover("demo-art-space");
     }
 
     @Test

@@ -1,12 +1,16 @@
 package com.saigonplantravel.backend.admin.controller;
 
-import com.saigonplantravel.backend.place.dto.AdminPlaceDetailResponse;
-import com.saigonplantravel.backend.place.dto.AdminPlaceSummaryResponse;
+import com.saigonplantravel.backend.media.MediaStorageException;
 import com.saigonplantravel.backend.place.dto.PageResponse;
-import com.saigonplantravel.backend.place.dto.PlaceCreateRequest;
 import com.saigonplantravel.backend.place.dto.PlaceDetailResponse;
-import com.saigonplantravel.backend.place.dto.PlaceUpdateRequest;
+import com.saigonplantravel.backend.place.dto.admin.AdminPlaceDetailResponse;
+import com.saigonplantravel.backend.place.dto.admin.AdminPlaceSummaryResponse;
+import com.saigonplantravel.backend.place.dto.admin.PlaceCreateRequest;
+import com.saigonplantravel.backend.place.dto.admin.PlaceUpdateRequest;
+import com.saigonplantravel.backend.place.exception.PlaceImageException;
 import com.saigonplantravel.backend.place.exception.PlaceSlugAlreadyExistsException;
+import com.saigonplantravel.backend.place.search.PlaceSearchNormalizer;
+import com.saigonplantravel.backend.place.service.PlaceImageService;
 import com.saigonplantravel.backend.place.service.PlaceService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -20,23 +24,30 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 @Controller
 @RequestMapping("/admin")
 public class AdminPlaceController {
     private final PlaceService placeService;
+    private final PlaceImageService placeImageService;
 
-    public AdminPlaceController(PlaceService placeService) {
+    public AdminPlaceController(PlaceService placeService, PlaceImageService placeImageService) {
         this.placeService = placeService;
+        this.placeImageService = placeImageService;
     }
 
     @GetMapping("/places")
     String placesPage(
+            @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size,
             Model model) {
-        PageResponse<AdminPlaceSummaryResponse> placesPage = placeService.getPlacesForAdministration(page, size);
+        String normalizedKeyword = PlaceSearchNormalizer.normalizeText(keyword);
+        PageResponse<AdminPlaceSummaryResponse> placesPage =
+                placeService.getPlacesForAdministration(normalizedKeyword, page, size);
         model.addAttribute("placesPage", placesPage);
+        model.addAttribute("keyword", normalizedKeyword);
         return "admin/places/list";
     }
 
@@ -108,9 +119,36 @@ public class AdminPlaceController {
 
     @GetMapping("/places/{slug}")
     String placeDetailPage(@PathVariable String slug, Model model) {
-        AdminPlaceDetailResponse place = placeService.getPlaceDetailForAdministrationBySlug(slug);
-        model.addAttribute("place", place);
+        addDetailPageAttributes(model, slug);
         return "admin/places/detail";
+    }
+
+    @PostMapping("/places/{slug}/cover-image")
+    String uploadCoverImage(@PathVariable String slug, @RequestParam("image") MultipartFile image, Model model) {
+        try {
+            placeImageService.uploadCover(slug, image);
+            return "redirect:/admin/places/" + slug;
+        } catch (PlaceImageException | MediaStorageException exception) {
+            addDetailPageAttributes(model, slug);
+            model.addAttribute("imageError", exception.getMessage());
+            return "admin/places/detail";
+        }
+    }
+
+    @PostMapping("/places/{slug}/cover-image/remove")
+    String removeCoverImage(@PathVariable String slug, Model model) {
+        try {
+            placeImageService.removeCover(slug);
+            return "redirect:/admin/places/" + slug;
+        } catch (PlaceImageException | MediaStorageException exception) {
+            addDetailPageAttributes(model, slug);
+            model.addAttribute("imageError", exception.getMessage());
+            return "admin/places/detail";
+        }
+    }
+
+    private void addDetailPageAttributes(Model model, String slug) {
+        model.addAttribute("place", placeService.getPlaceDetailForAdministrationBySlug(slug));
     }
 
     private PlaceUpdateRequest toUpdateRequest(AdminPlaceDetailResponse place) {

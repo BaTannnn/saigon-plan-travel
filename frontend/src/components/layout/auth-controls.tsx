@@ -37,11 +37,12 @@ export function AuthControls() {
     );
   }
 
-  const initial = user.displayName.trim().charAt(0).toLocaleUpperCase("vi") || "U";
+  const initial =
+    user.displayName.trim().charAt(0).toLocaleUpperCase("vi") || "U";
 
   function handleLogout() {
     logout();
-    router.push("/places");
+    router.replace("/");
     router.refresh();
   }
 
@@ -51,7 +52,7 @@ export function AuthControls() {
       aria-label={`Người dùng ${user.displayName}`}
     >
       <Avatar
-        className="size-[42px] border border-border bg-[linear-gradient(145deg,var(--primary-soft),var(--surface))] text-primary-strong max-md:size-[38px]"
+        className="size-[42px] border border-border bg-primary-soft text-primary-strong max-md:size-[38px]"
         size="lg"
         aria-hidden="true"
       >
@@ -59,7 +60,9 @@ export function AuthControls() {
           {initial}
         </AvatarFallback>
       </Avatar>
-      <span className="max-w-32 truncate max-md:hidden">{user.displayName}</span>
+      <span className="max-w-32 truncate max-md:hidden">
+        {user.displayName}
+      </span>
       <Button
         className="px-2.5 text-xs max-md:px-2"
         type="button"

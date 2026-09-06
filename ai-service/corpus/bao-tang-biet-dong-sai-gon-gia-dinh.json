@@ -1,0 +1,46 @@
+{
+  "placeSlug": "bao-tang-biet-dong-sai-gon-gia-dinh",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Bảo tàng Biệt động Sài Gòn - Gia Định đặt tại 145 Trần Quang Khải, khu vực Tân Định, là bảo tàng chuyên đề về lực lượng Biệt động Sài Gòn - Gia Định. Không gian phù hợp với người quan tâm lịch sử đô thị, chiến tranh, hoạt động bí mật và các câu chuyện nhân vật trong giai đoạn kháng chiến. Vì nằm gần trung tâm và chủ yếu trong nhà, địa điểm có thể được scheduler sử dụng như một lựa chọn lịch sử với thời lượng khoảng 75-120 phút, kể cả khi thời tiết bên ngoài không thuận lợi.",
+      "source": {
+        "label": "Bảo tàng Biệt động Sài Gòn - Giới thiệu chính thức",
+        "uri": "https://baotangbietdongsaigongiadinh.vn/gioi-thieu-ve-bao-tang-biet-dong-sai-gon-gia-dinh/",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Sở Văn hóa và Thể thao TP.HCM cho biết bảo tàng được cấp giấy phép hoạt động ngày 21/6/2023 và tổ chức lễ công bố thành lập ngày 27/8/2023. Trụ sở bảo tàng là một địa điểm gắn với hoạt động của lực lượng biệt động; tư liệu bảo tàng mô tả căn nhà ba tầng được xây dựng từ năm 1963 và từng phục vụ các hoạt động bí mật. Đây là dữ liệu quan trọng để RAG giải thích rằng bản thân không gian trưng bày cũng có giá trị lịch sử, không chỉ là nơi tập hợp hiện vật sau này.",
+      "source": {
+        "label": "Sở VHTT TP.HCM - Thành lập Bảo tàng Biệt động Sài Gòn - Gia Định",
+        "uri": "https://svhtt.hochiminhcity.gov.vn/tin-chi-tiet/-/chi-tiet/bao-tang-biet-%C4%91ong-sai-gon-gia-%C4%91inh-chinh-thuc-thanh-lap-24320-201.html",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Các bộ sưu tập được giới thiệu gồm hầm bí mật, phương tiện, vũ khí, vật dụng sinh hoạt, dụng cụ nghề nghiệp và thiết bị thông tin liên lạc gắn với lực lượng Biệt động Sài Gòn. Bảo tàng còn kết nối với một chuỗi địa điểm khác như hộp thư bí mật và các hầm chứa vũ khí, tạo tiềm năng mở rộng thành itinerary chuyên đề lịch sử. Với recommendation, các từ khóa nổi bật nên là Biệt động Sài Gòn, Mậu Thân 1968, hoạt động bí mật, Trần Văn Lai, bảo tàng lịch sử và giáo dục truyền thống.",
+      "source": {
+        "label": "Sở VHTT TP.HCM - Bảo tàng Biệt động Sài Gòn - Gia Định",
+        "uri": "https://svhtt.hochiminhcity.gov.vn/tin-chi-tiet/-/chi-tiet/bao-tang-biet-%C4%91ong-sai-gon-gia-%C4%91inh-chinh-thuc-thanh-lap-24320-201.html",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Website chính thức hiện công bố bảo tàng mở cửa cả tuần từ khoảng 7:30 đến 19:00. Tuy vậy, seed vẫn coi opening-hours là dữ liệu development để scheduler kiểm thử và không thay thế kiểm tra thực tế. Đây là trải nghiệm trong nhà, phù hợp với ngày mưa hoặc nắng nóng và có thể ghép với Nhà thờ Tân Định, Chợ Tân Định hoặc Chùa Xá Lợi. Người dùng nên dành đủ thời gian đọc tư liệu và xem hiện vật thay vì coi đây là điểm check-in ngắn; chi phí trong seed là khoảng ước tính phục vụ budget constraint.",
+      "source": {
+        "label": "Bảo tàng Biệt động Sài Gòn - Thông tin liên hệ",
+        "uri": "https://baotangbietdongsaigongiadinh.vn/thong-tin-lien-he-bao-tang/",
+        "retrievedAt": "2026-08-29"
+      }
+    }
+  ]
+}

@@ -1,15 +1,14 @@
 package com.saigonplantravel.backend.place.service;
 
-import com.saigonplantravel.backend.place.dto.AdminCategoryResponse;
-import com.saigonplantravel.backend.place.dto.CategoryCreateRequest;
 import com.saigonplantravel.backend.place.dto.CategoryResponse;
-import com.saigonplantravel.backend.place.dto.CategoryUpdateRequest;
+import com.saigonplantravel.backend.place.dto.admin.AdminCategoryResponse;
+import com.saigonplantravel.backend.place.dto.admin.CategoryCreateRequest;
+import com.saigonplantravel.backend.place.dto.admin.CategoryUpdateRequest;
 import com.saigonplantravel.backend.place.entity.Category;
 import com.saigonplantravel.backend.place.exception.CategoryAlreadyExistsException;
 import com.saigonplantravel.backend.place.exception.CategoryNotFoundException;
 import com.saigonplantravel.backend.place.mapper.PlaceMapper;
 import com.saigonplantravel.backend.place.repository.CategoryRepository;
-import java.util.Collection;
 import java.util.List;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -76,25 +75,5 @@ public class CategoryService {
         } catch (DataIntegrityViolationException exception) {
             throw new CategoryAlreadyExistsException("name");
         }
-    }
-
-    public List<CategoryResponse> findCategoriesBySlugs(Collection<String> slugs) {
-        if (slugs.isEmpty()) {
-            return List.of();
-        }
-
-        return categoryRepository.findAllBySlugInOrderByNameAscIdAsc(slugs).stream()
-                .map(placeMapper::toCategoryResponse)
-                .toList();
-    }
-
-    public List<CategoryResponse> findCategoriesByIds(Collection<Long> ids) {
-        if (ids.isEmpty()) {
-            return List.of();
-        }
-
-        return categoryRepository.findAllByIdInOrderByNameAscIdAsc(ids).stream()
-                .map(placeMapper::toCategoryResponse)
-                .toList();
     }
 }

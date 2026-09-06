@@ -1,7 +1,8 @@
 package com.saigonplantravel.backend.itinerary.controller;
 
 import com.saigonplantravel.backend.auth.security.UserPrincipal;
-import com.saigonplantravel.backend.itinerary.dto.ItineraryResponse;
+import com.saigonplantravel.backend.itinerary.dto.ItineraryDetailResponse;
+import com.saigonplantravel.backend.itinerary.dto.ReorderItineraryItemsRequest;
 import com.saigonplantravel.backend.itinerary.dto.SaveItineraryItemRequest;
 import com.saigonplantravel.backend.itinerary.service.ItineraryService;
 import jakarta.validation.Valid;
@@ -27,33 +28,46 @@ public class ItineraryController {
     }
 
     @GetMapping
-    public ItineraryResponse getItinerary(
+    public ItineraryDetailResponse getItinerary(
             @AuthenticationPrincipal UserPrincipal principal, @PathVariable UUID tripPublicId) {
+
         return itineraryService.getItinerary(principal.id(), tripPublicId);
     }
 
     @PostMapping("/items")
-    public ItineraryResponse addItem(
+    public ItineraryDetailResponse addItem(
             @AuthenticationPrincipal UserPrincipal principal,
             @PathVariable UUID tripPublicId,
             @Valid @RequestBody SaveItineraryItemRequest request) {
+
         return itineraryService.addItem(principal.id(), tripPublicId, request.placeId());
     }
 
     @DeleteMapping("/items/{itemPublicId}")
-    public ItineraryResponse deleteItem(
+    public ItineraryDetailResponse deleteItem(
             @AuthenticationPrincipal UserPrincipal principal,
             @PathVariable UUID tripPublicId,
             @PathVariable UUID itemPublicId) {
+
         return itineraryService.deleteItem(principal.id(), tripPublicId, itemPublicId);
     }
 
     @PutMapping("/items/{itemPublicId}")
-    public ItineraryResponse replaceItemPlace(
+    public ItineraryDetailResponse replaceItemPlace(
             @AuthenticationPrincipal UserPrincipal principal,
             @PathVariable UUID tripPublicId,
             @PathVariable UUID itemPublicId,
             @Valid @RequestBody SaveItineraryItemRequest request) {
+
         return itineraryService.replaceItemPlace(principal.id(), tripPublicId, itemPublicId, request.placeId());
+    }
+
+    @PutMapping("/items/order")
+    public ItineraryDetailResponse reorderItems(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable UUID tripPublicId,
+            @Valid @RequestBody ReorderItineraryItemsRequest request) {
+
+        return itineraryService.reorderItems(principal.id(), tripPublicId, request.itemPublicIds());
     }
 }

@@ -12,16 +12,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.saigonplantravel.backend.auth.security.JwtAuthenticationService;
+import com.saigonplantravel.backend.auth.security.RestAuthenticationEntryPoint;
+import com.saigonplantravel.backend.auth.security.SecurityConfig;
+import com.saigonplantravel.backend.auth.security.jwt.JwtService;
 import com.saigonplantravel.backend.common.exception.GlobalExceptionHandler;
-import com.saigonplantravel.backend.common.security.RestAuthenticationEntryPoint;
-import com.saigonplantravel.backend.common.security.SecurityConfig;
-import com.saigonplantravel.backend.common.security.jwt.JwtService;
 import com.saigonplantravel.backend.place.dto.CategoryResponse;
 import com.saigonplantravel.backend.place.dto.OpeningHourResponse;
 import com.saigonplantravel.backend.place.dto.PageResponse;
 import com.saigonplantravel.backend.place.dto.PlaceDetailResponse;
-import com.saigonplantravel.backend.place.dto.PlaceSearchRequest;
+import com.saigonplantravel.backend.place.dto.PlaceQueryRequest;
 import com.saigonplantravel.backend.place.dto.PlaceSummaryResponse;
+import com.saigonplantravel.backend.place.exception.PlaceExceptionHandler;
 import com.saigonplantravel.backend.place.exception.PlaceNotFoundException;
 import com.saigonplantravel.backend.place.service.PlaceService;
 import java.math.BigDecimal;
@@ -37,7 +38,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(PlaceController.class)
-@Import({GlobalExceptionHandler.class, SecurityConfig.class})
+@Import({GlobalExceptionHandler.class, PlaceExceptionHandler.class, SecurityConfig.class})
 class PlaceControllerTest {
 
     @Autowired
@@ -58,13 +59,13 @@ class PlaceControllerTest {
     @Test
     void usesDefaultPaginationAndReturnsLockedResponseContract() throws Exception {
         PlaceSummaryResponse place = demoPlace();
-        when(placeService.searchPlaces(any(PlaceSearchRequest.class)))
+        when(placeService.findActivePlaces(any(PlaceQueryRequest.class)))
                 .thenReturn(new PageResponse<>(List.of(place), 0, 20, 1, 1, true, true));
 
         mockMvc.perform(get("/api/v1/places"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", aMapWithSize(7)))
-                .andExpect(jsonPath("$.content[0]", aMapWithSize(10)))
+                .andExpect(jsonPath("$.content[0]", aMapWithSize(11)))
                 .andExpect(jsonPath("$.content[0].id").value(1))
                 .andExpect(jsonPath("$.content[0].name").value("Demo Place"))
                 .andExpect(jsonPath("$.content[0].slug").value("demo-place"))
@@ -75,6 +76,7 @@ class PlaceControllerTest {
                 .andExpect(jsonPath("$.content[0].minCost").value(0))
                 .andExpect(jsonPath("$.content[0].maxCost").value(100000))
                 .andExpect(jsonPath("$.content[0].indoor").value(true))
+                .andExpect(jsonPath("$.content[0].primaryImageUrl").value(nullValue()))
                 .andExpect(jsonPath("$.page").value(0))
                 .andExpect(jsonPath("$.size").value(20))
                 .andExpect(jsonPath("$.totalElements").value(1))
@@ -90,7 +92,7 @@ class PlaceControllerTest {
 
     @Test
     void acceptsCustomPaginationAndAllowsEmptyPage() throws Exception {
-        when(placeService.searchPlaces(any(PlaceSearchRequest.class)))
+        when(placeService.findActivePlaces(any(PlaceQueryRequest.class)))
                 .thenReturn(new PageResponse<>(List.of(), 3, 10, 5, 1, false, true));
 
         mockMvc.perform(get("/api/v1/places").param("page", "3").param("size", "10"))
@@ -131,7 +133,7 @@ class PlaceControllerTest {
 
     @Test
     void acceptsBoundaryPageSizes() throws Exception {
-        when(placeService.searchPlaces(any(PlaceSearchRequest.class)))
+        when(placeService.findActivePlaces(any(PlaceQueryRequest.class)))
                 .thenReturn(
                         new PageResponse<>(List.of(), 0, 1, 0, 0, true, true),
                         new PageResponse<>(List.of(), 0, 100, 0, 0, true, true));
@@ -154,7 +156,7 @@ class PlaceControllerTest {
 
     @Test
     void returnsSafeProblemDetailForUnexpectedErrors() throws Exception {
-        when(placeService.searchPlaces(any(PlaceSearchRequest.class)))
+        when(placeService.findActivePlaces(any(PlaceQueryRequest.class)))
                 .thenThrow(new DataAccessResourceFailureException("jdbc:postgresql://secret"));
 
         mockMvc.perform(get("/api/v1/places"))
@@ -162,13 +164,15 @@ class PlaceControllerTest {
                 .andExpect(content().contentType("application/problem+json"))
                 .andExpect(jsonPath("$.title").value("Internal server error"))
                 .andExpect(jsonPath("$.detail").value("An unexpected error occurred"))
+                .andExpect(jsonPath("$.instance").value("/api/v1/places"))
+                .andExpect(jsonPath("$.code").value("INTERNAL_SERVER_ERROR"))
                 .andExpect(content()
                         .string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("jdbc:postgresql"))));
     }
 
     @Test
     void bindsAndNormalizesAllSearchFilters() throws Exception {
-        when(placeService.searchPlaces(any(PlaceSearchRequest.class)))
+        when(placeService.findActivePlaces(any(PlaceQueryRequest.class)))
                 .thenReturn(new PageResponse<>(List.of(), 2, 10, 0, 0, false, true));
 
         mockMvc.perform(get("/api/v1/places")
@@ -181,9 +185,9 @@ class PlaceControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", aMapWithSize(7)));
 
-        ArgumentCaptor<PlaceSearchRequest> requestCaptor = ArgumentCaptor.forClass(PlaceSearchRequest.class);
-        verify(placeService).searchPlaces(requestCaptor.capture());
-        PlaceSearchRequest request = requestCaptor.getValue();
+        ArgumentCaptor<PlaceQueryRequest> requestCaptor = ArgumentCaptor.forClass(PlaceQueryRequest.class);
+        verify(placeService).findActivePlaces(requestCaptor.capture());
+        PlaceQueryRequest request = requestCaptor.getValue();
         org.assertj.core.api.Assertions.assertThat(request.keyword()).isEqualTo("Bảo tàng");
         org.assertj.core.api.Assertions.assertThat(request.category()).isEqualTo("van-hoa");
         org.assertj.core.api.Assertions.assertThat(request.indoor()).isFalse();
@@ -242,7 +246,7 @@ class PlaceControllerTest {
 
         mockMvc.perform(get("/api/v1/places/demo-art-space"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", aMapWithSize(14)))
+                .andExpect(jsonPath("$", aMapWithSize(15)))
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.name").value("Demo Art Space"))
                 .andExpect(jsonPath("$.slug").value("demo-art-space"))
@@ -251,6 +255,7 @@ class PlaceControllerTest {
                 .andExpect(jsonPath("$.address").value("Địa chỉ demo 1"))
                 .andExpect(jsonPath("$.estimatedVisitMinutes").value(90))
                 .andExpect(jsonPath("$.indoor").value(true))
+                .andExpect(jsonPath("$.primaryImageUrl").value(nullValue()))
                 .andExpect(jsonPath("$.categories[0]", aMapWithSize(3)))
                 .andExpect(jsonPath("$.categories[0].slug").value("nghe-thuat"))
                 .andExpect(jsonPath("$.openingHours[0]", aMapWithSize(4)))

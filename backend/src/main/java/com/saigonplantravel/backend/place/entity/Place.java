@@ -12,6 +12,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalTime;
@@ -24,6 +25,7 @@ import java.util.Set;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Table(name = "places")
@@ -85,7 +87,11 @@ public class Place {
     private Set<Category> categories = new HashSet<>();
 
     @OneToMany(mappedBy = "place", fetch = LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @BatchSize(size = 20)
     private List<OpeningHour> openingHours = new ArrayList<>();
+
+    @OneToOne(mappedBy = "place", fetch = LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private PlaceImage coverImage;
 
     public Place(
             String name,
@@ -148,6 +154,22 @@ public class Place {
     public void replaceCategories(Collection<Category> categories) {
         this.categories.clear();
         this.categories.addAll(categories);
+    }
+
+    public String getPrimaryImageUrl() {
+        return coverImage == null ? null : coverImage.getUrl();
+    }
+
+    public String getPrimaryImageStorageKey() {
+        return coverImage == null ? null : coverImage.getStorageKey();
+    }
+
+    public void replaceCoverImage(PlaceImage coverImage) {
+        this.coverImage = coverImage;
+    }
+
+    public void removeCoverImage() {
+        coverImage = null;
     }
 
     public void markClosed(Short dayOfWeek) {

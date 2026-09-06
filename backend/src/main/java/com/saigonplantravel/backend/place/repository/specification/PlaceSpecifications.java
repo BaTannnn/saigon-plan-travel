@@ -1,6 +1,6 @@
 package com.saigonplantravel.backend.place.repository.specification;
 
-import com.saigonplantravel.backend.place.dto.PlaceSearchRequest;
+import com.saigonplantravel.backend.place.dto.PlaceQueryRequest;
 import com.saigonplantravel.backend.place.entity.Category;
 import com.saigonplantravel.backend.place.entity.Place;
 import com.saigonplantravel.backend.place.search.PlaceSearchNormalizer;
@@ -19,7 +19,7 @@ public final class PlaceSpecifications {
 
     private PlaceSpecifications() {}
 
-    public static Specification<Place> matching(PlaceSearchRequest request) {
+    public static Specification<Place> matching(PlaceQueryRequest request) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(criteriaBuilder.isTrue(root.get("active")));
@@ -43,15 +43,29 @@ public final class PlaceSpecifications {
         };
     }
 
+    public static Specification<Place> adminKeyword(String keyword) {
+        return (root, query, criteriaBuilder) -> {
+            Expression<String> pattern = normalizedPattern(criteriaBuilder, keyword);
+            return criteriaBuilder.or(
+                    literalSubstring(criteriaBuilder, root.get("name"), pattern),
+                    literalSubstring(criteriaBuilder, root.get("slug"), pattern),
+                    literalSubstring(criteriaBuilder, root.get("address"), pattern));
+        };
+    }
+
     private static Predicate keywordPredicate(Root<Place> root, CriteriaBuilder criteriaBuilder, String keyword) {
-        String escapedKeyword = PlaceSearchNormalizer.escapeLikePattern(keyword.toLowerCase(Locale.ROOT));
-        Expression<String> pattern = normalizedLiteral(criteriaBuilder, "%" + escapedKeyword + "%");
+        Expression<String> pattern = normalizedPattern(criteriaBuilder, keyword);
 
         return criteriaBuilder.or(
                 literalSubstring(criteriaBuilder, root.get("name"), pattern),
                 literalSubstring(criteriaBuilder, root.get("shortDescription"), pattern),
                 literalSubstring(criteriaBuilder, root.get("fullDescription"), pattern),
                 literalSubstring(criteriaBuilder, root.get("address"), pattern));
+    }
+
+    private static Expression<String> normalizedPattern(CriteriaBuilder criteriaBuilder, String keyword) {
+        String escapedKeyword = PlaceSearchNormalizer.escapeLikePattern(keyword.toLowerCase(Locale.ROOT));
+        return normalizedLiteral(criteriaBuilder, "%" + escapedKeyword + "%");
     }
 
     private static Predicate literalSubstring(

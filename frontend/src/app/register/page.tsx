@@ -9,9 +9,7 @@ export const metadata: Metadata = {
 export default function RegisterPage() {
   return (
     <AuthCard
-      eyebrow="Bắt đầu khám phá"
       title="Tạo tài khoản"
-      description="Đăng ký để lưu địa điểm yêu thích và thông tin chuyến đi."
       alternateText="Đã có tài khoản?"
       alternateHref="/login"
       alternateLabel="Đăng nhập"

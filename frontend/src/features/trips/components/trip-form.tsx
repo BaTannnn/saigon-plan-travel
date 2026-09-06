@@ -2,10 +2,13 @@
 
 import { useState, type FormEvent } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  CalendarIcon,
+  ClockIcon,
+  WalletIcon,
+} from "@/components/ui/icons";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -15,7 +18,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getTripFormFeedback } from "@/features/trips/trip-errors";
-import type { Category } from "@/types/category";
+import {
+  StartLocationField,
+  type ResolvedLocationSource,
+  type StartLocationValue,
+} from "@/features/trips/components/start-location-field";
+import type { LocationSearchResult } from "@/types/location";
 import type {
   EnvironmentPreference,
   SaveTripRequest,
@@ -33,14 +41,14 @@ type TripFormValues = {
   longitude: string;
   travelPace: TravelPace;
   environmentPreference: EnvironmentPreference;
-  categorySlugs: string[];
 };
 
 type TripFormProps = {
-  categories: Category[];
   initialTrip?: TripResponse;
+  initialDate?: string;
   submitLabel: string;
   onSubmit: (request: SaveTripRequest) => Promise<void>;
+  onSearchLocations: (query: string) => Promise<LocationSearchResult[]>;
   onCancel?: () => void;
 };
 
@@ -56,10 +64,13 @@ const environmentLabels: Record<EnvironmentPreference, string> = {
   MIXED: "Kết hợp",
 };
 
-function initialValues(initialTrip?: TripResponse): TripFormValues {
+function initialValues(
+  initialTrip?: TripResponse,
+  initialDate?: string,
+): TripFormValues {
   if (!initialTrip) {
     return {
-      tripDate: "",
+      tripDate: initialDate ?? "",
       startTime: "08:00",
       endTime: "18:00",
       budget: "",
@@ -68,7 +79,6 @@ function initialValues(initialTrip?: TripResponse): TripFormValues {
       longitude: "",
       travelPace: "BALANCED",
       environmentPreference: "MIXED",
-      categorySlugs: [],
     };
   }
 
@@ -82,11 +92,14 @@ function initialValues(initialTrip?: TripResponse): TripFormValues {
     longitude: String(initialTrip.startLocation.longitude),
     travelPace: initialTrip.travelPace,
     environmentPreference: initialTrip.environmentPreference,
-    categorySlugs: initialTrip.categoryPreferences.map((item) => item.slug),
   };
 }
 
-function toRequest(values: TripFormValues): SaveTripRequest {
+function toRequest(
+  values: TripFormValues,
+  latitude: number,
+  longitude: number,
+): SaveTripRequest {
   return {
     tripDate: values.tripDate,
     startTime: values.startTime,
@@ -94,12 +107,11 @@ function toRequest(values: TripFormValues): SaveTripRequest {
     budget: Number(values.budget),
     startLocation: {
       label: values.originLabel,
-      latitude: Number(values.latitude),
-      longitude: Number(values.longitude),
+      latitude,
+      longitude,
     },
     travelPace: values.travelPace,
     environmentPreference: values.environmentPreference,
-    categorySlugs: values.categorySlugs,
   };
 }
 
@@ -110,16 +122,26 @@ function FieldError({ message }: { message?: string }) {
 }
 
 export function TripForm({
-  categories,
   initialTrip,
+  initialDate,
   submitLabel,
   onSubmit,
+  onSearchLocations,
   onCancel,
 }: TripFormProps) {
-  const [values, setValues] = useState(() => initialValues(initialTrip));
+  const [values, setValues] = useState(() =>
+    initialValues(initialTrip, initialDate),
+  );
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [resolvedSource, setResolvedSource] = useState<
+    ResolvedLocationSource
+  >(initialTrip ? "initial" : null);
+  const [locationValidationMessage, setLocationValidationMessage] = useState<
+    string | null
+  >(null);
+  const [locationSearching, setLocationSearching] = useState(false);
 
   function update<K extends keyof TripFormValues>(
     field: K,
@@ -143,26 +165,27 @@ export function TripForm({
     });
   }
 
-  function toggleCategory(slug: string) {
-    const selected = values.categorySlugs.includes(slug);
-    if (!selected && values.categorySlugs.length >= 5) return;
-
-    update(
-      "categorySlugs",
-      selected
-        ? values.categorySlugs.filter((item) => item !== slug)
-        : [...values.categorySlugs, slug],
-    );
-  }
-
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setMessage(null);
 
-    if (values.categorySlugs.length === 0) {
-      setFieldErrors({
-        categorySlugs: "Hãy chọn ít nhất một danh mục.",
-      });
+    const hasCoordinates =
+      values.latitude.trim() !== "" && values.longitude.trim() !== "";
+    const latitude = hasCoordinates ? Number(values.latitude) : Number.NaN;
+    const longitude = hasCoordinates ? Number(values.longitude) : Number.NaN;
+    if (
+      resolvedSource === null ||
+      !hasCoordinates ||
+      !Number.isFinite(latitude) ||
+      !Number.isFinite(longitude) ||
+      latitude < -90 ||
+      latitude > 90 ||
+      longitude < -180 ||
+      longitude > 180
+    ) {
+      setLocationValidationMessage(
+        "Hãy tìm và chọn một địa điểm, hoặc dùng vị trí hiện tại trước khi lưu.",
+      );
       return;
     }
 
@@ -170,7 +193,7 @@ export function TripForm({
     setFieldErrors({});
 
     try {
-      await onSubmit(toRequest(values));
+      await onSubmit(toRequest(values, latitude, longitude));
     } catch (error) {
       const feedback = getTripFormFeedback(error);
       setMessage(feedback.message);
@@ -183,8 +206,28 @@ export function TripForm({
   const inputClassName =
     "h-11 rounded-[10px] border-border bg-background px-3 text-text-primary";
 
+  function handleLocationChange(location: StartLocationValue) {
+    setValues((current) => ({
+      ...current,
+      originLabel: location.label,
+      latitude: location.latitude,
+      longitude: location.longitude,
+    }));
+    setResolvedSource(location.source);
+    setLocationValidationMessage(null);
+    setFieldErrors((current) => {
+      const next = { ...current };
+      delete next["startLocation.latitude"];
+      delete next["startLocation.longitude"];
+      if (location.source !== "gps") {
+        delete next["startLocation.label"];
+      }
+      return next;
+    });
+  }
+
   return (
-    <form className="grid gap-5" onSubmit={handleSubmit}>
+    <form className="grid gap-0" onSubmit={handleSubmit}>
       {message ? (
         <Alert variant="destructive" role="alert">
           <AlertTitle>Chưa thể lưu chuyến đi</AlertTitle>
@@ -192,17 +235,19 @@ export function TripForm({
         </Alert>
       ) : null}
 
-      <Card className="grid gap-5 rounded-mint-md border-border bg-surface p-5 ring-0 max-md:p-4">
+      <section className="grid gap-5 border-b border-border py-6 first:pt-0">
         <div>
-          <p className="m-0 text-xs font-extrabold tracking-[0.12em] text-primary uppercase">
-            Thời gian và ngân sách
-          </p>
-          <h2 className="mt-1 text-xl font-bold">Khung chuyến đi</h2>
+          <h2 className="m-0 text-xl font-bold">Khung chuyến đi</h2>
         </div>
 
         <div className="grid grid-cols-3 gap-4 max-md:grid-cols-1">
           <div className="grid gap-2">
-            <Label htmlFor="trip-date">Ngày đi</Label>
+            <Label htmlFor="trip-date" className="flex items-center gap-2">
+              <span className="grid size-6 place-items-center rounded-md bg-primary-soft text-primary">
+                <CalendarIcon className="size-3.5" />
+              </span>
+              Ngày đi
+            </Label>
             <Input
               id="trip-date"
               className={inputClassName}
@@ -217,7 +262,12 @@ export function TripForm({
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="start-time">Bắt đầu</Label>
+            <Label htmlFor="start-time" className="flex items-center gap-2">
+              <span className="grid size-6 place-items-center rounded-md bg-primary-soft text-primary">
+                <ClockIcon className="size-3.5" />
+              </span>
+              Bắt đầu
+            </Label>
             <Input
               id="start-time"
               className={inputClassName}
@@ -232,7 +282,12 @@ export function TripForm({
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="end-time">Kết thúc</Label>
+            <Label htmlFor="end-time" className="flex items-center gap-2">
+              <span className="grid size-6 place-items-center rounded-md bg-primary-soft text-primary">
+                <ClockIcon className="size-3.5" />
+              </span>
+              Kết thúc
+            </Label>
             <Input
               id="end-time"
               className={inputClassName}
@@ -248,7 +303,10 @@ export function TripForm({
         </div>
 
         <div className="grid gap-2">
-          <Label htmlFor="trip-budget">
+          <Label htmlFor="trip-budget" className="flex items-center gap-2">
+            <span className="grid size-6 place-items-center rounded-md bg-ochre-soft text-ochre-foreground">
+              <WalletIcon className="size-3.5" />
+            </span>
             Ngân sách dự kiến cho một người (VND)
           </Label>
           <Input
@@ -267,83 +325,27 @@ export function TripForm({
           />
           <FieldError message={fieldErrors.budget} />
         </div>
-      </Card>
+      </section>
 
-      <Card className="grid gap-5 rounded-mint-md border-border bg-surface p-5 ring-0 max-md:p-4">
+      <StartLocationField
+        value={{
+          label: values.originLabel,
+          latitude: values.latitude,
+          longitude: values.longitude,
+          source: resolvedSource,
+        }}
+        pending={pending}
+        fieldError={fieldErrors["startLocation.label"]}
+        validationMessage={locationValidationMessage}
+        onChange={handleLocationChange}
+        onClearValidationMessage={() => setLocationValidationMessage(null)}
+        onSearchBusyChange={setLocationSearching}
+        onSearchLocations={onSearchLocations}
+      />
+
+      <section className="grid gap-5 border-b border-border py-6">
         <div>
-          <p className="m-0 text-xs font-extrabold tracking-[0.12em] text-primary uppercase">
-            Điểm xuất phát
-          </p>
-          <h2 className="mt-1 text-xl font-bold">Vị trí bắt đầu</h2>
-          <p className="mt-1 mb-0 text-sm text-text-secondary">
-            Nhập nhãn dễ nhớ và tọa độ. Tìm kiếm địa chỉ hoặc GPS sẽ
-            thuộc một lát cắt sau.
-          </p>
-        </div>
-
-        <div className="grid gap-2">
-          <Label htmlFor="origin-label">Tên điểm xuất phát</Label>
-          <Input
-            id="origin-label"
-            className={inputClassName}
-            value={values.originLabel}
-            onChange={(event) => update("originLabel", event.target.value)}
-            aria-invalid={Boolean(fieldErrors["startLocation.label"])}
-            maxLength={255}
-            placeholder="Ví dụ: Chợ Bến Thành"
-            required
-            disabled={pending}
-          />
-          <FieldError message={fieldErrors["startLocation.label"]} />
-        </div>
-
-        <div className="grid grid-cols-2 gap-4 max-md:grid-cols-1">
-          <div className="grid gap-2">
-            <Label htmlFor="origin-latitude">Vĩ độ</Label>
-            <Input
-              id="origin-latitude"
-              className={inputClassName}
-              type="number"
-              min="-90"
-              max="90"
-              step="0.0000001"
-              value={values.latitude}
-              onChange={(event) => update("latitude", event.target.value)}
-              aria-invalid={Boolean(fieldErrors["startLocation.latitude"])}
-              placeholder="10.7726400"
-              required
-              disabled={pending}
-            />
-            <FieldError message={fieldErrors["startLocation.latitude"]} />
-          </div>
-
-          <div className="grid gap-2">
-            <Label htmlFor="origin-longitude">Kinh độ</Label>
-            <Input
-              id="origin-longitude"
-              className={inputClassName}
-              type="number"
-              min="-180"
-              max="180"
-              step="0.0000001"
-              value={values.longitude}
-              onChange={(event) => update("longitude", event.target.value)}
-              aria-invalid={Boolean(fieldErrors["startLocation.longitude"])}
-              placeholder="106.6980500"
-              required
-              disabled={pending}
-            />
-            <FieldError message={fieldErrors["startLocation.longitude"]} />
-          </div>
-        </div>
-      </Card>
-
-      <Card className="grid gap-5 rounded-mint-md border-border bg-surface p-5 ring-0 max-md:p-4">
-        <div>
-          <p className="m-0 text-xs font-extrabold tracking-[0.12em] text-primary uppercase">
-            Phong cách
-          </p>
-          <h2 className="mt-1 text-xl font-bold">Sở thích chuyến đi</h2>
+          <h2 className="m-0 text-xl font-bold">Sở thích chuyến đi</h2>
         </div>
 
         <div className="grid grid-cols-2 gap-4 max-md:grid-cols-1">
@@ -399,51 +401,9 @@ export function TripForm({
             <FieldError message={fieldErrors.environmentPreference} />
           </div>
         </div>
+      </section>
 
-        <fieldset className="grid gap-3">
-          <div>
-            <legend className="text-sm font-medium">Danh mục yêu thích</legend>
-            <p className="mt-1 mb-0 text-xs text-text-secondary">
-              Chọn từ 1 đến 5 danh mục. Thứ tự chọn không biểu thị ưu tiên.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {categories.map((category) => {
-              const selected = values.categorySlugs.includes(category.slug);
-              const disabled =
-                pending || (!selected && values.categorySlugs.length >= 5);
-
-              return (
-                <label
-                  key={category.id}
-                  className={
-                    disabled
-                      ? "cursor-not-allowed opacity-55"
-                      : "cursor-pointer"
-                  }
-                >
-                  <input
-                    className="peer sr-only"
-                    type="checkbox"
-                    checked={selected}
-                    onChange={() => toggleCategory(category.slug)}
-                    disabled={disabled}
-                  />
-                  <Badge
-                    className="h-10 rounded-full border-border bg-background px-3.5 font-bold text-primary-strong peer-focus-visible:ring-3 peer-focus-visible:ring-ring/50 peer-checked:border-primary peer-checked:bg-primary-soft"
-                    variant="outline"
-                  >
-                    {category.name}
-                  </Badge>
-                </label>
-              );
-            })}
-          </div>
-          <FieldError message={fieldErrors.categorySlugs} />
-        </fieldset>
-      </Card>
-
-      <div className="flex justify-end gap-3 max-md:flex-col-reverse">
+      <footer className="flex justify-end gap-3 py-6 max-md:flex-col-reverse">
         {onCancel ? (
           <Button
             type="button"
@@ -455,10 +415,17 @@ export function TripForm({
             Hủy chỉnh sửa
           </Button>
         ) : null}
-        <Button type="submit" size="lg" disabled={pending}>
+        <Button
+          type="submit"
+          variant="accent"
+          size="lg"
+          disabled={
+            pending || locationSearching || resolvedSource === null
+          }
+        >
           {pending ? "Đang lưu…" : submitLabel}
         </Button>
-      </div>
+      </footer>
     </form>
   );
 }

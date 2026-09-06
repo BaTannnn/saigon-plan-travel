@@ -1,0 +1,46 @@
+{
+  "placeSlug": "pho-di-bo-bui-vien",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Phố đi bộ Bùi Viện nằm tại khu vực trung tâm Thành phố Hồ Chí Minh và được biết đến như một điểm tập trung dịch vụ ăn uống, giải trí và trải nghiệm đời sống về đêm. Tuyến phố chính thức khai trương mô hình phố đi bộ vào tháng 8 năm 2017. Không gian này phù hợp với người thích không khí sôi động, hoạt động ban đêm, ẩm thực và giao lưu trong khu vực có đông khách du lịch. So với các điểm di sản hoặc bảo tàng, Bùi Viện mang tính trải nghiệm đô thị đương đại rõ hơn và thường phù hợp với chặng cuối ngày.",
+      "source": {
+        "label": "Báo Điện tử Chính phủ - Khai trương phố đi bộ Bùi Viện",
+        "uri": "https://baochinhphu.vn/tphcm-chinh-thuc-khai-truong-pho-di-bo-bui-vien-102225752.htm",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Trước khi trở thành phố đi bộ, Bùi Viện cùng các tuyến Đề Thám và Phạm Ngũ Lão đã hình thành một khu vực tập trung nhiều dịch vụ dành cho khách du lịch. Năm 2017, Thành phố Hồ Chí Minh tổ chức chỉnh trang tuyến phố và chính thức khai trương phố đi bộ Bùi Viện vào tối 20 tháng 8. Theo thông tin công bố khi khai trương, việc tổ chức phố đi bộ nhằm đáp ứng nhu cầu trải nghiệm thành phố về đêm, đồng thời tạo không gian cho các hoạt động văn hóa, nghệ thuật và dịch vụ du lịch. Kể từ đó, Bùi Viện trở thành một trong những địa điểm thường được nhắc đến khi nói về kinh tế ban đêm và trải nghiệm giải trí tại khu vực trung tâm.",
+      "source": {
+        "label": "Báo Điện tử Chính phủ - Khai trương phố đi bộ Bùi Viện",
+        "uri": "https://baochinhphu.vn/tphcm-chinh-thuc-khai-truong-pho-di-bo-bui-vien-102225752.htm",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Điểm đặc trưng của Bùi Viện là mật độ cao của các nhà hàng, quán ăn, cơ sở giải trí và dịch vụ phục vụ khách du lịch. Vào thời gian tổ chức phố đi bộ, không gian đường phố được ưu tiên cho người đi bộ và có thể xuất hiện các hoạt động văn hóa - nghệ thuật, tạo cảm giác khác biệt so với ban ngày. Giá trị trải nghiệm nằm nhiều ở bầu không khí, âm thanh, ánh sáng, dòng người và sự đa dạng dịch vụ hơn là ở một công trình kiến trúc cụ thể. Trong recommendation, Bùi Viện phù hợp với sở thích nightlife, ẩm thực, giải trí, không khí sôi động và trải nghiệm đô thị; không phù hợp nếu người dùng ưu tiên yên tĩnh, nghỉ dưỡng hoặc lịch trình dành chủ yếu cho trẻ nhỏ.",
+      "source": {
+        "label": "Báo Điện tử Chính phủ - Khai trương phố đi bộ Bùi Viện",
+        "uri": "https://baochinhphu.vn/tphcm-chinh-thuc-khai-truong-pho-di-bo-bui-vien-102225752.htm",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Bùi Viện hợp lý nhất khi được xếp vào buổi tối và sau các hoạt động tham quan chính trong ngày. Người dùng có thể lựa chọn đi bộ quan sát không khí khu phố, dùng bữa hoặc sử dụng dịch vụ giải trí tùy sở thích và ngân sách. Vì mức độ đông đúc và tiếng ồn thay đổi mạnh theo ngày, giờ và sự kiện, scheduler không nên chỉ dựa vào semantic similarity mà cần kết hợp time context khi có thể. Lịch phố đi bộ, quy định giao thông và giờ hoạt động của từng cơ sở có khả năng thay đổi; corpus chỉ nên cung cấp đặc trưng tương đối ổn định của địa điểm, còn trạng thái thực tế phải lấy từ dữ liệu cập nhật.",
+      "source": {
+        "label": "Báo Điện tử Chính phủ - Khai trương phố đi bộ Bùi Viện",
+        "uri": "https://baochinhphu.vn/tphcm-chinh-thuc-khai-truong-pho-di-bo-bui-vien-102225752.htm",
+        "retrievedAt": "2026-08-29"
+      }
+    }
+  ]
+}

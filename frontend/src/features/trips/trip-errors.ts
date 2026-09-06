@@ -5,12 +5,6 @@ export type TripFormFeedback = {
   fieldErrors: Record<string, string>;
 };
 
-function normalizeFieldName(field: string) {
-  if (field.startsWith("categorySlugs")) return "categorySlugs";
-  if (field.startsWith("startLocation.")) return field;
-  return field;
-}
-
 export function getTripFormFeedback(error: unknown): TripFormFeedback {
   if (!(error instanceof ApiError)) {
     return {
@@ -21,24 +15,15 @@ export function getTripFormFeedback(error: unknown): TripFormFeedback {
 
   if (error.status === 0) {
     return {
-      message: "Không thể kết nối đến backend. Hãy kiểm tra kết nối và thử lại.",
+      message:
+        "Không thể kết nối đến backend. Hãy kiểm tra kết nối và thử lại.",
       fieldErrors: {},
     };
   }
 
   const fieldErrors = Object.fromEntries(
-    (error.problem?.fieldErrors ?? []).map((item) => [
-      normalizeFieldName(item.field),
-      item.message,
-    ]),
+    (error.problem?.fieldErrors ?? []).map((item) => [item.field, item.message]),
   );
-
-  if (error.problem?.code === "INVALID_CATEGORY_PREFERENCE") {
-    const unknown = error.problem.unknownCategorySlugs ?? [];
-    fieldErrors.categorySlugs = unknown.length
-      ? `Danh mục không còn hợp lệ: ${unknown.join(", ")}.`
-      : "Một hoặc nhiều danh mục không còn hợp lệ.";
-  }
 
   return {
     message:
@@ -73,7 +58,19 @@ export function getTripsLoadErrorMessage(error: unknown) {
     return "Không thể kết nối đến backend. Hãy kiểm tra kết nối và thử lại.";
   }
   return (
-    error.problem?.detail ??
-    "Không thể tải danh sách chuyến đi. Hãy thử lại."
+    error.problem?.detail ?? "Không thể tải danh sách chuyến đi. Hãy thử lại."
   );
+}
+
+export function getTripDeleteErrorMessage(error: unknown) {
+  if (!(error instanceof ApiError)) {
+    return "Không thể xóa chuyến đi. Hãy thử lại.";
+  }
+  if (error.status === 0) {
+    return "Không thể kết nối đến backend. Hãy kiểm tra kết nối và thử lại.";
+  }
+  if (error.status === 404) {
+    return "Không tìm thấy chuyến đi này hoặc bạn không có quyền xóa.";
+  }
+  return error.problem?.detail ?? "Không thể xóa chuyến đi. Hãy thử lại.";
 }

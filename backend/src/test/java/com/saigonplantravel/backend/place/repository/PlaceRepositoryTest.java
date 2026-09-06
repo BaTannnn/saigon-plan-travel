@@ -3,20 +3,21 @@ package com.saigonplantravel.backend.place.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.saigonplantravel.backend.place.dto.AdminPlaceDetailResponse;
-import com.saigonplantravel.backend.place.dto.AdminPlaceSummaryResponse;
-import com.saigonplantravel.backend.place.dto.CategoryCreateRequest;
 import com.saigonplantravel.backend.place.dto.OpeningHourResponse;
 import com.saigonplantravel.backend.place.dto.OpeningHourState;
 import com.saigonplantravel.backend.place.dto.PageResponse;
 import com.saigonplantravel.backend.place.dto.PlaceDetailResponse;
-import com.saigonplantravel.backend.place.dto.PlaceOpeningHoursRequest;
-import com.saigonplantravel.backend.place.dto.PlaceSearchRequest;
+import com.saigonplantravel.backend.place.dto.PlaceQueryRequest;
 import com.saigonplantravel.backend.place.dto.PlaceSummaryResponse;
+import com.saigonplantravel.backend.place.dto.admin.AdminPlaceDetailResponse;
+import com.saigonplantravel.backend.place.dto.admin.AdminPlaceSummaryResponse;
+import com.saigonplantravel.backend.place.dto.admin.CategoryCreateRequest;
+import com.saigonplantravel.backend.place.dto.admin.PlaceOpeningHoursRequest;
 import com.saigonplantravel.backend.place.entity.Category;
 import com.saigonplantravel.backend.place.entity.Place;
 import com.saigonplantravel.backend.place.service.CategoryService;
 import com.saigonplantravel.backend.place.service.PlaceService;
+import com.saigonplantravel.backend.testsupport.PostgresIntegrationTestSupport;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import java.math.BigDecimal;
@@ -28,9 +29,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataAccessException;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -38,22 +36,17 @@ import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
-import org.testcontainers.utility.DockerImageName;
 
 @Testcontainers
 @SpringBootTest
 class PlaceRepositoryTest {
 
     @Container
-    static final PostgreSQLContainer postgres = new PostgreSQLContainer(
-            DockerImageName.parse("pgvector/pgvector:pg16").asCompatibleSubstituteFor("postgres"));
+    static final PostgreSQLContainer postgres = PostgresIntegrationTestSupport.newContainer();
 
     @DynamicPropertySource
     static void databaseProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
-        registry.add("spring.datasource.username", postgres::getUsername);
-        registry.add("spring.datasource.password", postgres::getPassword);
-        registry.add("app.security.jwt.secret", () -> "MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=");
+        PostgresIntegrationTestSupport.registerCommonProperties(registry, postgres);
         registry.add("spring.jpa.properties.hibernate.generate_statistics", () -> "true");
     }
 
@@ -77,30 +70,6 @@ class PlaceRepositoryTest {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
-
-    @Test
-    void returnsOnlyActivePlacesWithStableSortingAndPagination() {
-        Sort sort = Sort.by(Sort.Order.asc("name"), Sort.Order.asc("id"));
-
-        Page<Place> firstPage = placeRepository.findAllByActiveTrue(PageRequest.of(0, 2, sort));
-        Page<Place> finalPage = placeRepository.findAllByActiveTrue(PageRequest.of(2, 2, sort));
-
-        assertThat(firstPage.getTotalElements()).isEqualTo(5);
-        assertThat(firstPage.getTotalPages()).isEqualTo(3);
-        assertThat(firstPage.getContent())
-                .extracting(Place::getName)
-                .containsExactly("Demo Art Space", "Demo City Garden");
-        assertThat(finalPage.getContent()).extracting(Place::getName).containsExactly("Demo Science Center");
-
-        List<String> returnedSlugs = placeRepository
-                .findAllByActiveTrue(PageRequest.of(0, 100, sort))
-                .map(Place::getSlug)
-                .getContent();
-        assertThat(returnedSlugs).doesNotContain("demo-temporarily-hidden-place");
-        assertThat(returnedSlugs).hasSize(5);
-        assertThat(firstPage.getContent())
-                .allSatisfy(place -> assertThat(place.getActive()).isTrue());
-    }
 
     @Test
     void rejectsInvalidPlaceDataWithCanonicalConstraints() {
@@ -172,14 +141,29 @@ class PlaceRepositoryTest {
     }
 
     @Test
+    void loadsSchedulingPlacesAndTheirOpeningHoursInOneQuery() {
+        Statistics statistics =
+                entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
+        statistics.clear();
+
+        List<Place> places =
+                placeRepository.findAllActiveBySlugsForScheduling(List.of("demo-art-space", "demo-city-garden"));
+
+        assertThat(places).hasSize(2);
+        assertThat(places)
+                .allSatisfy(place -> assertThat(place.getOpeningHours()).isNotEmpty());
+        assertThat(statistics.getPrepareStatementCount()).isEqualTo(1);
+    }
+
+    @Test
     @Transactional
     void administrationCanListAndOpenInactivePlaceWhilePublicQueriesStillHideIt() {
-        PlaceSearchRequest request = searchRequest(null, null, null, null, 0, 100);
+        PlaceQueryRequest request = searchRequest(null, null, null, null, 0, 100);
 
-        PageResponse<AdminPlaceSummaryResponse> adminPlaces = placeService.getPlacesForAdministration(0, 100);
+        PageResponse<AdminPlaceSummaryResponse> adminPlaces = placeService.getPlacesForAdministration(null, 0, 100);
         AdminPlaceDetailResponse inactivePlace =
                 placeService.getPlaceDetailForAdministrationBySlug("demo-temporarily-hidden-place");
-        PageResponse<PlaceSummaryResponse> publicPlaces = placeService.searchPlaces(request);
+        PageResponse<PlaceSummaryResponse> publicPlaces = placeService.findActivePlaces(request);
 
         assertThat(adminPlaces.content())
                 .filteredOn(place -> !place.active())
@@ -191,6 +175,74 @@ class PlaceRepositoryTest {
                 .doesNotContain("demo-temporarily-hidden-place");
         assertThatThrownBy(() -> placeService.getPlaceDetailBySlug("demo-temporarily-hidden-place"))
                 .hasMessage("Place not found");
+    }
+
+    @Test
+    @Transactional
+    void administrationSearchesNameSlugAndAddressAcrossAllStatuses() {
+        insertSearchPlace("admin-name-match", "Dinh Độc Lập Admin", null, null, "Unrelated address", true);
+        insertSearchPlace("admin-slug-match-target", "Unrelated Slug Name", null, null, "Other address", true);
+        insertSearchPlace(
+                "admin-inactive-address-match",
+                "Inactive Admin Place",
+                null,
+                null,
+                "Đường Nam Kỳ Khởi Nghĩa Admin",
+                false);
+
+        assertThat(placeService
+                        .getPlacesForAdministration("DINH DOC LAP", 0, 100)
+                        .content())
+                .extracting(AdminPlaceSummaryResponse::slug)
+                .containsExactly("admin-name-match");
+        assertThat(placeService
+                        .getPlacesForAdministration("slug-match-target", 0, 100)
+                        .content())
+                .extracting(AdminPlaceSummaryResponse::slug)
+                .containsExactly("admin-slug-match-target");
+        assertThat(placeService
+                        .getPlacesForAdministration("nam ky khoi nghia admin", 0, 100)
+                        .content())
+                .singleElement()
+                .satisfies(place -> {
+                    assertThat(place.slug()).isEqualTo("admin-inactive-address-match");
+                    assertThat(place.active()).isFalse();
+                });
+    }
+
+    @Test
+    @Transactional
+    void administrationSearchKeepsTotalCountAndStableOrderingAcrossPages() {
+        for (int index = 0; index < 23; index++) {
+            insertSearchPlace(
+                    "admin-pagination-" + index,
+                    "Admin pagination place %02d".formatted(index),
+                    null,
+                    null,
+                    "Unique admin pagination target",
+                    index % 2 == 0);
+        }
+
+        PageResponse<AdminPlaceSummaryResponse> firstPage =
+                placeService.getPlacesForAdministration("admin pagination target", 0, 10);
+        PageResponse<AdminPlaceSummaryResponse> secondPage =
+                placeService.getPlacesForAdministration("admin pagination target", 1, 10);
+
+        assertThat(firstPage.totalElements()).isEqualTo(23);
+        assertThat(firstPage.totalPages()).isEqualTo(3);
+        assertThat(firstPage.content())
+                .hasSize(10)
+                .extracting(AdminPlaceSummaryResponse::name)
+                .isSorted();
+        assertThat(secondPage.content())
+                .hasSize(10)
+                .extracting(AdminPlaceSummaryResponse::name)
+                .isSorted();
+        assertThat(firstPage.content())
+                .extracting(AdminPlaceSummaryResponse::id)
+                .doesNotContainAnyElementsOf(secondPage.content().stream()
+                        .map(AdminPlaceSummaryResponse::id)
+                        .toList());
     }
 
     @Test
@@ -373,7 +425,7 @@ class PlaceRepositoryTest {
         insertSearchPlace("search-address", "Search Address", null, null, "Đường Bảo tàng", true);
 
         PageResponse<PlaceSummaryResponse> response =
-                placeService.searchPlaces(searchRequest("BAO TANG", null, null, null, 0, 100));
+                placeService.findActivePlaces(searchRequest("BAO TANG", null, null, null, 0, 100));
 
         assertThat(response.content())
                 .extracting(item -> item.slug())
@@ -387,7 +439,7 @@ class PlaceRepositoryTest {
         insertSearchPlace("literal-wildcards", "Demo 50%_path\\name", null, null, "Địa chỉ demo", true);
 
         PageResponse<PlaceSummaryResponse> response =
-                placeService.searchPlaces(searchRequest("50%_path\\name", null, null, null, 0, 100));
+                placeService.findActivePlaces(searchRequest("50%_path\\name", null, null, null, 0, 100));
 
         assertThat(response.content()).extracting(item -> item.slug()).containsExactly("literal-wildcards");
     }
@@ -396,7 +448,7 @@ class PlaceRepositoryTest {
     @Transactional
     void combinesAllFiltersAndExcludesInactivePlaces() {
         PageResponse<PlaceSummaryResponse> response =
-                placeService.searchPlaces(searchRequest("demo", "van-hoa", true, new BigDecimal("100000"), 0, 100));
+                placeService.findActivePlaces(searchRequest("demo", "van-hoa", true, new BigDecimal("100000"), 0, 100));
 
         assertThat(response.content())
                 .extracting(item -> item.slug())
@@ -409,18 +461,18 @@ class PlaceRepositoryTest {
     @Transactional
     void appliesCategoryIndoorAndBudgetSemanticsIndividually() {
         assertThat(placeService
-                        .searchPlaces(searchRequest(null, "khong-ton-tai", null, null, 0, 100))
+                        .findActivePlaces(searchRequest(null, "khong-ton-tai", null, null, 0, 100))
                         .content())
                 .isEmpty();
 
         assertThat(placeService
-                        .searchPlaces(searchRequest(null, null, false, null, 0, 100))
+                        .findActivePlaces(searchRequest(null, null, false, null, 0, 100))
                         .content())
                 .extracting(item -> item.slug())
                 .containsExactly("demo-city-garden", "demo-riverside-walk");
 
         assertThat(placeService
-                        .searchPlaces(searchRequest(null, null, null, BigDecimal.ZERO, 0, 100))
+                        .findActivePlaces(searchRequest(null, null, null, BigDecimal.ZERO, 0, 100))
                         .content())
                 .extracting(item -> item.slug())
                 .containsExactly("demo-city-garden", "demo-riverside-walk");
@@ -433,7 +485,7 @@ class PlaceRepositoryTest {
         statistics.clear();
 
         PageResponse<PlaceSummaryResponse> response =
-                placeService.searchPlaces(searchRequest(null, "van-hoa", null, null, 0, 1));
+                placeService.findActivePlaces(searchRequest(null, "van-hoa", null, null, 0, 1));
 
         assertThat(response.content()).hasSize(1);
         assertThat(response.totalElements()).isEqualTo(2);
@@ -453,20 +505,20 @@ class PlaceRepositoryTest {
                     true);
         }
 
-        PlaceSearchRequest firstPageRequest = searchRequest("fixture search target", null, null, null, 0, 10);
-        PlaceSearchRequest secondPageRequest = searchRequest("fixture search target", null, null, null, 1, 10);
+        PlaceQueryRequest firstPageRequest = searchRequest("fixture search target", null, null, null, 0, 10);
+        PlaceQueryRequest secondPageRequest = searchRequest("fixture search target", null, null, null, 1, 10);
         Statistics statistics =
                 entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
 
         statistics.clear();
         long firstPageStartedAt = System.nanoTime();
-        PageResponse<PlaceSummaryResponse> firstPage = placeService.searchPlaces(firstPageRequest);
+        PageResponse<PlaceSummaryResponse> firstPage = placeService.findActivePlaces(firstPageRequest);
         long firstPageElapsedNanos = System.nanoTime() - firstPageStartedAt;
         assertThat(statistics.getPrepareStatementCount()).isBetween(1L, 2L);
 
         statistics.clear();
         long secondPageStartedAt = System.nanoTime();
-        PageResponse<PlaceSummaryResponse> secondPage = placeService.searchPlaces(secondPageRequest);
+        PageResponse<PlaceSummaryResponse> secondPage = placeService.findActivePlaces(secondPageRequest);
         long secondPageElapsedNanos = System.nanoTime() - secondPageStartedAt;
         assertThat(statistics.getPrepareStatementCount()).isBetween(1L, 2L);
 
@@ -534,8 +586,8 @@ class PlaceRepositoryTest {
                 active);
     }
 
-    private PlaceSearchRequest searchRequest(
+    private PlaceQueryRequest searchRequest(
             String keyword, String category, Boolean indoor, BigDecimal maxCost, Integer page, Integer size) {
-        return new PlaceSearchRequest(keyword, category, indoor, maxCost, page, size);
+        return new PlaceQueryRequest(keyword, category, indoor, maxCost, page, size);
     }
 }

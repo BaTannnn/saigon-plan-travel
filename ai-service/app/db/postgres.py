@@ -5,7 +5,6 @@ from pgvector.psycopg import register_vector
 from psycopg import Connection
 from psycopg_pool import ConnectionPool
 
-
 load_dotenv()
 
 

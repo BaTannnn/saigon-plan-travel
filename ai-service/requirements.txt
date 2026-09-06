@@ -4,6 +4,7 @@ python-dotenv
 google-genai
 pgvector
 langchain-google-genai
+langchain-text-splitters>=1,<2
 fastapi
 uvicorn[standard]
 psycopg-pool

@@ -1,0 +1,46 @@
+{
+  "placeSlug": "bao-tang-lich-su-tphcm",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Bảo tàng Lịch sử Thành phố Hồ Chí Minh là một bảo tàng có lịch sử lâu đời ở khu vực phía Nam Việt Nam, lưu giữ và giới thiệu các bộ sưu tập về lịch sử, văn hóa Việt Nam cùng nhiều hiện vật liên quan đến văn hóa Nam Bộ và một số nền văn hóa châu Á. Đây là địa điểm phù hợp với người muốn tìm hiểu lịch sử và di sản qua hiện vật, khảo cổ và các phòng trưng bày chuyên đề.",
+      "source": {
+        "label": "Bảo tàng Lịch sử TP.HCM - Giới thiệu",
+        "uri": "https://www.baotanglichsutphcm.com.vn/gioi-thieu",
+        "retrievedAt": "2026-08-22"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Tiền thân của bảo tàng là Bảo tàng Blanchard de la Brosse, được thành lập năm 1929 và được giới thiệu là bảo tàng đầu tiên ở phía Nam Việt Nam. Năm 1956, cơ sở này mang tên Viện Bảo tàng Quốc gia Việt Nam tại Sài Gòn; đến ngày 23 tháng 8 năm 1979, bảo tàng chính thức mang tên Bảo tàng Lịch sử Thành phố Hồ Chí Minh. Tòa nhà bảo tàng được xếp hạng Di tích kiến trúc nghệ thuật cấp quốc gia vào năm 2012.",
+      "source": {
+        "label": "Bảo tàng Lịch sử TP.HCM - Lịch sử hình thành",
+        "uri": "https://www.baotanglichsutphcm.com.vn/gioi-thieu",
+        "retrievedAt": "2026-08-22"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Hệ thống trưng bày thường xuyên của bảo tàng bao quát lịch sử Việt Nam từ thời nguyên thủy đến thời Nguyễn, đồng thời giới thiệu văn hóa Champa, Óc Eo, các dân tộc phía Nam Việt Nam, điêu khắc đá Campuchia, gốm châu Á và nhiều bộ sưu tập chuyên đề. Chính tòa nhà cũng là một điểm nhấn với phong cách kiến trúc Đông Dương, kết hợp các yếu tố Á Đông và phương Tây trong bố cục, hoa văn và không gian trưng bày.",
+      "source": {
+        "label": "Bảo tàng Lịch sử TP.HCM - Trưng bày thường xuyên",
+        "uri": "https://www.baotanglichsutphcm.com.vn/trung-bay/trung-bay-thuong-xuyen",
+        "retrievedAt": "2026-08-22"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Khách tham quan có thể đi qua các phòng trưng bày theo tiến trình lịch sử và chủ đề văn hóa, quan sát hiện vật khảo cổ, nghệ thuật và các bộ sưu tập chuyên biệt. Bảo tàng còn có các hoạt động hỗ trợ học tập và thưởng lãm như đăng ký thuyết minh, trưng bày chuyên đề, nội dung tương tác và một số chương trình nghệ thuật truyền thống, phù hợp với trải nghiệm tìm hiểu lịch sử trong nhà.",
+      "source": {
+        "label": "Bảo tàng Lịch sử TP.HCM - Dịch vụ tham quan",
+        "uri": "https://www.baotanglichsutphcm.com.vn/tham-quan/dich-vu",
+        "retrievedAt": "2026-08-22"
+      }
+    }
+  ]
+}

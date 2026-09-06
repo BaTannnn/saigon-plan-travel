@@ -1,5 +1,5 @@
-from app.rag.embedding_service import embed_query
-from app.rag.knowledge_repository import (
+from app.knowledge.embedding_service import embed_query
+from app.knowledge.retrieval_repository import (
     search_similar_chunks,
 )
 
@@ -23,20 +23,11 @@ def main() -> None:
         results,
         start=1,
     ):
-        print(
-            f"{index}. "
-            f"{result.place_name} "
-            f"[{result.section}]"
-        )
+        print(f"{index}. {result.place_name} [{result.section}]")
 
-        print(
-            f"   similarity="
-            f"{result.similarity:.4f}"
-        )
+        print(f"   similarity={result.similarity:.4f}")
 
-        print(
-            f"   {result.content[:160]}..."
-        )
+        print(f"   {result.content[:160]}...")
 
         print()
 

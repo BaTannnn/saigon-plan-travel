@@ -1,0 +1,46 @@
+{
+  "placeSlug": "bao-tang-quan-khu-7",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Bảo tàng Quân khu 7, còn được biết đến với tên Bảo tàng Lực lượng vũ trang miền Đông Nam Bộ, nằm trên đường Hoàng Văn Thụ tại khu vực Tân Bình. Đây là điểm tham quan chuyên về lịch sử quân sự và truyền thống lực lượng vũ trang trên địa bàn Quân khu 7. Với vị trí gần sân bay Tân Sơn Nhất, bảo tàng có thể được xếp vào nhóm điểm trong nhà phù hợp cho lịch trình khu vực Tân Bình hoặc dùng làm phương án thay thế khi thời tiết không thuận lợi cho hoạt động ngoài trời.",
+      "source": {
+        "label": "Bảo tàng Lịch sử Quân sự Việt Nam - Bảo tàng Quân khu 7",
+        "uri": "https://btlsqsvn.mod.gov.vn/nguoi-linh-bao-tang/chi-tiet/bao-tang-quan-khu-7-30-nam-xay-dung-va-truong-thanh-c6523c10-f323-4a4b-9c4e-3e986539e3b1",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Bảo tàng Lịch sử Quân sự Việt Nam cho biết tiền thân của Bảo tàng Quân khu 7 được hình thành từ quyết định năm 1988 về xây dựng Bảo tàng Lực lượng vũ trang miền Đông Nam Bộ và công trình được đưa vào sử dụng năm 1990. Nhiệm vụ của bảo tàng gắn với lưu giữ, nghiên cứu và giáo dục truyền thống của lực lượng vũ trang Quân khu 7. Nguồn chính thức của Quân khu 7 những năm gần đây vẫn ghi nhận hoạt động triển lãm và phối hợp giáo dục tại bảo tàng, cho thấy đây là thực thể phù hợp để đưa vào corpus hiện tại.",
+      "source": {
+        "label": "Bảo tàng Lịch sử Quân sự Việt Nam - Bảo tàng Quân khu 7",
+        "uri": "https://btlsqsvn.mod.gov.vn/nguoi-linh-bao-tang/chi-tiet/bao-tang-quan-khu-7-30-nam-xay-dung-va-truong-thanh-c6523c10-f323-4a4b-9c4e-3e986539e3b1",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Nội dung tham quan tập trung vào tài liệu, hình ảnh và hiện vật phản ánh quá trình hình thành, chiến đấu và phát triển của lực lượng vũ trang miền Đông Nam Bộ và Quân khu 7. Một số hoạt động triển lãm chuyên đề được tổ chức nhằm phục vụ cán bộ, học sinh, sinh viên và người dân. Trong recommendation, địa điểm nên có trọng số cao cho sở thích lịch sử, giáo dục và bảo tàng; ngược lại không phù hợp nếu người dùng ưu tiên vui chơi, mua sắm hay trải nghiệm thiên nhiên. Thời lượng khoảng 60 đến 120 phút phù hợp cho MVP.",
+      "source": {
+        "label": "Quân khu 7 - Thông báo triển lãm tại Bảo tàng Quân khu 7",
+        "uri": "https://www2.baoquankhu7.vn/thong-bao--1091450856-0035760s34010gs",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Bảo tàng hoạt động theo mô hình cơ quan quân đội nên lịch mở cửa có thể khác các bảo tàng du lịch thương mại và có những khung nghỉ giữa buổi. Vì seed hiện tại chỉ lưu một khoảng mở cửa cho mỗi ngày, dữ liệu giờ trong database nên được coi là ước tính phục vụ scheduler, còn thông tin chi tiết cần được kiểm tra từ nguồn cập nhật trước khi triển khai thực tế. Với đồ án, điểm này là ví dụ tốt để giải thích giới hạn của static corpus: RAG lưu giá trị lịch sử và nội dung tham quan, còn giờ mở cửa thực tế thuộc dữ liệu cấu trúc cần cập nhật độc lập.",
+      "source": {
+        "label": "Quân khu 7 - Bảo tàng Quân khu 7",
+        "uri": "https://www.baoquankhu7.vn/bao-tang-quan-khu-7-no-luc-phat-huy-nhung-gia-tri-truyen-thong--1442174229-002690s34910gs",
+        "retrievedAt": "2026-08-29"
+      }
+    }
+  ]
+}

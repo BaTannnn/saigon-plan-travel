@@ -1,0 +1,46 @@
+{
+  "placeSlug": "bao-tang-thanh-pho-ho-chi-minh",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Bảo tàng Thành phố Hồ Chí Minh là một bảo tàng ở khu vực trung tâm thành phố, giới thiệu lịch sử hình thành, phát triển và đời sống của vùng đất Sài Gòn - Thành phố Hồ Chí Minh qua tư liệu, hiện vật và các không gian trưng bày. Bảo tàng đồng thời nằm trong một công trình kiến trúc có giá trị, vì vậy phù hợp với người quan tâm cả lịch sử đô thị lẫn kiến trúc cổ.",
+      "source": {
+        "label": "Bảo tàng Thành phố Hồ Chí Minh - Trang chủ",
+        "uri": "https://hcmc-museum.edu.vn/",
+        "retrievedAt": "2026-08-22"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Tòa nhà hiện là Bảo tàng Thành phố Hồ Chí Minh do kiến trúc sư người Pháp Alfred Foulhoux thiết kế và được xây dựng vào cuối thế kỷ XIX. Công trình từng trải qua nhiều chức năng hành chính khác nhau trước khi được sử dụng làm bảo tàng của thành phố; đến năm 1999, đơn vị mang tên Bảo tàng Thành phố Hồ Chí Minh như hiện nay. Quá trình thay đổi chức năng của tòa nhà phản ánh nhiều giai đoạn trong lịch sử đô thị Sài Gòn - Thành phố Hồ Chí Minh.",
+      "source": {
+        "label": "Cục Di sản văn hóa - Bảo tàng Thành phố Hồ Chí Minh",
+        "uri": "https://baotang.dsvh.gov.vn/vi-VN/Detail/Index/39",
+        "retrievedAt": "2026-08-22"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Các nội dung trưng bày của bảo tàng giúp người xem tìm hiểu nhiều phương diện của Sài Gòn - Thành phố Hồ Chí Minh như địa lý - hành chính, thiên nhiên - khảo cổ, thương cảng - thương mại - dịch vụ, công nghiệp - tiểu thủ công nghiệp và các chặng đường lịch sử của thành phố. Bản thân tòa nhà cũng là điểm nhấn với mặt đứng và hệ chi tiết trang trí mang phong cách kiến trúc phương Tây kết hợp một số yếu tố Á Đông.",
+      "source": {
+        "label": "Bảo tàng Thành phố Hồ Chí Minh - Địa lý, hành chính và kiến trúc",
+        "uri": "https://hcmc-museum.edu.vn/luu-tru/2078",
+        "retrievedAt": "2026-08-22"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Khách tham quan có thể đi qua các phòng trưng bày để quan sát bản đồ, hình ảnh, mô hình, tài liệu và hiện vật liên quan đến quá trình hình thành và phát triển của thành phố. Trải nghiệm phù hợp với người muốn bổ sung kiến thức lịch sử địa phương, tìm hiểu diện mạo Sài Gòn xưa và kết hợp tham quan một công trình kiến trúc cổ ngay trong khu trung tâm.",
+      "source": {
+        "label": "Bảo tàng Thành phố Hồ Chí Minh - Hoạt động tham quan và giáo dục",
+        "uri": "https://hcmc-museum.edu.vn/luu-tru/4642",
+        "retrievedAt": "2026-08-22"
+      }
+    }
+  ]
+}

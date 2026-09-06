@@ -2,24 +2,18 @@ package com.saigonplantravel.backend.trip.entity;
 
 import com.saigonplantravel.backend.trip.domain.EnvironmentPreference;
 import com.saigonplantravel.backend.trip.domain.TravelPace;
-import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -70,11 +64,6 @@ public class Trip {
     @Column(name = "environment_preference", nullable = false, length = 20)
     private EnvironmentPreference environmentPreference;
 
-    @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(name = "trip_category_preferences", joinColumns = @JoinColumn(name = "trip_id"))
-    @Column(name = "category_id", nullable = false)
-    private Set<Long> preferredCategoryIds = new HashSet<>();
-
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
@@ -92,7 +81,6 @@ public class Trip {
             BigDecimal startLongitude,
             TravelPace travelPace,
             EnvironmentPreference environmentPreference,
-            Set<Long> preferredCategoryIds,
             OffsetDateTime createdAt) {
         this.publicId = UUID.randomUUID();
         this.userId = userId;
@@ -105,7 +93,6 @@ public class Trip {
         this.startLongitude = startLongitude;
         this.travelPace = travelPace;
         this.environmentPreference = environmentPreference;
-        this.preferredCategoryIds = new HashSet<>(preferredCategoryIds);
         this.createdAt = createdAt;
         this.updatedAt = createdAt;
     }
@@ -120,7 +107,6 @@ public class Trip {
             BigDecimal startLongitude,
             TravelPace travelPace,
             EnvironmentPreference environmentPreference,
-            Set<Long> preferredCategoryIds,
             OffsetDateTime updatedAt) {
         this.tripDate = tripDate;
         this.startTime = startTime;
@@ -132,13 +118,6 @@ public class Trip {
         this.travelPace = travelPace;
         this.environmentPreference = environmentPreference;
 
-        this.preferredCategoryIds.clear();
-        this.preferredCategoryIds.addAll(preferredCategoryIds);
-
         this.updatedAt = updatedAt;
-    }
-
-    public Set<Long> getPreferredCategoryIds() {
-        return Set.copyOf(preferredCategoryIds);
     }
 }

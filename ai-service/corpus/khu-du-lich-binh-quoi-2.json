@@ -1,0 +1,46 @@
+{
+  "placeSlug": "khu-du-lich-binh-quoi-2",
+  "language": "vi-VN",
+  "sections": [
+    {
+      "chunkIndex": 1,
+      "section": "OVERVIEW",
+      "content": "Khu du lịch Bình Quới 2 nằm ở cuối đường Bình Quới trên bán đảo Thanh Đa, ven sông Sài Gòn. Đây là điểm nghỉ ngơi - ẩm thực có nhiều mảng xanh, không gian sông nước và dịch vụ dành cho gia đình hoặc nhóm bạn. So với Bình Quới 1 đã có trong catalog, Bình Quới 2 thiên về thư giãn ven sông, lưu trú bungalow, ăn uống và hoạt động nhóm. Scheduler nên dành thời lượng tương đối dài vì đây không phải điểm check-in ngắn mà phù hợp với một buổi thư giãn hoặc bữa ăn kết hợp tham quan.",
+      "source": {
+        "label": "Làng Du lịch Bình Quới - Khu du lịch Bình Quới 2",
+        "uri": "https://binhquoi.vn/overview/kdl-binh-quoi-2/",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 2,
+      "section": "BACKGROUND",
+      "content": "Bình Quới 2 là một thành viên của Làng Du lịch Bình Quới thuộc hệ thống Saigontourist Group. Đơn vị vận hành giới thiệu khu này nằm trên bán đảo Thanh Đa, có diện tích trên 25.000 m² và tiếp giáp sông Sài Gòn. Không gian được phát triển theo hướng nghỉ dưỡng xanh và tái hiện cảm giác sông nước Nam Bộ trong phạm vi thành phố. Đối với RAG, thông tin này giúp phân biệt Bình Quới 2 với công viên đô thị: trải nghiệm cốt lõi là dịch vụ du lịch - ẩm thực - nghỉ dưỡng chứ không chỉ đi bộ ngắm cây xanh.",
+      "source": {
+        "label": "Làng Du lịch Bình Quới - Bình Quới 2",
+        "uri": "https://binhquoi.vn/en/overview/binh-quoi-2/",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 3,
+      "section": "HIGHLIGHTS",
+      "content": "Các dịch vụ được đơn vị vận hành giới thiệu gồm bungalow ven sông, nhà hàng, khu tổ chức hội họp, sân cỏ cho hoạt động nhóm, cà phê và một số tiện ích giải trí. Cảnh quan ven sông, cây xanh và không khí yên tĩnh là điểm mạnh so với nhiều điểm vui chơi trong nội đô. Khi recommendation, có thể ưu tiên các thuộc tính thiên nhiên, gia đình, ẩm thực, thư giãn và ngoài trời. Nếu người dùng chỉ có quỹ thời gian ngắn hoặc muốn tối ưu số lượng địa điểm, hệ thống nên giảm điểm do thời gian lưu trú phù hợp thường dài hơn.",
+      "source": {
+        "label": "Làng Du lịch Bình Quới - Khu du lịch Bình Quới 2",
+        "uri": "https://binhquoi.vn/overview/kdl-binh-quoi-2/",
+        "retrievedAt": "2026-08-29"
+      }
+    },
+    {
+      "chunkIndex": 4,
+      "section": "EXPERIENCE",
+      "content": "Cổng du lịch TP.HCM giới thiệu cụm Bình Quới hoạt động đến buổi tối, phù hợp cho bữa trưa muộn, chiều hoặc tối. Chi phí phụ thuộc mạnh vào ăn uống và dịch vụ lựa chọn nên corpus không nên cố định một mức giá cụ thể; seed chỉ dùng khoảng chi phí phát triển để scheduler có thể kiểm thử budget constraint. Vì có nhiều hoạt động ngoài trời và cảnh quan ven sông, mưa lớn có thể làm giảm trải nghiệm. Đây là trường hợp phù hợp để context module hạ score hoặc chuyển sang điểm trong nhà khi điều kiện thời tiết bất lợi.",
+      "source": {
+        "label": "Du lịch TP.HCM - Top khu du lịch sinh thái",
+        "uri": "https://visithcmc.net/news/top-10-khu-du-lich-sinh-thai-o-tphcm-hap-dan-du-khach",
+        "retrievedAt": "2026-08-29"
+      }
+    }
+  ]
+}

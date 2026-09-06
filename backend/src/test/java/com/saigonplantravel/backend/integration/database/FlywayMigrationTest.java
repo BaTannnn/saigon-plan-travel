@@ -2,6 +2,9 @@ package com.saigonplantravel.backend.integration.database;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.saigonplantravel.backend.media.StoredMedia;
+import com.saigonplantravel.backend.place.service.PlaceImageMetadataService;
+import com.saigonplantravel.backend.testsupport.PostgresIntegrationTestSupport;
 import java.util.List;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.output.MigrateResult;
@@ -14,22 +17,17 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
-import org.testcontainers.utility.DockerImageName;
 
 @Testcontainers
 @SpringBootTest
 class FlywayMigrationTest {
 
     @Container
-    static final PostgreSQLContainer postgres = new PostgreSQLContainer(
-            DockerImageName.parse("pgvector/pgvector:pg16").asCompatibleSubstituteFor("postgres"));
+    static final PostgreSQLContainer postgres = PostgresIntegrationTestSupport.newContainer();
 
     @DynamicPropertySource
     static void databaseProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
-        registry.add("spring.datasource.username", postgres::getUsername);
-        registry.add("spring.datasource.password", postgres::getPassword);
-        registry.add("app.security.jwt.secret", () -> "MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=");
+        PostgresIntegrationTestSupport.registerCommonProperties(registry, postgres);
     }
 
     @Autowired
@@ -38,20 +36,35 @@ class FlywayMigrationTest {
     @Autowired
     private Flyway flyway;
 
-    @Test
-    void contextLoadsWithFlywayAndHibernateValidation() {}
+    @Autowired
+    private PlaceImageMetadataService placeImageMetadataService;
 
     @Test
     void appliesCanonicalMigrationsAndSeedExactlyOnce() {
         List<String> versions = jdbcTemplate.queryForList(
                 "SELECT version FROM flyway_schema_history WHERE success ORDER BY installed_rank", String.class);
 
-        assertThat(versions).containsExactly("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12");
+        assertThat(versions)
+                .containsExactly("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15");
         assertThat(jdbcTemplate.queryForObject(
                         "SELECT count(*) FROM flyway_schema_history WHERE version = '6' AND success", Integer.class))
                 .isEqualTo(1);
         assertThat(jdbcTemplate.queryForObject(
                         "SELECT count(*) FROM pg_extension WHERE extname = 'vector'", Integer.class))
+                .isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject(
+                        "SELECT count(*) FROM information_schema.table_constraints "
+                                + "WHERE table_schema = 'public' "
+                                + "AND table_name = 'place_knowledge_chunks' "
+                                + "AND constraint_name = 'uq_place_knowledge_chunks_content'",
+                        Integer.class))
+                .isZero();
+        assertThat(jdbcTemplate.queryForObject(
+                        "SELECT count(*) FROM information_schema.table_constraints "
+                                + "WHERE table_schema = 'public' "
+                                + "AND table_name = 'place_knowledge_chunks' "
+                                + "AND constraint_name = 'uq_place_knowledge_chunks_index'",
+                        Integer.class))
                 .isEqualTo(1);
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM places", Integer.class))
                 .isEqualTo(6);
@@ -85,7 +98,10 @@ class FlywayMigrationTest {
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM trips", Integer.class))
                 .isZero();
 
-        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM trip_category_preferences", Integer.class))
+        assertThat(jdbcTemplate.queryForObject(
+                        "SELECT count(*) FROM pg_tables WHERE schemaname = 'public' "
+                                + "AND tablename = 'trip_category_preferences'",
+                        Integer.class))
                 .isZero();
         assertThat(jdbcTemplate.queryForObject(
                         """
@@ -126,10 +142,88 @@ class FlywayMigrationTest {
                 """,
                         Integer.class))
                 .isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject(
+                        "SELECT count(*) FROM flyway_schema_history WHERE version = '13' AND success", Integer.class))
+                .isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject(
+                        "SELECT count(*) FROM flyway_schema_history WHERE version = '14' AND success", Integer.class))
+                .isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject(
+                        "SELECT count(*) FROM flyway_schema_history WHERE version = '15' AND success", Integer.class))
+                .isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM place_images", Integer.class))
+                .isZero();
     }
 
     @Test
-    void appliesTripAndItineraryMigrationsAndCreatesTables() {
+    void enforcesOneCoverAndCascadesMetadataWhenPlaceIsDeleted() {
+        Long placeId = jdbcTemplate.queryForObject(
+                """
+                INSERT INTO places (
+                    name, slug, address, latitude, longitude,
+                    estimated_visit_minutes, min_cost, max_cost, indoor
+                )
+                VALUES ('Image test', 'image-test', 'Address', 10.77, 106.70, 60, 0, 0, FALSE)
+                RETURNING id
+                """,
+                Long.class);
+        jdbcTemplate.update(
+                """
+                INSERT INTO place_images (place_id, storage_key, url)
+                VALUES (?, 'places/image-test/cover', 'https://cdn.example/cover.jpg')
+                """,
+                placeId);
+
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> jdbcTemplate.update(
+                        """
+                        INSERT INTO place_images (place_id, storage_key, url)
+                        VALUES (?, 'places/image-test/second', 'https://cdn.example/second.jpg')
+                        """,
+                        placeId))
+                .isInstanceOf(org.springframework.dao.DataIntegrityViolationException.class);
+
+        jdbcTemplate.update("DELETE FROM places WHERE id = ?", placeId);
+
+        assertThat(jdbcTemplate.queryForObject(
+                        "SELECT count(*) FROM place_images WHERE place_id = ?", Integer.class, placeId))
+                .isZero();
+    }
+
+    @Test
+    void persistsReplacesAndRemovesCoverMetadata() {
+        Long placeId = jdbcTemplate.queryForObject(
+                """
+                INSERT INTO places (
+                    name, slug, address, latitude, longitude,
+                    estimated_visit_minutes, min_cost, max_cost, indoor
+                )
+                VALUES ('Metadata test', 'metadata-test', 'Address', 10.77, 106.70, 60, 0, 0, FALSE)
+                RETURNING id
+                """,
+                Long.class);
+
+        String firstOldKey = placeImageMetadataService.replaceCover(
+                "metadata-test", new StoredMedia("places/metadata/first", "https://cdn.example/first.jpg"));
+        String replacedKey = placeImageMetadataService.replaceCover(
+                "metadata-test", new StoredMedia("places/metadata/second", "https://cdn.example/second.jpg"));
+
+        assertThat(firstOldKey).isNull();
+        assertThat(replacedKey).isEqualTo("places/metadata/first");
+        assertThat(jdbcTemplate.queryForList(
+                        "SELECT storage_key FROM place_images WHERE place_id = ?", String.class, placeId))
+                .containsExactly("places/metadata/second");
+
+        String removedKey = placeImageMetadataService.removeCover("metadata-test");
+
+        assertThat(removedKey).isEqualTo("places/metadata/second");
+        assertThat(jdbcTemplate.queryForObject(
+                        "SELECT count(*) FROM place_images WHERE place_id = ?", Integer.class, placeId))
+                .isZero();
+        jdbcTemplate.update("DELETE FROM places WHERE id = ?", placeId);
+    }
+
+    @Test
+    void appliesTripAndItineraryMigrationsAndCreatesFinalTables() {
         Integer migrationV7Count = jdbcTemplate.queryForObject(
                 """
                         SELECT count(*)
@@ -166,6 +260,15 @@ class FlywayMigrationTest {
                         """,
                 Integer.class);
 
+        Integer migrationV13Count = jdbcTemplate.queryForObject(
+                """
+                        SELECT count(*)
+                        FROM flyway_schema_history
+                        WHERE version = '13'
+                          AND success
+                        """,
+                Integer.class);
+
         Boolean tripsTableExists = jdbcTemplate.queryForObject(
                 """
                         SELECT to_regclass(
@@ -196,9 +299,11 @@ class FlywayMigrationTest {
 
         assertThat(migrationV10Count).isEqualTo(1);
 
+        assertThat(migrationV13Count).isEqualTo(1);
+
         assertThat(tripsTableExists).isTrue();
 
-        assertThat(preferencesTableExists).isTrue();
+        assertThat(preferencesTableExists).isFalse();
 
         assertThat(itinerariesTableExists).isTrue();
 
