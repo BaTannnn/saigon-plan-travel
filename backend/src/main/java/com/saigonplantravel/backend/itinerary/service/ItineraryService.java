@@ -165,20 +165,10 @@ public class ItineraryService {
 
         OffsetDateTime now = OffsetDateTime.now(clock);
 
-        /*
-         * Phase 1:
-         * Move current sequence numbers outside
-         * the active range to avoid violating
-         * UNIQUE(itinerary_id, sequence_no).
-         */
         itinerary.shiftSequencesForReorder(now);
 
         itineraryRepository.flush();
 
-        /*
-         * Phase 2:
-         * Apply the user-defined final order.
-         */
         itinerary.reorderItems(orderedItemPublicIds, now);
 
         return recalculateAndMap(tripPublicId, trip, itinerary);
