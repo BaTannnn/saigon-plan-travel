@@ -190,13 +190,6 @@ public class ItineraryService {
             itinerary = new Itinerary(trip, now);
 
         } else {
-
-            /*
-             * User đã xác nhận replace preview AI.
-             *
-             * Xóa itinerary items cũ trước,
-             * rồi flush để giải phóng sequence_no.
-             */
             itinerary.clearItems(now);
 
             itineraryRepository.flush();

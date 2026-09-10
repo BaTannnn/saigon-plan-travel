@@ -1,8 +1,6 @@
 from dataclasses import dataclass
 
-from langchain_core.documents import Document
 from langchain_text_splitters import (
-    MarkdownHeaderTextSplitter,
     RecursiveCharacterTextSplitter,
 )
 
