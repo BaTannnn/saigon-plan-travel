@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TripAssistant } from "@/features/assistant/components/trip-assistant";
 import { useAuth } from "@/features/auth/auth-provider";
 import { ItineraryView } from "@/features/itinerary/components/itinerary-view";
 import { useItineraryWorkspace } from "@/features/itinerary/hooks/use-itinerary-workspace";
@@ -207,6 +208,14 @@ export function TripDetailView({ publicId }: TripDetailViewProps) {
           />
         )}
       </section>
+
+      {section === "itinerary" ? (
+        <TripAssistant
+          tripPublicId={publicId}
+          itineraryPlaceSlugs={itineraryItems.map((item) => item.place.slug)}
+          onAddPlace={itineraryWorkspace.addPlaceById}
+        />
+      ) : null}
     </main>
   );
 }
