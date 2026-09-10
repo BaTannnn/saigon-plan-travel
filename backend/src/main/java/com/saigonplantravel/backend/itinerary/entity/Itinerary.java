@@ -93,14 +93,6 @@ public class Itinerary {
         this.updatedAt = updatedAt;
     }
 
-    public void resequenceItems(OffsetDateTime updatedAt) {
-        items.sort(Comparator.comparing(ItineraryItem::getSequenceNo));
-
-        for (int index = 0; index < items.size(); index++) {
-            items.get(index).changeSequence(index + 1, updatedAt);
-        }
-    }
-
     public void replaceItemPlace(ItineraryItem item, Place replacementPlace, OffsetDateTime updatedAt) {
         item.replacePlace(replacementPlace, updatedAt);
         this.updatedAt = updatedAt;
@@ -110,7 +102,7 @@ public class Itinerary {
         return List.copyOf(items);
     }
 
-    public void reorderItems(List<UUID> orderedItemPublicIds, OffsetDateTime updatedAt) {
+    public void validateOrder(List<UUID> orderedItemPublicIds) {
 
         if (orderedItemPublicIds == null
                 || orderedItemPublicIds.size() != items.size()
@@ -119,44 +111,16 @@ public class Itinerary {
             throw new InvalidItineraryOrderException();
         }
 
-        Map<UUID, ItineraryItem> itemsByPublicId =
-                items.stream().collect(Collectors.toMap(ItineraryItem::getPublicId, item -> item));
+        Set<UUID> itemPublicIds =
+                items.stream().map(ItineraryItem::getPublicId).collect(Collectors.toSet());
 
-        if (!itemsByPublicId.keySet().equals(new HashSet<>(orderedItemPublicIds))) {
+        if (!itemPublicIds.equals(new HashSet<>(orderedItemPublicIds))) {
 
             throw new InvalidItineraryOrderException();
         }
-
-        List<ItineraryItem> reorderedItems =
-                orderedItemPublicIds.stream().map(itemsByPublicId::get).toList();
-
-        items.clear();
-        items.addAll(reorderedItems);
-
-        for (int index = 0; index < items.size(); index++) {
-
-            items.get(index).changeSequence(index + 1, updatedAt);
-        }
-
-        this.updatedAt = updatedAt;
     }
 
-    public void shiftSequencesForReorder(OffsetDateTime updatedAt) {
-
-        if (items.isEmpty()) {
-            return;
-        }
-
-        int maxSequence =
-                items.stream().mapToInt(ItineraryItem::getSequenceNo).max().orElse(0);
-
-        int offset = maxSequence + items.size();
-
-        for (ItineraryItem item : items) {
-
-            item.changeSequence(item.getSequenceNo() + offset, updatedAt);
-        }
-
+    public void markUpdated(OffsetDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
 }

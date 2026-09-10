@@ -60,10 +60,4 @@ public class ItineraryItem {
         this.updatedAt = updatedAt;
     }
 
-    void changeSequence(Integer sequenceNo, OffsetDateTime updatedAt) {
-        if (!this.sequenceNo.equals(sequenceNo)) {
-            this.sequenceNo = sequenceNo;
-            this.updatedAt = updatedAt;
-        }
-    }
 }

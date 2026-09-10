@@ -101,14 +101,14 @@ class ItineraryServiceIntegrationTest {
     }
 
     @Test
-    void batchesOpeningHoursWhenRecalculatingAnExistingItinerary() {
-        Long userId = fixtures.insertUser("batched-opening-hours-owner");
+    void bulkLoadsOpeningHoursWhenRecalculatingTenPlaces() {
+        Long userId = fixtures.insertUser("bulk-opening-hours-owner");
         TripFixture trip = fixtures.insertValidTrip(userId);
-        PlaceFixture first = place("Batch first", "batch-first");
-        PlaceFixture second = place("Batch second", "batch-second");
 
-        itineraryService.addItem(userId, trip.tripPublicId(), first.placeId());
-        itineraryService.addItem(userId, trip.tripPublicId(), second.placeId());
+        for (int index = 0; index < 10; index++) {
+            PlaceFixture place = place("Bulk place " + index, "bulk-place-" + index);
+            itineraryService.addItem(userId, trip.tripPublicId(), place.placeId());
+        }
         entityManager.flush();
         entityManager.clear();
 
@@ -118,7 +118,7 @@ class ItineraryServiceIntegrationTest {
 
         ItineraryDetailResponse response = itineraryService.getItinerary(userId, trip.tripPublicId());
 
-        assertThat(response.items()).hasSize(2);
+        assertThat(response.items()).hasSize(10);
         assertThat(statistics.getPrepareStatementCount()).isEqualTo(3);
     }
 
@@ -231,36 +231,54 @@ class ItineraryServiceIntegrationTest {
 
         PlaceFixture third = place("Delete third", "delete-third");
 
+        PlaceFixture fourth = place("Delete fourth", "delete-fourth");
+
+        PlaceFixture fifth = place("Delete fifth", "delete-fifth");
+
         itineraryService.addItem(userId, trip.tripPublicId(), first.placeId());
 
-        ItineraryDetailResponse beforeDelete = itineraryService.addItem(userId, trip.tripPublicId(), second.placeId());
+        itineraryService.addItem(userId, trip.tripPublicId(), second.placeId());
 
-        UUID removedItemPublicId = beforeDelete.items().get(1).publicId();
+        ItineraryDetailResponse beforeDelete = itineraryService.addItem(userId, trip.tripPublicId(), third.placeId());
 
-        itineraryService.addItem(userId, trip.tripPublicId(), third.placeId());
+        itineraryService.addItem(userId, trip.tripPublicId(), fourth.placeId());
+
+        itineraryService.addItem(userId, trip.tripPublicId(), fifth.placeId());
+
+        UUID removedItemPublicId = beforeDelete.items().get(2).publicId();
+
+        entityManager.flush();
+        entityManager.clear();
+        Statistics statistics =
+                entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
+        statistics.clear();
 
         ItineraryDetailResponse response =
                 itineraryService.deleteItem(userId, trip.tripPublicId(), removedItemPublicId);
 
-        assertThat(response.items()).extracting(item -> item.sequenceNo()).containsExactly(1, 2);
+        assertThat(statistics.getPrepareStatementCount()).isEqualTo(7);
+
+        assertThat(response.items()).extracting(item -> item.sequenceNo()).containsExactly(1, 2, 3, 4);
 
         assertThat(response.items())
                 .extracting(item -> item.place().slug())
-                .containsExactly(placeSlug(first.placeId()), placeSlug(third.placeId()));
+                .containsExactly(
+                        placeSlug(first.placeId()),
+                        placeSlug(second.placeId()),
+                        placeSlug(fourth.placeId()),
+                        placeSlug(fifth.placeId()));
 
         /*
-         * Item thứ hai phải có schedule mới sau khi
-         * B bị xóa khỏi A -> B -> C.
-         *
-         * Recalculation lúc này phải chạy lại A -> C.
+         * D phải có schedule mới sau khi C bị xóa khỏi
+         * A -> B -> C -> D -> E.
          */
-        assertThat(response.items().get(1).schedule()).isNotNull();
+        assertThat(response.items().get(2).schedule()).isNotNull();
 
-        assertThat(response.items().get(1).schedule().arrivalTime()).isNotNull();
+        assertThat(response.items().get(2).schedule().arrivalTime()).isNotNull();
 
         entityManager.flush();
 
-        assertThat(databaseSequences(trip.tripId())).containsExactly(1, 2);
+        assertThat(databaseSequences(trip.tripId())).containsExactly(1, 2, 3, 4);
     }
 
     @Test
@@ -381,11 +399,15 @@ class ItineraryServiceIntegrationTest {
 
         PlaceFixture third = place("Reorder third", "reorder-third");
 
+        PlaceFixture fourth = place("Reorder fourth", "reorder-fourth");
+
         itineraryService.addItem(userId, trip.tripPublicId(), first.placeId());
 
         itineraryService.addItem(userId, trip.tripPublicId(), second.placeId());
 
-        ItineraryDetailResponse beforeReorder = itineraryService.addItem(userId, trip.tripPublicId(), third.placeId());
+        itineraryService.addItem(userId, trip.tripPublicId(), third.placeId());
+
+        ItineraryDetailResponse beforeReorder = itineraryService.addItem(userId, trip.tripPublicId(), fourth.placeId());
 
         UUID firstItemPublicId = beforeReorder.items().get(0).publicId();
 
@@ -393,18 +415,34 @@ class ItineraryServiceIntegrationTest {
 
         UUID thirdItemPublicId = beforeReorder.items().get(2).publicId();
 
+        UUID fourthItemPublicId = beforeReorder.items().get(3).publicId();
+
+        entityManager.flush();
+        entityManager.clear();
+        Statistics statistics =
+                entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
+        statistics.clear();
+
         ItineraryDetailResponse result = itineraryService.reorderItems(
-                userId, trip.tripPublicId(), List.of(thirdItemPublicId, firstItemPublicId, secondItemPublicId));
+                userId,
+                trip.tripPublicId(),
+                List.of(fourthItemPublicId, secondItemPublicId, firstItemPublicId, thirdItemPublicId));
+
+        assertThat(statistics.getPrepareStatementCount()).isEqualTo(7);
 
         assertThat(result.items())
                 .extracting(item -> item.publicId())
-                .containsExactly(thirdItemPublicId, firstItemPublicId, secondItemPublicId);
+                .containsExactly(fourthItemPublicId, secondItemPublicId, firstItemPublicId, thirdItemPublicId);
 
-        assertThat(result.items()).extracting(item -> item.sequenceNo()).containsExactly(1, 2, 3);
+        assertThat(result.items()).extracting(item -> item.sequenceNo()).containsExactly(1, 2, 3, 4);
 
         assertThat(result.items())
                 .extracting(item -> item.place().slug())
-                .containsExactly(placeSlug(third.placeId()), placeSlug(first.placeId()), placeSlug(second.placeId()));
+                .containsExactly(
+                        placeSlug(fourth.placeId()),
+                        placeSlug(second.placeId()),
+                        placeSlug(first.placeId()),
+                        placeSlug(third.placeId()));
 
         /*
          * Recalculation phải chạy lại theo order mới.
@@ -419,7 +457,7 @@ class ItineraryServiceIntegrationTest {
 
         entityManager.flush();
 
-        assertThat(databaseSequences(trip.tripId())).containsExactly(1, 2, 3);
+        assertThat(databaseSequences(trip.tripId())).containsExactly(1, 2, 3, 4);
     }
 
     @Test
@@ -439,6 +477,10 @@ class ItineraryServiceIntegrationTest {
 
         UUID firstItemPublicId = firstResponse.items().getFirst().publicId();
 
+        List<UUID> originalOrder = itineraryService.getItinerary(userId, trip.tripPublicId()).items().stream()
+                .map(item -> item.publicId())
+                .toList();
+
         assertThatThrownBy(() -> itineraryService.reorderItems(userId, trip.tripPublicId(), List.of(firstItemPublicId)))
                 .isInstanceOf(InvalidItineraryOrderException.class);
 
@@ -450,7 +492,47 @@ class ItineraryServiceIntegrationTest {
 
         ItineraryDetailResponse loaded = itineraryService.getItinerary(userId, trip.tripPublicId());
 
-        assertThat(loaded.items()).hasSize(2);
+        assertThat(loaded.items()).extracting(item -> item.publicId()).containsExactlyElementsOf(originalOrder);
+        assertThat(loaded.items()).extracting(item -> item.sequenceNo()).containsExactly(1, 2);
+    }
+
+    @Test
+    void rejectsDuplicateAndForeignReorderIdsWithoutMutatingDatabase() {
+        Long userId = fixtures.insertUser("invalid-reorder-scope-owner");
+        Long foreignUserId = fixtures.insertUser("invalid-reorder-foreign-owner");
+        TripFixture trip = fixtures.insertValidTrip(userId);
+        TripFixture foreignTrip = fixtures.insertValidTrip(foreignUserId);
+
+        ItineraryDetailResponse first = itineraryService.addItem(
+                userId,
+                trip.tripPublicId(),
+                place("Invalid scope first", "invalid-scope-first").placeId());
+        ItineraryDetailResponse original = itineraryService.addItem(
+                userId,
+                trip.tripPublicId(),
+                place("Invalid scope second", "invalid-scope-second").placeId());
+        ItineraryDetailResponse foreign = itineraryService.addItem(
+                foreignUserId,
+                foreignTrip.tripPublicId(),
+                place("Invalid scope foreign", "invalid-scope-foreign").placeId());
+
+        UUID firstId = first.items().getFirst().publicId();
+        UUID secondId = original.items().get(1).publicId();
+        UUID foreignId = foreign.items().getFirst().publicId();
+
+        assertThatThrownBy(() -> itineraryService.reorderItems(userId, trip.tripPublicId(), List.of(firstId, firstId)))
+                .isInstanceOf(InvalidItineraryOrderException.class);
+
+        assertThatThrownBy(
+                        () -> itineraryService.reorderItems(userId, trip.tripPublicId(), List.of(firstId, foreignId)))
+                .isInstanceOf(InvalidItineraryOrderException.class);
+
+        entityManager.clear();
+
+        ItineraryDetailResponse loaded = itineraryService.getItinerary(userId, trip.tripPublicId());
+
+        assertThat(loaded.items()).extracting(item -> item.publicId()).containsExactly(firstId, secondId);
+        assertThat(loaded.items()).extracting(item -> item.sequenceNo()).containsExactly(1, 2);
     }
 
     @Test

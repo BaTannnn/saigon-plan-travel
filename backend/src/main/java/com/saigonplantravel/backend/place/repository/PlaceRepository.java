@@ -25,6 +25,10 @@ public interface PlaceRepository extends JpaRepository<Place, Long>, JpaSpecific
     @Query("select distinct place from Place place where place.slug in :slugs and place.active = true")
     List<Place> findAllActiveBySlugsForScheduling(Collection<String> slugs);
 
+    @EntityGraph(attributePaths = {"coverImage", "openingHours"})
+    @Query("select distinct place from Place place where place.id in :ids")
+    List<Place> findAllByIdsForScheduling(Collection<Long> ids);
+
     @Override
     @EntityGraph(attributePaths = "coverImage")
     Optional<Place> findById(Long id);
