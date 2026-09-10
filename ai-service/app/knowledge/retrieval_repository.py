@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Literal
 
 from pgvector import Vector
 
@@ -34,6 +35,19 @@ class KnowledgeChunk:
     source_label: str
     source_uri: str
     similarity: float | None = None
+
+
+@dataclass
+class DocumentSearchResult:
+    document_id: int
+    document_title: str
+    page_number: int
+    chunk_index: int
+    content: str
+    similarity: float
+    source_label: str
+    source_uri: str
+    source_type: Literal["DOCUMENT"] = "DOCUMENT"
 
 
 def search_similar_chunks(
@@ -81,6 +95,65 @@ def search_similar_chunks(
             source_label=row[4],
             source_uri=row[5],
             similarity=float(row[6]),
+        )
+        for row in rows
+    ]
+
+
+def search_similar_document_chunks(
+    query_embedding: list[float],
+    limit: int = 5,
+    *,
+    document_ids: list[int] | None = None,
+) -> list[DocumentSearchResult]:
+    if limit <= 0:
+        raise ValueError("limit must be greater than zero")
+
+    if document_ids == []:
+        return []
+
+    filters = ""
+    parameters: list[object] = []
+    vector = Vector(query_embedding)
+
+    if document_ids is not None:
+        filters = "WHERE d.id = ANY(%s)"
+        parameters.append(document_ids)
+
+    query = f"""
+        SELECT
+            d.id,
+            d.title,
+            c.page_number,
+            c.chunk_index,
+            c.content,
+            1 - (c.embedding <=> %s) AS similarity,
+            d.source_label,
+            d.source_uri
+        FROM document_knowledge_chunks c
+        JOIN knowledge_documents d
+            ON d.id = c.document_id
+        {filters}
+        ORDER BY c.embedding <=> %s, d.id, c.chunk_index
+        LIMIT %s
+    """
+    parameters = [vector, *parameters, vector, limit]
+
+    with get_connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(query, parameters)
+            rows = cursor.fetchall()
+
+    return [
+        DocumentSearchResult(
+            document_id=row[0],
+            document_title=row[1],
+            page_number=row[2],
+            chunk_index=row[3],
+            content=row[4],
+            similarity=float(row[5]),
+            source_label=row[6],
+            source_uri=row[7],
         )
         for row in rows
     ]
