@@ -3,6 +3,8 @@ package com.saigonplantravel.backend.ai.client;
 import com.saigonplantravel.backend.ai.client.dto.AiAssistantRequest;
 import com.saigonplantravel.backend.ai.client.dto.AiAssistantResponse;
 import java.net.http.HttpClient;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
@@ -13,7 +15,7 @@ import org.springframework.web.client.RestClient;
 public class AiAssistantClient {
 
     private final RestClient restClient;
-
+    @Autowired
     public AiAssistantClient(RestClient.Builder restClientBuilder, @Value("${app.ai.base-url}") String baseUrl) {
         HttpClient httpClient =
                 HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
