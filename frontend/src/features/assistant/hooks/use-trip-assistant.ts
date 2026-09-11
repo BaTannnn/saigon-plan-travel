@@ -77,7 +77,6 @@ export function useTripAssistant({
           role: "assistant",
           content: response.answer,
           suggestedPlaces: response.suggestedPlaces,
-          sources: response.sources,
         },
       ]);
       setFailedRequest(null);

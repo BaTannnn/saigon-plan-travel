@@ -57,17 +57,13 @@ class TripAssistantControllerTest {
     }
 
     @Test
-    void sendsAuthenticatedTripScopedMessageAndReturnsDiscriminatedSources() throws Exception {
+    void sendsAuthenticatedTripScopedMessageAndReturnsSuggestions() throws Exception {
         UserPrincipal principal = userPrincipal();
         UUID tripPublicId = UUID.randomUUID();
         AssistantMessageResponse response = new AssistantMessageResponse(
                 "Bạn có thể cân nhắc bảo tàng.",
                 List.of(new AssistantMessageResponse.SuggestedPlace(
-                        42L, "bao-tang-lich-su-tphcm", "Bảo tàng Lịch sử TP.HCM", null, "Phù hợp.")),
-                List.of(
-                        new AssistantMessageResponse.PlaceSource(
-                                "bao-tang-lich-su-tphcm", "Bảo tàng Lịch sử TP.HCM", "BACKGROUND"),
-                        new AssistantMessageResponse.DocumentSource("Cẩm nang TP.HCM", 7, "Cẩm nang")));
+                        42L, "bao-tang-lich-su-tphcm", "Bảo tàng Lịch sử TP.HCM", null, "Phù hợp.")));
         when(tripAssistantService.sendMessage(any(), any(), any())).thenReturn(response);
 
         mockMvc.perform(
@@ -86,10 +82,7 @@ class TripAssistantControllerTest {
                 .andExpect(jsonPath("$.answer").value("Bạn có thể cân nhắc bảo tàng."))
                 .andExpect(jsonPath("$.suggestedPlaces[0].placeId").value(42))
                 .andExpect(jsonPath("$.suggestedPlaces[0].slug").value("bao-tang-lich-su-tphcm"))
-                .andExpect(jsonPath("$.sources[0].type").value("PLACE"))
-                .andExpect(jsonPath("$.sources[0].section").value("BACKGROUND"))
-                .andExpect(jsonPath("$.sources[1].type").value("DOCUMENT"))
-                .andExpect(jsonPath("$.sources[1].pageNumber").value(7));
+                .andExpect(jsonPath("$.sources").doesNotExist());
 
         verify(tripAssistantService).sendMessage(any(), any(), any());
     }

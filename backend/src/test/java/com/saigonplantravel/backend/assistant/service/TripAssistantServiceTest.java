@@ -67,7 +67,7 @@ class TripAssistantServiceTest {
         when(tripQueryService.findOwnedTrip(userId, tripPublicId)).thenReturn(ownedTrip);
         when(itineraryService.getItinerary(userId, tripPublicId)).thenReturn(itinerary(tripPublicId));
         when(aiAssistantClient.sendMessage(any()))
-                .thenReturn(new AiAssistantResponse("Câu trả lời", List.of(), List.of()));
+                .thenReturn(new AiAssistantResponse("Câu trả lời", List.of()));
         AssistantMessageRequest request = new AssistantMessageRequest(
                 "  Tôi thích lịch sử  ",
                 List.of(new AssistantMessageRequest.ConversationMessage(
@@ -91,7 +91,7 @@ class TripAssistantServiceTest {
         when(tripQueryService.findOwnedTrip(userId, tripPublicId)).thenReturn(ownedTrip);
         when(itineraryService.getItinerary(userId, tripPublicId)).thenReturn(emptyItinerary(tripPublicId));
         when(aiAssistantClient.sendMessage(any()))
-                .thenReturn(new AiAssistantResponse("Câu trả lời", List.of(), List.of()));
+                .thenReturn(new AiAssistantResponse("Câu trả lời", List.of()));
 
         service.sendMessage(userId, tripPublicId, request());
 
@@ -113,7 +113,7 @@ class TripAssistantServiceTest {
     }
 
     @Test
-    void resolvesOnlyExistingActiveRecommendationsAndMapsSafeSources() {
+    void resolvesOnlyExistingActiveRecommendations() {
         Long userId = 7L;
         UUID tripPublicId = UUID.randomUUID();
         when(tripQueryService.findOwnedTrip(userId, tripPublicId)).thenReturn(ownedTrip);
@@ -126,12 +126,7 @@ class TripAssistantServiceTest {
                         new AiAssistantResponse.SuggestedPlace("dinh-doc-lap", "Đã có trong hành trình"),
                         new AiAssistantResponse.SuggestedPlace("unknown-place", "Không tồn tại"),
                         new AiAssistantResponse.SuggestedPlace("inactive-place", "Đã tắt"),
-                        new AiAssistantResponse.SuggestedPlace("valid-place", "Lý do trùng")),
-                List.of(
-                        new AiAssistantResponse.Source(
-                                "PLACE", "valid-place", "Địa điểm hợp lệ", "BACKGROUND", null, null, null),
-                        new AiAssistantResponse.Source(
-                                "DOCUMENT", null, null, null, "Cẩm nang TP.HCM", 7, "Cẩm nang")));
+                        new AiAssistantResponse.SuggestedPlace("valid-place", "Lý do trùng")));
         when(aiAssistantClient.sendMessage(any())).thenReturn(aiResponse);
 
         Place valid = place("Địa điểm hợp lệ", "valid-place");
@@ -148,10 +143,6 @@ class TripAssistantServiceTest {
         verify(placeQueryService)
                 .findAllActiveBySlugsForScheduling(org.mockito.ArgumentMatchers.argThat(
                         slugs -> !slugs.contains("dinh-doc-lap")));
-        assertThat(response.sources())
-                .containsExactly(
-                        new AssistantMessageResponse.PlaceSource("valid-place", "Địa điểm hợp lệ", "BACKGROUND"),
-                        new AssistantMessageResponse.DocumentSource("Cẩm nang TP.HCM", 7, "Cẩm nang"));
     }
 
     private AssistantMessageRequest request() {

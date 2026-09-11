@@ -69,21 +69,6 @@ class GeneratedAssistantOutput(BaseModel):
         return normalized
 
 
-class PlaceSource(BaseModel):
-    type: Literal["PLACE"] = "PLACE"
-    place_slug: str
-    place_name: str
-    section: str
-
-
-class DocumentSource(BaseModel):
-    type: Literal["DOCUMENT"] = "DOCUMENT"
-    title: str
-    page_number: int
-    source_label: str | None = None
-
-
 class AssistantResponse(BaseModel):
     answer: str
     suggested_places: list[GeneratedPlaceRecommendation]
-    sources: list[PlaceSource | DocumentSource]

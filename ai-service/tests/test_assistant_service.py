@@ -63,7 +63,7 @@ def document_result() -> DocumentSearchResult:
     )
 
 
-def test_uses_one_embedding_for_both_sources_and_builds_combined_context(monkeypatch) -> None:
+def test_uses_one_embedding_for_both_retrievals_and_builds_combined_context(monkeypatch) -> None:
     embedding_calls = []
     place_calls = []
     document_calls = []
@@ -110,11 +110,6 @@ def test_uses_one_embedding_for_both_sources_and_builds_combined_context(monkeyp
     assert "CURRENT ITINERARY:" not in prompt
     assert "[USER] Tôi muốn tham quan lịch sử." in prompt
     assert response.suggested_places[0].slug == "bao-tang-lich-su-tphcm"
-    assert response.sources[0].type == "PLACE"
-    assert response.sources[0].place_slug == "bao-tang-lich-su-tphcm"
-    assert response.sources[1].type == "DOCUMENT"
-    assert response.sources[1].page_number == 7
-    assert not hasattr(response.sources[1], "source_uri")
 
 
 def test_filters_unknown_and_duplicate_recommendation_slugs(monkeypatch) -> None:
@@ -223,7 +218,6 @@ def test_empty_retrieval_returns_safe_answer_without_calling_gemini(monkeypatch)
 
     assert response.answer == assistant_service.INSUFFICIENT_CONTEXT_ANSWER
     assert response.suggested_places == []
-    assert response.sources == []
 
 
 def test_invalid_gemini_structured_output_is_rejected(monkeypatch) -> None:

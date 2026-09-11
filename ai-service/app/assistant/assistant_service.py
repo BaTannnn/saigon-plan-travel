@@ -4,10 +4,8 @@ from app.assistant.models import (
     AssistantRequest,
     AssistantResponse,
     ConversationMessage,
-    DocumentSource,
     GeneratedAssistantOutput,
     GeneratedPlaceRecommendation,
-    PlaceSource,
 )
 from app.assistant.prompts import ASSISTANT_PROMPT
 from app.knowledge.embedding_service import embed_query
@@ -46,12 +44,10 @@ def answer_assistant_message(
         limit=document_top_k,
     )
 
-    sources = _build_sources(place_results, document_results)
     if not place_results and not document_results:
         return AssistantResponse(
             answer=INSUFFICIENT_CONTEXT_ANSWER,
             suggested_places=[],
-            sources=[],
         )
 
     excluded_slugs = set(request.excluded_place_slugs)
@@ -92,7 +88,6 @@ def answer_assistant_message(
     return AssistantResponse(
         answer=parsed.answer.strip(),
         suggested_places=recommendations,
-        sources=sources,
     )
 
 
@@ -143,37 +138,3 @@ def _build_evidence(
             )
         )
     return "\n\n".join(parts)
-
-
-def _build_sources(
-    place_results: list[SearchResult],
-    document_results: list[DocumentSearchResult],
-) -> list[PlaceSource | DocumentSource]:
-    sources: list[PlaceSource | DocumentSource] = []
-    seen: set[tuple[object, ...]] = set()
-
-    for result in place_results:
-        key = ("PLACE", result.place_slug, result.section)
-        if key not in seen:
-            seen.add(key)
-            sources.append(
-                PlaceSource(
-                    place_slug=result.place_slug,
-                    place_name=result.place_name,
-                    section=result.section,
-                )
-            )
-
-    for result in document_results:
-        key = ("DOCUMENT", result.document_id, result.page_number)
-        if key not in seen:
-            seen.add(key)
-            sources.append(
-                DocumentSource(
-                    title=result.document_title,
-                    page_number=result.page_number,
-                    source_label=result.source_label,
-                )
-            )
-
-    return sources

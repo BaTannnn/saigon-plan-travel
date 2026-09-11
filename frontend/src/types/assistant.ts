@@ -16,28 +16,9 @@ export type AssistantSuggestedPlace = {
   reason: string;
 };
 
-export type PlaceAssistantSource = {
-  type: "PLACE";
-  placeSlug: string;
-  placeName: string;
-  section: string;
-};
-
-export type DocumentAssistantSource = {
-  type: "DOCUMENT";
-  title: string;
-  pageNumber: number;
-  sourceLabel: string | null;
-};
-
-export type AssistantSource =
-  | PlaceAssistantSource
-  | DocumentAssistantSource;
-
 export type AssistantMessageResponse = {
   answer: string;
   suggestedPlaces: AssistantSuggestedPlace[];
-  sources: AssistantSource[];
 };
 
 export type AssistantChatMessage = {
@@ -45,5 +26,4 @@ export type AssistantChatMessage = {
   role: "user" | "assistant";
   content: string;
   suggestedPlaces?: AssistantSuggestedPlace[];
-  sources?: AssistantSource[];
 };

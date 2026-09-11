@@ -46,12 +46,6 @@ class AiAssistantClientTest {
                           "suggested_places": [{
                             "slug": "bao-tang-lich-su-tphcm",
                             "reason": "Phù hợp sở thích lịch sử."
-                          }],
-                          "sources": [{
-                            "type": "DOCUMENT",
-                            "title": "Cẩm nang TP.HCM",
-                            "page_number": 7,
-                            "source_label": "Cẩm nang"
                           }]
                         }
                         """,
@@ -63,10 +57,6 @@ class AiAssistantClientTest {
                 .singleElement()
                 .extracting(AiAssistantResponse.SuggestedPlace::slug)
                 .isEqualTo("bao-tang-lich-su-tphcm");
-        assertThat(response.sources()).singleElement().satisfies(source -> {
-            assertThat(source.type()).isEqualTo("DOCUMENT");
-            assertThat(source.pageNumber()).isEqualTo(7);
-        });
         server.verify();
     }
 }

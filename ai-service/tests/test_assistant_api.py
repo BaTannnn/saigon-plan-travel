@@ -12,7 +12,7 @@ def test_assistant_endpoint_maps_json_request(monkeypatch) -> None:
         "answer_assistant_message",
         lambda request: (
             captured.append(request)
-            or AssistantResponse(answer="Câu trả lời", suggested_places=[], sources=[])
+            or AssistantResponse(answer="Câu trả lời", suggested_places=[])
         ),
     )
     request = AssistantRequest.model_validate(
@@ -28,7 +28,6 @@ def test_assistant_endpoint_maps_json_request(monkeypatch) -> None:
     assert response.model_dump() == {
         "answer": "Câu trả lời",
         "suggested_places": [],
-        "sources": [],
     }
     assert captured[0].excluded_place_slugs == []
 

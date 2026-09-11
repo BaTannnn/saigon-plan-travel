@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
-import { Bot, FileText, LoaderCircle, MapPin, Send, Sparkles } from "lucide-react";
+import { Bot, LoaderCircle, Send, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,7 +14,7 @@ import {
 import { SuggestedPlaceCard } from "@/features/assistant/components/suggested-place-card";
 import { useTripAssistant } from "@/features/assistant/hooks/use-trip-assistant";
 import { useAuth } from "@/features/auth/auth-provider";
-import type { AssistantChatMessage, AssistantSource } from "@/types/assistant";
+import type { AssistantChatMessage } from "@/types/assistant";
 
 const STARTER_PROMPTS = [
   "Gợi ý cho tôi địa điểm lịch sử",
@@ -27,37 +27,6 @@ type TripAssistantProps = {
   itineraryPlaceSlugs: string[];
   onAddPlace: (placeId: number) => Promise<void>;
 };
-
-function AssistantSources({ sources }: { sources: AssistantSource[] }) {
-  if (sources.length === 0) return null;
-
-  return (
-    <section className="mt-3 border-t border-border pt-3">
-      <h4 className="m-0 text-[0.68rem] font-extrabold tracking-[0.1em] text-text-secondary uppercase">
-        Tài liệu tham khảo
-      </h4>
-      <ul className="mt-2 grid list-none gap-1.5 p-0 text-xs text-text-secondary">
-        {sources.map((source, index) => (
-          <li
-            key={`${source.type}-${index}`}
-            className="flex min-w-0 items-start gap-1.5"
-          >
-            {source.type === "PLACE" ? (
-              <MapPin className="mt-0.5 size-3.5 shrink-0 text-primary" aria-hidden="true" />
-            ) : (
-              <FileText className="mt-0.5 size-3.5 shrink-0 text-ochre" aria-hidden="true" />
-            )}
-            <span className="min-w-0 wrap-break-word">
-              {source.type === "PLACE"
-                ? `${source.placeName} · ${source.section}`
-                : `${source.title} · Trang ${source.pageNumber}`}
-            </span>
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
 
 function ChatMessage({
   message,
@@ -92,10 +61,6 @@ function ChatMessage({
               />
             ))}
           </div>
-        ) : null}
-
-        {!isUser && message.sources ? (
-          <AssistantSources sources={message.sources} />
         ) : null}
       </div>
     </div>
@@ -138,8 +103,8 @@ export function TripAssistant({
       <DialogTrigger asChild>
         <Button
           type="button"
-          variant="accent"
-          className="fixed right-5 bottom-5 z-[900] shadow-mint-md sm:right-7 sm:bottom-7"
+          variant="outline"
+          className="absolute top-2.5 right-2.5 z-[1050] border-primary bg-surface text-primary shadow-mint-md hover:bg-primary-soft hover:text-primary-strong"
           aria-label="Mở trợ lý du lịch AI"
         >
           <Sparkles className="size-4" aria-hidden="true" />
@@ -147,7 +112,7 @@ export function TripAssistant({
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="top-0 right-0 left-auto h-dvh max-h-dvh w-[min(100vw,410px)] translate-x-0 translate-y-0 rounded-none border-y-0 border-r-0 shadow-mint-md md:top-20 md:h-[calc(100dvh_-_5rem)] md:max-h-[calc(100dvh_-_5rem)]">
+      <DialogContent className="top-0 right-0 left-auto h-dvh max-h-dvh w-[min(100vw,410px)] translate-x-0 translate-y-0 rounded-none border-y-0 border-r-0 shadow-mint-md md:top-24 md:right-5 md:bottom-5 md:h-auto md:max-h-none md:rounded-mint-lg md:border">
         <DialogHeader className="border-b border-border pb-4">
           <DialogTitle className="flex items-center gap-2">
             <span className="grid size-8 place-items-center rounded-full bg-accent-soft text-accent-strong">
@@ -226,21 +191,22 @@ export function TripAssistant({
           <div ref={endRef} />
         </div>
 
-        <form className="border-t border-border bg-surface p-3" onSubmit={handleSubmit}>
-          <div className="flex items-end gap-2 rounded-mint-md border border-input bg-background p-2 focus-within:ring-3 focus-within:ring-ring/25">
+        <form className="border-t border-border bg-surface px-4 py-3" onSubmit={handleSubmit}>
+          <div className="flex items-center gap-2 rounded-mint-md border border-input bg-background px-2 py-1.5 focus-within:ring-3 focus-within:ring-ring/25">
             <textarea
               value={assistant.input}
               onChange={(event) => assistant.setInput(event.target.value)}
               onKeyDown={handleInputKeyDown}
-              rows={2}
+              rows={1}
               maxLength={1000}
               placeholder="Nhập câu hỏi..."
               aria-label="Câu hỏi cho trợ lý AI"
-              className="min-h-10 flex-1 resize-none border-0 bg-transparent px-1 py-1.5 text-sm leading-5 outline-none placeholder:text-muted-foreground"
+              className="max-h-24 min-h-9 flex-1 resize-none border-0 bg-transparent px-1 py-2 text-sm leading-5 outline-none placeholder:text-muted-foreground"
             />
             <Button
               type="submit"
               size="icon-sm"
+              className="size-9"
               disabled={assistant.input.trim().length < 3 || assistant.isSending}
               aria-label="Gửi câu hỏi"
             >

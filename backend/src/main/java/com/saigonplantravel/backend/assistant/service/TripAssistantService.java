@@ -10,8 +10,6 @@ import com.saigonplantravel.backend.itinerary.service.ItineraryService;
 import com.saigonplantravel.backend.place.entity.Place;
 import com.saigonplantravel.backend.place.service.PlaceQueryService;
 import com.saigonplantravel.backend.trip.service.TripQueryService;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,8 +52,7 @@ public class TripAssistantService {
 
         return new AssistantMessageResponse(
                 aiResponse.answer(),
-                validateRecommendations(aiResponse.suggestedPlaces(), excludedPlaceSlugs),
-                mapSources(aiResponse.sources()));
+                validateRecommendations(aiResponse.suggestedPlaces(), excludedPlaceSlugs));
     }
 
     private AiAssistantRequest toAiRequest(AssistantMessageRequest request, Set<String> excludedPlaceSlugs) {
@@ -110,31 +107,4 @@ public class TripAssistantService {
                 .toList();
     }
 
-    private List<AssistantMessageResponse.Source> mapSources(List<AiAssistantResponse.Source> sources) {
-        if (sources == null || sources.isEmpty()) {
-            return List.of();
-        }
-
-        List<AssistantMessageResponse.Source> mapped = new ArrayList<>();
-        for (AiAssistantResponse.Source source : sources) {
-            if (source == null || source.type() == null) {
-                continue;
-            }
-            if ("PLACE".equals(source.type()) && nonBlank(source.placeSlug(), source.placeName(), source.section())) {
-                mapped.add(new AssistantMessageResponse.PlaceSource(
-                        source.placeSlug(), source.placeName(), source.section()));
-            } else if ("DOCUMENT".equals(source.type())
-                    && nonBlank(source.title())
-                    && source.pageNumber() != null
-                    && source.pageNumber() > 0) {
-                mapped.add(new AssistantMessageResponse.DocumentSource(
-                        source.title(), source.pageNumber(), source.sourceLabel()));
-            }
-        }
-        return List.copyOf(mapped);
-    }
-
-    private boolean nonBlank(String... values) {
-        return Arrays.stream(values).allMatch(value -> value != null && !value.isBlank());
-    }
 }
