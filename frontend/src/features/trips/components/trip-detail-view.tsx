@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TripAssistant } from "@/features/assistant/components/trip-assistant";
 import { useAuth } from "@/features/auth/auth-provider";
 import { ItineraryView } from "@/features/itinerary/components/itinerary-view";
 import { useItineraryWorkspace } from "@/features/itinerary/hooks/use-itinerary-workspace";
@@ -187,7 +188,7 @@ export function TripDetailView({ publicId }: TripDetailViewProps) {
       </section>
 
       <section
-        className="h-[360px] min-w-0 border-t border-border bg-muted/20 md:h-[440px] xl:h-auto xl:min-h-0 xl:border-t-0 xl:border-l"
+        className="relative h-[360px] min-w-0 border-t border-border bg-muted/20 md:h-[440px] xl:h-auto xl:min-h-0 xl:border-t-0 xl:border-l"
         aria-label={
           section === "overview" ? "Bản đồ điểm xuất phát" : "Bản đồ hành trình"
         }
@@ -206,6 +207,14 @@ export function TripDetailView({ publicId }: TripDetailViewProps) {
             onSelectItem={itineraryWorkspace.setSelectedItemPublicId}
           />
         )}
+
+        {section === "itinerary" ? (
+          <TripAssistant
+            tripPublicId={publicId}
+            itineraryPlaceSlugs={itineraryItems.map((item) => item.place.slug)}
+            onAddPlace={itineraryWorkspace.addPlaceById}
+          />
+        ) : null}
       </section>
     </main>
   );

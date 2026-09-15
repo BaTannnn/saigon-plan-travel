@@ -151,6 +151,19 @@ class FlywayMigrationTest {
         assertThat(jdbcTemplate.queryForObject(
                         "SELECT count(*) FROM flyway_schema_history WHERE version = '15' AND success", Integer.class))
                 .isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject(
+                        "SELECT count(*) FROM pg_tables WHERE schemaname = 'public' "
+                                + "AND tablename IN ('knowledge_documents', 'document_knowledge_chunks')",
+                        Integer.class))
+                .isEqualTo(2);
+        assertThat(jdbcTemplate.queryForObject(
+                        "SELECT count(*) FROM information_schema.columns "
+                                + "WHERE table_schema = 'public' "
+                                + "AND table_name = 'document_knowledge_chunks' "
+                                + "AND column_name IN ('document_id', 'chunk_index', 'page_number', "
+                                + "'content', 'content_hash', 'embedding')",
+                        Integer.class))
+                .isEqualTo(6);
         assertThat(jdbcTemplate.queryForObject("SELECT count(*) FROM place_images", Integer.class))
                 .isZero();
     }

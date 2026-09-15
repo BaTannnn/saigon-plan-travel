@@ -25,4 +25,8 @@ public class PlaceQueryService {
     public List<Place> findAllActiveBySlugsForScheduling(Collection<String> slugs) {
         return placeRepository.findAllActiveBySlugsForScheduling(slugs);
     }
+
+    public List<Place> findAllByIdsForScheduling(Collection<Long> ids) {
+        return placeRepository.findAllByIdsForScheduling(ids);
+    }
 }

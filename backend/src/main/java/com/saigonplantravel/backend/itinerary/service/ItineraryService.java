@@ -6,11 +6,13 @@ import com.saigonplantravel.backend.itinerary.entity.ItineraryItem;
 import com.saigonplantravel.backend.itinerary.exception.*;
 import com.saigonplantravel.backend.itinerary.mapper.ItineraryDetailMapper;
 import com.saigonplantravel.backend.itinerary.model.CalculatedItinerary;
+import com.saigonplantravel.backend.itinerary.repository.ItineraryItemSequenceRepository;
 import com.saigonplantravel.backend.itinerary.repository.ItineraryRepository;
 import com.saigonplantravel.backend.place.entity.Place;
 import com.saigonplantravel.backend.place.service.PlaceQueryService;
 import com.saigonplantravel.backend.trip.entity.Trip;
 import com.saigonplantravel.backend.trip.service.TripQueryService;
+import jakarta.persistence.EntityManager;
 import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
@@ -26,25 +28,31 @@ public class ItineraryService {
 
     private final TripQueryService tripQueryService;
     private final ItineraryRepository itineraryRepository;
+    private final ItineraryItemSequenceRepository itemSequenceRepository;
     private final PlaceQueryService placeQueryService;
     private final ItineraryRecalculationService recalculationService;
     private final ItineraryDetailMapper itineraryDetailMapper;
     private final Clock clock;
+    private final EntityManager entityManager;
 
     public ItineraryService(
             TripQueryService tripQueryService,
             ItineraryRepository itineraryRepository,
+            ItineraryItemSequenceRepository itemSequenceRepository,
             PlaceQueryService placeQueryService,
             ItineraryRecalculationService recalculationService,
             ItineraryDetailMapper itineraryDetailMapper,
-            Clock clock) {
+            Clock clock,
+            EntityManager entityManager) {
 
         this.tripQueryService = tripQueryService;
         this.itineraryRepository = itineraryRepository;
+        this.itemSequenceRepository = itemSequenceRepository;
         this.placeQueryService = placeQueryService;
         this.recalculationService = recalculationService;
         this.itineraryDetailMapper = itineraryDetailMapper;
         this.clock = clock;
+        this.entityManager = entityManager;
     }
 
     @Transactional(readOnly = true)
@@ -86,15 +94,18 @@ public class ItineraryService {
         Trip trip = findOwnedTrip(userId, tripPublicId);
         Itinerary itinerary = findItinerary(trip.getId());
         ItineraryItem item = findItem(itinerary, itemPublicId);
+        int deletedSequenceNo = item.getSequenceNo();
         OffsetDateTime now = OffsetDateTime.now(clock);
 
         itinerary.removeItem(item, now);
 
         itineraryRepository.flush();
 
-        itinerary.resequenceItems(now);
+        itemSequenceRepository.decrementSequencesAfter(itinerary.getId(), deletedSequenceNo, now);
 
-        return recalculateAndMap(tripPublicId, trip, itinerary);
+        entityManager.clear();
+
+        return recalculateAndMap(tripPublicId, trip, findItinerary(trip.getId()));
     }
 
     @Transactional
@@ -140,12 +151,30 @@ public class ItineraryService {
 
     private ItineraryDetailResponse recalculateAndMap(UUID tripPublicId, Trip trip, Itinerary itinerary) {
 
-        List<Place> orderedPlaces =
-                itinerary.getItems().stream().map(ItineraryItem::getPlace).toList();
+        List<Long> orderedPlaceIds = itinerary.getItems().stream()
+                .map(item -> item.getPlace().getId())
+                .toList();
+
+        List<Place> orderedPlaces = loadSchedulingPlacesInOrder(orderedPlaceIds);
 
         CalculatedItinerary calculatedItinerary = recalculationService.recalculate(trip, orderedPlaces);
 
         return itineraryDetailMapper.toResponse(tripPublicId, itinerary, calculatedItinerary);
+    }
+
+    private List<Place> loadSchedulingPlacesInOrder(List<Long> orderedPlaceIds) {
+        if (orderedPlaceIds.isEmpty()) {
+            return List.of();
+        }
+
+        Map<Long, Place> placesById = placeQueryService.findAllByIdsForScheduling(orderedPlaceIds).stream()
+                .collect(Collectors.toMap(Place::getId, place -> place));
+
+        if (placesById.size() != orderedPlaceIds.size()) {
+            throw new IllegalStateException("An itinerary references a missing place");
+        }
+
+        return orderedPlaceIds.stream().map(placesById::get).toList();
     }
 
     private ItineraryDetailResponse calculateEmptyItinerary(UUID tripPublicId, Trip trip) {
@@ -165,23 +194,29 @@ public class ItineraryService {
 
         OffsetDateTime now = OffsetDateTime.now(clock);
 
-        /*
-         * Phase 1:
-         * Move current sequence numbers outside
-         * the active range to avoid violating
-         * UNIQUE(itinerary_id, sequence_no).
-         */
-        itinerary.shiftSequencesForReorder(now);
+        itinerary.validateOrder(orderedItemPublicIds);
+        itinerary.markUpdated(now);
 
         itineraryRepository.flush();
 
-        /*
-         * Phase 2:
-         * Apply the user-defined final order.
-         */
-        itinerary.reorderItems(orderedItemPublicIds, now);
+        if (!orderedItemPublicIds.isEmpty()) {
+            int maxSequence = itinerary.getItems().stream()
+                    .mapToInt(ItineraryItem::getSequenceNo)
+                    .max()
+                    .orElse(0);
+            int offset = Math.addExact(maxSequence, itinerary.getItems().size());
 
-        return recalculateAndMap(tripPublicId, trip, itinerary);
+            int shifted = itemSequenceRepository.shiftSequencesToTemporaryRange(itinerary.getId(), offset, now);
+            int reordered = itemSequenceRepository.applyOrder(itinerary.getId(), orderedItemPublicIds, now);
+
+            if (shifted != orderedItemPublicIds.size() || reordered != orderedItemPublicIds.size()) {
+                throw new InvalidItineraryOrderException();
+            }
+        }
+
+        entityManager.clear();
+
+        return recalculateAndMap(tripPublicId, trip, findItinerary(trip.getId()));
     }
 
     @Transactional
@@ -200,13 +235,6 @@ public class ItineraryService {
             itinerary = new Itinerary(trip, now);
 
         } else {
-
-            /*
-             * User đã xác nhận replace preview AI.
-             *
-             * Xóa itinerary items cũ trước,
-             * rồi flush để giải phóng sequence_no.
-             */
             itinerary.clearItems(now);
 
             itineraryRepository.flush();

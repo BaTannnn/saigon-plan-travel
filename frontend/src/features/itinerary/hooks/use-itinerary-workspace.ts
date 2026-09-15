@@ -98,10 +98,23 @@ export function useItineraryWorkspace({
     }
   }
 
-  function addPlace(place: PlaceSummary) {
+  function addPlaceRequest(
+    placeId: number,
+    onSuccess?: (updated: ItineraryResponse) => void,
+  ) {
     return runMutation(
-      (token) =>
-        addItineraryItem(tripPublicId, { placeId: place.id }, token),
+      (token) => addItineraryItem(tripPublicId, { placeId }, token),
+      onSuccess,
+    );
+  }
+
+  function addPlaceById(placeId: number) {
+    return addPlaceRequest(placeId);
+  }
+
+  function addPlace(place: PlaceSummary) {
+    return addPlaceRequest(
+      place.id,
       (updated) => {
         const addedItem = updated.items.find(
           (item) => item.place.slug === place.slug,
@@ -169,6 +182,7 @@ export function useItineraryWorkspace({
     loadIfNeeded,
     refreshIfLoaded,
     addPlace,
+    addPlaceById,
     deleteItem,
     replacePlace,
     reorderItems,

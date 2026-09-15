@@ -18,6 +18,7 @@ import com.saigonplantravel.backend.place.entity.Place;
 import com.saigonplantravel.backend.place.service.CategoryService;
 import com.saigonplantravel.backend.place.service.PlaceService;
 import com.saigonplantravel.backend.testsupport.PostgresIntegrationTestSupport;
+import com.saigonplantravel.backend.testsupport.database.DatabaseTestFixtures;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import java.math.BigDecimal;
@@ -148,6 +149,35 @@ class PlaceRepositoryTest {
 
         List<Place> places =
                 placeRepository.findAllActiveBySlugsForScheduling(List.of("demo-art-space", "demo-city-garden"));
+
+        assertThat(places).hasSize(2);
+        assertThat(places)
+                .allSatisfy(place -> assertThat(place.getOpeningHours()).isNotEmpty());
+        assertThat(statistics.getPrepareStatementCount()).isEqualTo(1);
+    }
+
+    @Test
+    void loadsSchedulingPlacesByIdAndTheirOpeningHoursInOneQuery() {
+        DatabaseTestFixtures fixtures = new DatabaseTestFixtures(jdbcTemplate);
+        Long firstId = fixtures.insertValidPlace("Scheduling first", "scheduling-first", true)
+                .placeId();
+        Long secondId = fixtures.insertValidPlace("Scheduling second", "scheduling-second", false)
+                .placeId();
+
+        jdbcTemplate.update(
+                """
+                INSERT INTO opening_hours (place_id, day_of_week, open_time, close_time, closed)
+                VALUES (?, 1, '08:00', '17:00', FALSE),
+                       (?, 1, NULL, NULL, TRUE)
+                """,
+                firstId,
+                secondId);
+
+        Statistics statistics =
+                entityManagerFactory.unwrap(SessionFactory.class).getStatistics();
+        statistics.clear();
+
+        List<Place> places = placeRepository.findAllByIdsForScheduling(List.of(firstId, secondId));
 
         assertThat(places).hasSize(2);
         assertThat(places)
